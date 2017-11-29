@@ -1,0 +1,18 @@
+api:
+  database_url: postgres://postgres@localhost/api?sslmode=disable
+  horizon_url: http://localhost:8000
+  account_manager: SCIMXOIWIB32R7JI6ISNYSCO2BFST5E6P3TLBM4TTLHH57IK6SJPGZT2
+  skip_signature_check: true
+
+notificator:
+  client_router: http://localhost:8888/hredir
+  endpoint: http://95.85.47.33:7000
+  #secret: foo
+  #public: bar
+
+http:
+  host: localhost
+  port: 8001
+
+log:
+  level: info
