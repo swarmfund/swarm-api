@@ -20,13 +20,13 @@ stages:
 build:
   stage: build
   variables:
-    APP_PATH: gitlab.com/tokend/api
+    APP_PATH: gitlab.com/swarmfund/api
   script:
     - mkdir -p $GOPATH/src/$APP_PATH
     - cp -rf ./* $GOPATH/src/$APP_PATH
     - cd $GOPATH/src/$APP_PATH
-    - go build -o bin/api -a gitlab.com/tokend/api/cmd/api
-    - cp -rf ./bin/ /builds/tokend/api/bin/
+    - go build -o bin/api -a gitlab.com/swarmfund/api/cmd/api
+    - cp -rf ./bin/ /builds/swarmfund/api/bin/
   artifacts:
       expire_in: 1 week
       paths:
