@@ -239,7 +239,7 @@ Content-Type: application/vnd.api+json
 
 
 
-## Update wallet
+## Update wallet 🔒 
 
 ```ruby
 PUT /wallets/5xkxn3nfjmfx9p58geo5stt9
