@@ -6,6 +6,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/pquerna/otp"
 	"github.com/pquerna/otp/totp"
+	"gitlab.com/swarmfund/api/internal/types"
 )
 
 type GoogleTOPT struct {
@@ -46,6 +47,12 @@ func (b GoogleTOPT) Attributes() map[string]interface{} {
 	return map[string]interface{}{
 		"secret": b.Secret,
 		"seed":   b.key.String(),
+	}
+}
+
+func (p GoogleTOPT) Meta() map[string]interface{} {
+	return map[string]interface{}{
+		"factor_type": types.WalletFactorTOTP,
 	}
 }
 

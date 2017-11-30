@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 
 	"github.com/pkg/errors"
+	"gitlab.com/swarmfund/api/internal/types"
 	"gitlab.com/swarmfund/go/keypair"
 )
 
@@ -48,6 +49,7 @@ func (p Password) Meta() map[string]interface{} {
 	return map[string]interface{}{
 		"salt":          p.Details.Salt,
 		"keychain_data": p.Details.KeychainData,
+		"factor_type":   types.WalletFactorPassword,
 	}
 }
 

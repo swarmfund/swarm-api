@@ -361,6 +361,7 @@ Request should be signed.
             "status": "403",
           	"meta": {
                 "factor_id": 26,
+              	"factor_type": "password",
                 "token": "c64c45125a5a846dbfa8cbbaf1b7f3dcc8c3ce9d",
               	"wallet_id": "388108095960430b80554ac3efb6807a9f286854033aca47f6f466094ab50876"
             }
@@ -377,11 +378,12 @@ After successful OTP verification user should be able to access requested resour
 
 ### Response
 
-| Field       | Description                              |
-| ----------- | ---------------------------------------- |
-| `factor_id` | ID of a factor which triggered verification |
-| `token`     | Hash based on request                    |
-| `wallet_id` | ID of a wallet for which verification was triggered |
+| Field         | Description                              |
+| ------------- | ---------------------------------------- |
+| `factor_id`   | ID of a factor which triggered verification |
+| `token`       | Hash based on request                    |
+| `wallet_id`   | ID of a wallet for which verification was triggered |
+| `factor_type` | Type of the factor which triggered verification |
 
 
 
