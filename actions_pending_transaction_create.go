@@ -5,6 +5,7 @@ import (
 
 	"gitlab.com/swarmfund/api/internal/api/handlers"
 	"gitlab.com/swarmfund/api/internal/secondfactor"
+	"gitlab.com/swarmfund/api/internal/types"
 	"gitlab.com/swarmfund/api/pentxsub"
 	"gitlab.com/swarmfund/api/render/problem"
 	"gitlab.com/swarmfund/go/xdr"
@@ -99,7 +100,7 @@ func (action *PendingTransactionCreateAction) checkTFA() {
 				return
 			}
 
-			if err := secondfactor.NewConsumer(action.APIQ().TFA()).Consume(action.R, wallet); err != nil {
+			if err := secondfactor.NewConsumer(action.APIQ().TFA()).WithBackendType(types.WalletFactorPassword).Consume(action.R, wallet); err != nil {
 				handlers.RenderFactorConsumeError(action.W, action.R, err)
 				action.Rendered = true
 				return
