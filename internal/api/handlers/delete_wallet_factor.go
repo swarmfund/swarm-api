@@ -61,22 +61,34 @@ func DeleteWalletFactor(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// ask password before writing anything
-	if err := secondfactor.NewConsumer(TFAQ(r)).WithBackendType(types.WalletFactorPassword).Consume(r, wallet); err != nil {
-		RenderFactorConsumeError(w, r, err)
-		return
-	}
-
 	bid, err := strconv.ParseInt(request.BackendID, 10, 64)
 	if err != nil {
 		Log(r).WithError(err).Error("failed to parse backend id")
 		ape.RenderErr(w, problems.InternalError())
 		return
 	}
-	if err := TFAQ(r).DeleteBackend(bid); err != nil {
-		Log(r).WithError(err).Error("failed to delete backend")
+
+	record, err := TFAQ(r).Backend(bid)
+	if err != nil {
+		Log(r).WithError(err).Error("failed to get backend")
 		ape.RenderErr(w, problems.InternalError())
 		return
+	}
+
+	if record != nil {
+		// slight race condition, but it should be fine
+		if record.Priority > 0 {
+			if err := secondfactor.NewConsumer(TFAQ(r)).WithBackendType(types.WalletFactorPassword).Consume(r, wallet); err != nil {
+				RenderFactorConsumeError(w, r, err)
+				return
+			}
+		}
+
+		if err := TFAQ(r).DeleteBackend(bid); err != nil {
+			Log(r).WithError(err).Error("failed to delete backend")
+			ape.RenderErr(w, problems.InternalError())
+			return
+		}
 	}
 
 	w.WriteHeader(204)

@@ -29,15 +29,18 @@ func GetKDF(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		if wallet != nil {
-			if wallet.KDF != 1 {
-				Log(r).WithField("wallet", wallet.Id).Error("non-default kdf is not implemented")
-				ape.RenderErr(w, problems.InternalError())
-				return
-			}
-
-			kdf.Salt = wallet.Salt
+		if wallet == nil {
+			ape.RenderErr(w, problems.NotFound())
+			return
 		}
+
+		if wallet.KDF != 1 {
+			Log(r).WithField("wallet", wallet.Id).Error("non-default kdf is not implemented")
+			ape.RenderErr(w, problems.InternalError())
+			return
+		}
+
+		kdf.Salt = wallet.Salt
 	}
 
 	ape.Render(w, kdf)

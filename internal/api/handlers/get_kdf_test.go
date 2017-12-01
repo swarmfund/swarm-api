@@ -9,6 +9,7 @@ import (
 
 	"github.com/go-chi/chi"
 	"github.com/google/jsonapi"
+	"github.com/magiconair/properties/assert"
 	api2 "gitlab.com/swarmfund/api/db2/api"
 	"gitlab.com/swarmfund/api/db2/api/mocks"
 	"gitlab.com/swarmfund/api/internal/api/middlewares"
@@ -58,9 +59,7 @@ func TestGetKDF(t *testing.T) {
 		walletQ.On("ByEmail", "not@existing.com").Return(nil, nil).Once()
 		defer walletQ.AssertExpectations(t)
 		_, status := get("not@existing.com")
-		if status != 200 {
-			t.Fatalf("expected 200 got %d", status)
-		}
+		assert.Equal(t, status, http.StatusNotFound)
 	})
 
 	t.Run("valid email", func(t *testing.T) {
