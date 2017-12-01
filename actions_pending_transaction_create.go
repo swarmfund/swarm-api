@@ -100,7 +100,7 @@ func (action *PendingTransactionCreateAction) checkTFA() {
 				return
 			}
 
-			if err := secondfactor.NewConsumer(action.APIQ().TFA()).WithBackendType(types.WalletFactorPassword).Consume(action.R, wallet); err != nil {
+			if err := secondfactor.NewConsumer(action.APIQ().TFA()).WithBackendType(types.WalletFactorTOTP).Consume(action.R, wallet); err != nil {
 				handlers.RenderFactorConsumeError(action.W, action.R, err)
 				action.Rendered = true
 				return
