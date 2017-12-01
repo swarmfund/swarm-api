@@ -18,6 +18,7 @@ import (
 	"gitlab.com/swarmfund/api/db2/api/mocks"
 	"gitlab.com/swarmfund/api/internal/api/middlewares"
 	"gitlab.com/swarmfund/api/internal/externalmocks"
+	"gitlab.com/swarmfund/api/internal/secondfactor"
 	"gitlab.com/swarmfund/api/internal/types"
 	"gitlab.com/swarmfund/go/doorman"
 	"gitlab.com/swarmfund/go/keypair"
@@ -48,6 +49,7 @@ func (c *TestClient) Signer(signer keypair.KP) *TestClient {
 }
 
 func (c *TestClient) Do(method, path, body string) *http.Response {
+	c.t.Helper()
 	request, err := http.NewRequest(method, fmt.Sprintf("%s/%s", c.ts.URL, path), bytes.NewReader([]byte(body)))
 	if err != nil {
 		c.t.Fatal(err)
@@ -138,11 +140,13 @@ func TestCreateTFABackend(t *testing.T) {
 	)
 
 	router := chi.NewRouter()
-	router.Use(middlewares.Ctx(
-		CtxWalletQ(&walletQ),
-		CtxDoorman(doormanM),
-		CtxTFAQ(&tfaQ),
-	))
+	router.Use(
+		secondfactor.HashMiddleware(),
+		middlewares.Ctx(
+			CtxWalletQ(&walletQ),
+			CtxDoorman(doormanM),
+			CtxTFAQ(&tfaQ),
+		))
 	router.Post("/{wallet-id}", CreateTFABackend)
 
 	ts := httptest.NewServer(router)
@@ -197,6 +201,7 @@ func TestCreateTFABackend(t *testing.T) {
 		var backendID int64 = 10
 		walletQ.On("ByWalletID", wallet.WalletId).Return(&wallet, nil).Once()
 		tfaQ.On("CreateBackend", wallet.WalletId, mock.Anything).Return(&backendID, nil).Once()
+		tfaQ.On("Consume", mock.Anything).Return(true, nil).Once()
 		defer walletQ.AssertExpectations(t)
 		defer tfaQ.AssertExpectations(t)
 		resp := Client(t, ts).Signer(signer).Post(wallet.WalletId, `{
@@ -211,6 +216,7 @@ func TestCreateTFABackend(t *testing.T) {
 		walletQ.On("ByWalletID", wallet.WalletId).Return(&wallet, nil).Once()
 		tfaQ.On("CreateBackend", wallet.WalletId, mock.Anything).
 			Return(nil, api.ErrWalletBackendConflict).Once()
+		tfaQ.On("Consume", mock.Anything).Return(true, nil).Once()
 		defer walletQ.AssertExpectations(t)
 		defer tfaQ.AssertExpectations(t)
 		resp := Client(t, ts).Signer(signer).Post(wallet.WalletId, `{
@@ -221,5 +227,6 @@ func TestCreateTFABackend(t *testing.T) {
 		assert.Equal(t, resp.StatusCode, 409)
 	})
 
+	// TODO test not verified factor
 	// TODO test response struct for totp
 }
