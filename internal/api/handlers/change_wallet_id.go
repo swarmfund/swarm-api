@@ -75,12 +75,20 @@ func ChangeWalletID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// check allowed
 	if err := Doorman(r, doorman.SignerOf(wallet.CurrentAccountID)); err != nil {
 		movetoape.RenderDoormanErr(w, err)
 		return
 	}
 
+	// check if user knows password
 	if err := secondfactor.NewConsumer(TFAQ(r)).WithBackendType(types.WalletFactorPassword).Consume(r, wallet); err != nil {
+		RenderFactorConsumeError(w, r, err)
+		return
+	}
+
+	// ask for TOTP token if enabled
+	if err := secondfactor.NewConsumer(TFAQ(r)).WithBackendType(types.WalletFactorTOTP).Consume(r, wallet); err != nil {
 		RenderFactorConsumeError(w, r, err)
 		return
 	}
