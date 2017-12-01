@@ -125,7 +125,7 @@ func VerifyFactorOTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err = TFAQ(r).Verify(request.Data.Attributes.Token); err != nil {
+	if err = TFAQ(r).Verify(backend.ID(), request.Data.Attributes.Token); err != nil {
 		Log(r).WithError(err).Error("failed to mark token as verified")
 		ape.RenderErr(w, problems.InternalError())
 		return

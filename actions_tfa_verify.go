@@ -71,10 +71,10 @@ func (action *VerifyTFAAction) performRequest() {
 	//	return
 	//}
 
-	err = action.APIQ().TFA().Verify(action.Token)
-	if err != nil {
-		action.Log.WithError(err).Error("failed to mark token as verified")
-		action.Err = &problem.ServerError
-		return
-	}
+	//err = action.APIQ().TFA().Verify(action.Token)
+	//if err != nil {
+	//	action.Log.WithError(err).Error("failed to mark token as verified")
+	//	action.Err = &problem.ServerError
+	//	return
+	//}
 }
