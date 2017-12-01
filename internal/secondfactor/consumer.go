@@ -3,6 +3,8 @@ package secondfactor
 import (
 	"net/http"
 
+	"fmt"
+
 	"github.com/pkg/errors"
 	"gitlab.com/swarmfund/api/db2/api"
 	"gitlab.com/swarmfund/api/internal/types"
@@ -16,6 +18,8 @@ type Consumer struct {
 	// error will be returned in case of conflict
 	forcedBackendType *types.WalletFactorType
 	forcedBackend     tfa.Backend
+	// used to modify token for handlers with multiple consume calls
+	tokenMixin *string
 }
 
 // NewConsumer returns new instance of Consumer with minimal required parameters,
@@ -26,11 +30,21 @@ func NewConsumer(tfaQ api.TFAQI) *Consumer {
 	}
 }
 
+func (c *Consumer) WithTokenMixin(mixin string) *Consumer {
+	return &Consumer{
+		TFAQ:              c.TFAQ,
+		forcedBackend:     c.forcedBackend,
+		forcedBackendType: c.forcedBackendType,
+		tokenMixin:        &mixin,
+	}
+}
+
 // WithBackendType forces consumer to use only backends of provided type
 func (c *Consumer) WithBackendType(tpe types.WalletFactorType) *Consumer {
 	return &Consumer{
 		TFAQ:              c.TFAQ,
 		forcedBackendType: &tpe,
+		tokenMixin:        c.tokenMixin,
 	}
 }
 
@@ -39,6 +53,7 @@ func (c *Consumer) WithBackend(backend tfa.Backend) *Consumer {
 	return &Consumer{
 		TFAQ:          c.TFAQ,
 		forcedBackend: backend,
+		tokenMixin:    c.tokenMixin,
 	}
 }
 
@@ -70,6 +85,9 @@ func (c *Consumer) backends(wallet *api.Wallet) ([]tfa.Backend, error) {
 
 func (c *Consumer) Consume(r *http.Request, wallet *api.Wallet) error {
 	token := RequestHash(r)
+	if c.tokenMixin != nil {
+		token = fmt.Sprintf("%s:%s", *c.tokenMixin, token)
+	}
 
 	// try to consume tfa token
 	ok, err := c.TFAQ.Consume(token)
