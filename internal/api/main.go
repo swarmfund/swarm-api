@@ -85,5 +85,6 @@ func Router(
 		//r.Use(middlewares.CheckAllowed("address", doorman.SignerOf))
 		r.Put("/", handlers.CreateUser)
 	})
+
 	return r
 }

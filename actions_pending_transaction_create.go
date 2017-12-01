@@ -1,12 +1,12 @@
 package api
 
 import (
-	"encoding/base64"
 	"net/http"
 
+	"gitlab.com/swarmfund/api/internal/api/handlers"
+	"gitlab.com/swarmfund/api/internal/secondfactor"
 	"gitlab.com/swarmfund/api/pentxsub"
 	"gitlab.com/swarmfund/api/render/problem"
-	"gitlab.com/swarmfund/go/network"
 	"gitlab.com/swarmfund/go/xdr"
 	"gitlab.com/swarmfund/horizon-connector"
 )
@@ -21,6 +21,7 @@ type PendingTransactionCreateAction struct {
 	Envelope xdr.TransactionEnvelope
 	Source   string
 
+	Rendered bool
 	Resource interface{}
 }
 
@@ -98,20 +99,19 @@ func (action *PendingTransactionCreateAction) checkTFA() {
 				return
 			}
 
-			hash, err := network.HashTransaction(&action.Envelope.Tx, action.App.CoreInfo.NetworkPassphrase)
-			if err != nil {
-				action.Log.WithError(err).Error("failed to get tx hash")
-				action.Err = &problem.ServerError
+			if err := secondfactor.NewConsumer(action.APIQ().TFA()).Consume(action.R, wallet); err != nil {
+				handlers.RenderFactorConsumeError(action.W, action.R, err)
+				action.Rendered = true
 				return
 			}
-
-			action.consumeTFA(wallet, base64.StdEncoding.EncodeToString(hash[:]))
-			return
 		}
 	}
 }
 
 func (action *PendingTransactionCreateAction) submitTX() {
+	if action.Rendered {
+		return
+	}
 	result, err := action.App.pendingSubmitter.Submit(action.TX)
 	if err != nil {
 		switch err {
