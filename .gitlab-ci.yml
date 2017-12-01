@@ -1,0 +1,74 @@
+image: shebgregor/ci-golang
+before_script:
+  # Run ssh-agent (inside the build environment)
+  - eval $(ssh-agent -s)
+  # Add the SSH key stored in SSH_PRIVATE_KEY variable to the agent store
+  - echo "$SSH_PRIVATE_KEY" | ssh-add -
+  - mkdir -p ~/.ssh
+  - echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+  - chmod 600 ~/.ssh/id_rsa
+  - 'echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
+  - 'echo -e "Host gitlab\n\tHostName gitlab.com\n\tIdentityFile ~/.ssh/id_rsa\n\tUser git\n" >> ~/.ssh/config'
+
+stages:
+  - prebuild
+  - build
+  - delivery
+  - deploy
+  - postdeploy
+
+build:
+  stage: build
+  variables:
+    APP_PATH: gitlab.com/swarmfund/api
+  script:
+    - mkdir -p $GOPATH/src/$APP_PATH
+    - cp -rf ./* $GOPATH/src/$APP_PATH
+    - cd $GOPATH/src/$APP_PATH
+    - go build -o bin/api -a gitlab.com/swarmfund/api/cmd/api
+    - cp -rf ./bin/ /builds/swarmfund/api/bin/
+  artifacts:
+      expire_in: 1 week
+      paths:
+        - bin/api
+  only:
+    - master
+    - staging
+    - dev
+
+delivery:
+  stage: delivery
+  script:
+    - rsync bin/api ubuntu@$HOST_DEV:artifacts/api/${CI_COMMIT_SHA:0:8}/
+  only:
+    - master
+    - staging
+    - dev
+
+deploy:dev:
+  stage: deploy
+  script:
+    - ssh ubuntu@$HOST_DEV "artifacts/update.sh api dev ${CI_COMMIT_SHA:0:8}"
+    - curl -X POST http://$HOST_DEV:8842/ec96h_fVyGnrRXZ0X9r8RQ
+  only:
+    - dev
+    # TODO: remove this when the dev branch is added
+    - staging
+    - master
+
+pages:
+  image: ruby:2.3.1
+  stage: deploy
+  before_script:
+    - echo pass
+  script:
+    - cd docs
+    - bundle install 
+    - bundle exec middleman build --clean --build-dir=../public
+  artifacts:
+    paths:
+      - public
+  only:
+    - master
+    - staging
+    - dev

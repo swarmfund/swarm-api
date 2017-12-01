@@ -6,6 +6,7 @@ import (
 	"github.com/rcrowley/go-metrics"
 	"github.com/zenazn/goji/web"
 	"github.com/zenazn/goji/web/middleware"
+	"gitlab.com/swarmfund/api/internal/secondfactor"
 	"gitlab.com/swarmfund/api/render/problem"
 )
 
@@ -36,6 +37,7 @@ func initWeb(app *App) {
 // provided app.
 func initWebMiddleware(app *App) {
 	r := app.web.router
+	r.Use(secondfactor.HashMiddleware())
 	r.Use(stripTrailingSlashMiddleware())
 	r.Use(middleware.EnvInit)
 	r.Use(app.Middleware)
