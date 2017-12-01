@@ -33,7 +33,7 @@ type TFAQI interface {
 	Get(token string) (*TFA, error)
 	Create(tfa *TFA) error
 	Consume(token string) (bool, error)
-	Verify(token string) error
+	Verify(bid int64, token string) error
 
 	Backend(id int64) (*Backend, error)
 	Backends(walletID string) ([]Backend, error)
@@ -146,10 +146,11 @@ func (q *TFAQ) Consume(token string) (bool, error) {
 	return affected > 0, err
 }
 
-func (q *TFAQ) Verify(token string) error {
+func (q *TFAQ) Verify(bid int64, token string) error {
 	sql := sq.Update(tfaTable).
 		Where(sq.Eq{
-			"token": token,
+			"backend_id": bid,
+			"token":      token,
 		}).
 		Set("verified", true)
 
