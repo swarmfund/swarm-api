@@ -326,10 +326,6 @@ func (q *WalletQ) Verify(id int64) error {
 }
 
 func (q *WalletQ) Update(w *Wallet) error {
-	if q.Err != nil {
-		return q.Err
-	}
-
 	stmt := walletUpdate.SetMap(map[string]interface{}{
 		"wallet_id":          w.WalletId,
 		"salt":               w.Salt,
@@ -337,7 +333,19 @@ func (q *WalletQ) Update(w *Wallet) error {
 		"keychain_data":      w.KeychainData,
 	}).Where("id = ?", w.Id)
 
-	_, q.Err = q.parent.Exec(stmt)
+	_, err := q.parent.Exec(stmt)
+	if err != nil {
+		cause := errors.Cause(err)
+		pqerr, ok := cause.(*pq.Error)
+		if ok {
+			if pqerr.Constraint == walletsKDFFkeyConstraint {
+				return ErrWalletsKDFViolated
+			}
+			if pqerr.Constraint == walletsWalletIDKeyConstraint {
+				return ErrWalletsWalletIDViolated
+			}
+		}
+	}
 
-	return q.Err
+	return err
 }

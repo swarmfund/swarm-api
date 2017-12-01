@@ -12,25 +12,63 @@ import (
 	"fmt"
 
 	"github.com/go-chi/chi"
+	"github.com/magiconair/properties/assert"
 	"github.com/stretchr/testify/mock"
 	"gitlab.com/swarmfund/api/db2/api"
 	"gitlab.com/swarmfund/api/db2/api/mocks"
 	"gitlab.com/swarmfund/api/internal/api/middlewares"
 	"gitlab.com/swarmfund/api/internal/externalmocks"
 	"gitlab.com/swarmfund/api/internal/types"
-	doormanTypes "gitlab.com/swarmfund/go/doorman/types"
+	"gitlab.com/swarmfund/go/doorman"
+	"gitlab.com/swarmfund/go/keypair"
 	"gitlab.com/swarmfund/go/signcontrol"
 )
 
-var (
-	SignerConstraintAllow = doormanTypes.SignerConstraint(func(_ *http.Request) error {
-		return nil
-	})
+type TestClient struct {
+	t      *testing.T
+	ts     *httptest.Server
+	signer keypair.KP
+}
 
-	SignerConstraintNotAllowed = doormanTypes.SignerConstraint(func(_ *http.Request) error {
-		return signcontrol.ErrNotAllowed
-	})
-)
+func Client(t *testing.T, ts *httptest.Server) *TestClient {
+	return &TestClient{
+		t:  t,
+		ts: ts,
+	}
+}
+
+func (c *TestClient) RandomSigner() *TestClient {
+	c.signer, _ = keypair.Random()
+	return c
+}
+
+func (c *TestClient) Signer(signer keypair.KP) *TestClient {
+	c.signer = signer
+	return c
+}
+
+func (c *TestClient) Do(method, path, body string) *http.Response {
+	request, err := http.NewRequest(method, fmt.Sprintf("%s/%s", c.ts.URL, path), bytes.NewReader([]byte(body)))
+	if err != nil {
+		c.t.Fatal(err)
+	}
+
+	if c.signer != nil {
+		if err := signcontrol.SignRequest(request, c.signer); err != nil {
+			c.t.Fatal(err)
+		}
+	}
+
+	response, err := http.DefaultClient.Do(request)
+	if err != nil {
+		c.t.Fatal(err)
+	}
+	return response
+}
+
+func (c *TestClient) Post(path, body string) *http.Response {
+	return c.Do("POST", path, body)
+}
 
 func TestNewCreateBackendRequest(t *testing.T) {
 	cases := []struct {
@@ -89,14 +127,20 @@ func TestNewCreateBackendRequest(t *testing.T) {
 
 func TestCreateTFABackend(t *testing.T) {
 	walletQ := mocks.WalletQI{}
-	doorman := externalmocks.Doorman{}
-	tfaQ := mocks.TFAQI{}
 	walletQ.On("New").Return(&walletQ)
+
+	tfaQ := mocks.TFAQI{}
 	tfaQ.On("New").Return(&tfaQ)
+
+	accountQ := externalmocks.AccountQ{}
+	doormanM := doorman.New(
+		false, &accountQ,
+	)
+
 	router := chi.NewRouter()
 	router.Use(middlewares.Ctx(
 		CtxWalletQ(&walletQ),
-		CtxDoorman(&doorman),
+		CtxDoorman(doormanM),
 		CtxTFAQ(&tfaQ),
 	))
 	router.Post("/{wallet-id}", CreateTFABackend)
@@ -104,110 +148,77 @@ func TestCreateTFABackend(t *testing.T) {
 	ts := httptest.NewServer(router)
 	defer ts.Close()
 
+	signer, err := keypair.Random()
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	wallet := api.Wallet{
 		WalletId:  "foobar",
 		Username:  "fo@ob.ar",
-		AccountID: "GDXTLOUXG26JETQVECI3QMVTCG6LBZ7MBQU46QB4PK4G2TMAAZJ32DPD",
-	}
-
-	post := func(walletID, body string) int {
-		response, err := http.Post(fmt.Sprintf("%s/%s", ts.URL, walletID), "", bytes.NewReader([]byte(body)))
-		if err != nil {
-			t.Fatal(err)
-		}
-		defer response.Body.Close()
-
-		return response.StatusCode
+		AccountID: signer.Address(),
 	}
 
 	t.Run("not found", func(t *testing.T) {
 		walletQ.On("ByWalletID", wallet.WalletId).Return(nil, nil).Once()
 		defer walletQ.AssertExpectations(t)
-		status := post(wallet.WalletId, `{
+		resp := Client(t, ts).Post(wallet.WalletId, `{
 			"data": {
 				"type": "totp"
 			}
 		}`)
-		if status != 404 {
-			t.Fatalf("expected %d got %d", 404, status)
-		}
+		assert.Equal(t, resp.StatusCode, 404)
 	})
 
-	t.Run("check allowed", func(t *testing.T) {
+	t.Run("check not allowed", func(t *testing.T) {
 		walletQ.On("ByWalletID", wallet.WalletId).Return(&wallet, nil).Once()
-		doorman.On("SignerOf", wallet.AccountID).Return(SignerConstraintNotAllowed).Once()
+		accountQ.On("Signers", wallet.AccountID).Return(nil, nil).Once()
 		defer walletQ.AssertExpectations(t)
-		defer doorman.AssertExpectations(t)
-		status := post(wallet.WalletId, `{
+		resp := Client(t, ts).RandomSigner().Post(wallet.WalletId, `{
 			"data": {
 				"type": "totp"
 			}
 		}`)
-		if status != 401 {
-			t.Fatalf("expected %d got %d", 401, status)
-		}
+		assert.Equal(t, resp.StatusCode, 401)
 	})
 
 	t.Run("password not allowed", func(t *testing.T) {
 		walletQ.On("ByWalletID", wallet.WalletId).Return(&wallet, nil).Once()
-		doorman.On("SignerOf", wallet.AccountID).Return(SignerConstraintAllow).Once()
 		defer walletQ.AssertExpectations(t)
-		defer doorman.AssertExpectations(t)
-		status := post(wallet.WalletId, `{
+		resp := Client(t, ts).Signer(signer).Post(wallet.WalletId, `{
 			"data": {
 				"type": "password"
 			}
 		}`)
-		if status != 409 {
-			t.Fatalf("expected %d got %d", 409, status)
-		}
+		assert.Equal(t, resp.StatusCode, 409)
 	})
 
 	t.Run("valid", func(t *testing.T) {
 		var backendID int64 = 10
 		walletQ.On("ByWalletID", wallet.WalletId).Return(&wallet, nil).Once()
-		doorman.On("SignerOf", wallet.AccountID).Return(SignerConstraintAllow).Once()
 		tfaQ.On("CreateBackend", wallet.WalletId, mock.Anything).Return(&backendID, nil).Once()
 		defer walletQ.AssertExpectations(t)
-		defer doorman.AssertExpectations(t)
 		defer tfaQ.AssertExpectations(t)
-		status := post(wallet.WalletId, `{
+		resp := Client(t, ts).Signer(signer).Post(wallet.WalletId, `{
 			"data": {
 				"type": "totp"
 			}
 		}`)
-		if status != 201 {
-			t.Fatalf("expected %d got %d", 201, status)
-		}
+		assert.Equal(t, resp.StatusCode, 201)
 	})
 
 	t.Run("multiple conflict", func(t *testing.T) {
-		var backendID int64 = 10
-		walletQ.On("ByWalletID", wallet.WalletId).Return(&wallet, nil).Twice()
-		doorman.On("SignerOf", wallet.AccountID).Return(SignerConstraintAllow).Twice()
-		tfaQ.On("CreateBackend", wallet.WalletId, mock.Anything).
-			Return(&backendID, nil).Once()
+		walletQ.On("ByWalletID", wallet.WalletId).Return(&wallet, nil).Once()
 		tfaQ.On("CreateBackend", wallet.WalletId, mock.Anything).
 			Return(nil, api.ErrWalletBackendConflict).Once()
 		defer walletQ.AssertExpectations(t)
-		defer doorman.AssertExpectations(t)
 		defer tfaQ.AssertExpectations(t)
-		status := post(wallet.WalletId, `{
+		resp := Client(t, ts).Signer(signer).Post(wallet.WalletId, `{
 			"data": {
 				"type": "totp"
 			}
 		}`)
-		if status != 201 {
-			t.Fatalf("expected %d got %d", 201, status)
-		}
-		status = post(wallet.WalletId, `{
-			"data": {
-				"type": "totp"
-			}
-		}`)
-		if status != 409 {
-			t.Fatalf("expected %d got %d", 409, status)
-		}
+		assert.Equal(t, resp.StatusCode, 409)
 	})
 
 	// TODO test response struct for totp

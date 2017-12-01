@@ -11,6 +11,8 @@ import (
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/ape/problems"
 	"gitlab.com/swarmfund/api/internal/api/movetoape"
+	"gitlab.com/swarmfund/api/internal/secondfactor"
+	"gitlab.com/swarmfund/api/internal/types"
 	"gitlab.com/swarmfund/go/doorman"
 )
 
@@ -54,8 +56,14 @@ func DeleteWalletFactor(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// check allowed
-	if err := doorman.Check(r, Doorman(r).SignerOf(wallet.AccountID)); err != nil {
+	if err := Doorman(r, doorman.SignerOf(wallet.AccountID)); err != nil {
 		movetoape.RenderDoormanErr(w, err)
+		return
+	}
+
+	// ask password before writing anything
+	if err := secondfactor.NewConsumer(TFAQ(r)).WithBackendType(types.WalletFactorPassword).Consume(r, wallet); err != nil {
+		RenderFactorConsumeError(w, r, err)
 		return
 	}
 

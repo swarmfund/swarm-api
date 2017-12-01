@@ -10,10 +10,12 @@ import (
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/ape/problems"
 	"gitlab.com/swarmfund/api/db2/api"
+	"gitlab.com/swarmfund/api/internal/api/movetoape"
 	"gitlab.com/swarmfund/api/internal/api/resources"
 	"gitlab.com/swarmfund/api/internal/secondfactor"
 	"gitlab.com/swarmfund/api/internal/types"
 	"gitlab.com/swarmfund/api/tfa"
+	"gitlab.com/swarmfund/go/doorman"
 )
 
 type (
@@ -73,9 +75,20 @@ func ChangeWalletID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO check allowed
+	// check allowed
+	if err := Doorman(r, doorman.SignerOf(wallet.CurrentAccountID)); err != nil {
+		movetoape.RenderDoormanErr(w, err)
+		return
+	}
 
+	// check if user knows password
 	if err := secondfactor.NewConsumer(TFAQ(r)).WithBackendType(types.WalletFactorPassword).Consume(r, wallet); err != nil {
+		RenderFactorConsumeError(w, r, err)
+		return
+	}
+
+	// ask for TOTP token if enabled
+	if err := secondfactor.NewConsumer(TFAQ(r)).WithBackendType(types.WalletFactorTOTP).Consume(r, wallet); err != nil {
 		RenderFactorConsumeError(w, r, err)
 		return
 	}
@@ -114,6 +127,25 @@ func ChangeWalletID(w http.ResponseWriter, r *http.Request) {
 		return nil
 	})
 	if err != nil {
+		cause := errors.Cause(err)
+
+		if cause == api.ErrWalletsConflict {
+			ape.RenderErr(w, problems.Conflict())
+			return
+		}
+
+		if cause == api.ErrWalletsWalletIDViolated {
+			ape.RenderErr(w, problems.Conflict())
+			return
+		}
+
+		if cause == api.ErrWalletsKDFViolated {
+			ape.RenderErr(w, problems.BadRequest(Errors{
+				"/data/relationships/kdf/data/id": errors.New("invalid kdf version"),
+			})...)
+			return
+		}
+
 		Log(r).WithError(err).Error("update wallet tx failed")
 		ape.RenderErr(w, problems.InternalError())
 		return

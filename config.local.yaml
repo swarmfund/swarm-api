@@ -1,7 +1,7 @@
 api:
   database_url: postgres://postgres@localhost/api?sslmode=disable
   horizon_url: http://localhost:8000
-  account_manager: SCIMXOIWIB32R7JI6ISNYSCO2BFST5E6P3TLBM4TTLHH57IK6SJPGZT2
+  account_manager: SBMFQCGDVJBC2NYBRPURK3ISC4XJGGOLHMGHF7MIHVXE2DIQSMY6NYRH
   skip_signature_check: true
 
 notificator:

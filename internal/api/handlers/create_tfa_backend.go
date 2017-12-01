@@ -12,6 +12,7 @@ import (
 	"gitlab.com/distributed_lab/ape/problems"
 	"gitlab.com/swarmfund/api/db2/api"
 	"gitlab.com/swarmfund/api/internal/api/movetoape"
+	"gitlab.com/swarmfund/api/internal/secondfactor"
 	"gitlab.com/swarmfund/api/internal/types"
 	"gitlab.com/swarmfund/api/tfa"
 	"gitlab.com/swarmfund/go/doorman"
@@ -82,7 +83,7 @@ func CreateTFABackend(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// check allowed
-	if err := doorman.Check(r, Doorman(r).SignerOf(wallet.AccountID)); err != nil {
+	if err := Doorman(r, doorman.SignerOf(wallet.AccountID)); err != nil {
 		movetoape.RenderDoormanErr(w, err)
 		return
 	}
@@ -105,6 +106,12 @@ func CreateTFABackend(w http.ResponseWriter, r *http.Request) {
 		Log(r).WithField("type", request.Data.Type).Error("unable to handle backend type")
 		// TODO make 501 not implemented
 		ape.RenderErr(w, problems.InternalError())
+		return
+	}
+
+	// after all checks have passed, check 2fa
+	if err := secondfactor.NewConsumer(TFAQ(r)).WithBackendType(types.WalletFactorPassword).Consume(r, wallet); err != nil {
+		RenderFactorConsumeError(w, r, err)
 		return
 	}
 
