@@ -129,7 +129,7 @@
 
 [[projects]]
   name = "github.com/magiconair/properties"
-  packages = ["."]
+  packages = [".","assert"]
   revision = "be5ece7dd465ab0765a9682137865547526d1dfb"
   version = "v1.7.3"
 
@@ -308,10 +308,10 @@
   version = "v1"
 
 [[projects]]
-  branch = "feature/reviewable_request"
+  branch = "feature/doorman"
   name = "gitlab.com/swarmfund/go"
-  packages = ["amount","crc16","doorman","doorman/data","doorman/horizon","doorman/types","hash","keypair","network","resources","signcontrol","strkey","xdr"]
-  revision = "bba1270bd2de1f20ec9c802250e05bbf6ce1a5ae"
+  packages = ["amount","crc16","doorman","doorman/data","hash","keypair","network","resources","signcontrol","strkey","xdr"]
+  revision = "02d9d4a6712b53a6a092cdd4daf281d8d91ffb2d"
 
 [[projects]]
   branch = "master"
@@ -364,6 +364,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "7c55de3cdb395131da36645a3048fe68ccd1b5d0ca780a4dfd004f5c3e330efd"
+  inputs-digest = "e6a85e58292be86f99cd2feafec82f95c361e4abdc60bd1eab8341fc76cf0cb2"
   solver-name = "gps-cdcl"
   solver-version = 1

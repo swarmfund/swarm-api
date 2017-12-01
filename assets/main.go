@@ -4,7 +4,7 @@ import (
 	"gitlab.com/swarmfund/api/log"
 )
 
-//go:generate go-bindata -ignore .+\.go$ -pkg assets -o bindata.go ./...
+//go:generate go-bindata -nometadata -ignore .+\.go$ -pkg assets -o bindata.go ./...
 //go:generate gofmt -w bindata.go
 
 const (

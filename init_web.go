@@ -70,7 +70,7 @@ func initWebActions(app *App) {
 	r.Delete("/users/:user/entities/:entity", &DeleteKYCEntityAction{})
 	r.Post("/users/:user/approve", &UserApproveAction{})
 
-	r.Post("/users/unverified/delete", &DeleteWalletAction{})
+	//r.Post("/users/unverified/delete", &DeleteWalletAction{})
 	//r.Post("/users/unverified/resend_token", &ResendTokenAction{})
 
 	// documents

@@ -75,7 +75,7 @@ func ChangeWalletID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := doorman.Check(r, Doorman(r).SignerOf(wallet.CurrentAccountID)); err != nil {
+	if err := Doorman(r, doorman.SignerOf(wallet.CurrentAccountID)); err != nil {
 		movetoape.RenderDoormanErr(w, err)
 		return
 	}

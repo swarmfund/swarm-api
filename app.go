@@ -88,7 +88,7 @@ func (a *App) Serve() {
 		a.APIQ().Wallet(),
 		a.EmailTokensQ(),
 		a.APIQ().Users(),
-		doorman.NewDoormanHorizon(
+		doorman.New(
 			a.Config().API().SkipSignatureCheck,
 			horizon2.NewAccountQ(horizon2.New(a.Config().API().HorizonURL)),
 		),

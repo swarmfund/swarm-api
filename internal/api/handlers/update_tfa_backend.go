@@ -87,7 +87,7 @@ func UpdateWalletFactor(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// check allowed
-	if err := doorman.Check(r, Doorman(r).SignerOf(wallet.AccountID)); err != nil {
+	if err := Doorman(r, doorman.SignerOf(wallet.AccountID)); err != nil {
 		movetoape.RenderDoormanErr(w, err)
 		return
 	}

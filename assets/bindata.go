@@ -112,7 +112,7 @@ func enumsBusiness_typeJson() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "enums/business_type.json", size: 34, mode: os.FileMode(420), modTime: time.Unix(1510146082, 0)}
+	info := bindataFileInfo{name: "enums/business_type.json", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -132,7 +132,7 @@ func enumsCountriesJson() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "enums/countries.json", size: 3508, mode: os.FileMode(420), modTime: time.Unix(1510146082, 0)}
+	info := bindataFileInfo{name: "enums/countries.json", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -152,7 +152,7 @@ func enumsEducationJson() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "enums/education.json", size: 129, mode: os.FileMode(420), modTime: time.Unix(1510146082, 0)}
+	info := bindataFileInfo{name: "enums/education.json", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -172,7 +172,7 @@ func enumsEmployment_statusJson() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "enums/employment_status.json", size: 218, mode: os.FileMode(420), modTime: time.Unix(1510146082, 0)}
+	info := bindataFileInfo{name: "enums/employment_status.json", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -192,7 +192,7 @@ func enumsEntity_typeJson() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "enums/entity_type.json", size: 36, mode: os.FileMode(420), modTime: time.Unix(1510146082, 0)}
+	info := bindataFileInfo{name: "enums/entity_type.json", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -212,7 +212,7 @@ func enumsGenderJson() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "enums/gender.json", size: 38, mode: os.FileMode(420), modTime: time.Unix(1510146082, 0)}
+	info := bindataFileInfo{name: "enums/gender.json", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -232,7 +232,7 @@ func enumsId_documentJson() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "enums/id_document.json", size: 50, mode: os.FileMode(420), modTime: time.Unix(1510146082, 0)}
+	info := bindataFileInfo{name: "enums/id_document.json", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -252,7 +252,7 @@ func enumsIndustryJson() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "enums/industry.json", size: 958, mode: os.FileMode(420), modTime: time.Unix(1510146082, 0)}
+	info := bindataFileInfo{name: "enums/industry.json", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -272,7 +272,7 @@ func enumsMarital_statusJson() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "enums/marital_status.json", size: 54, mode: os.FileMode(420), modTime: time.Unix(1510146082, 0)}
+	info := bindataFileInfo{name: "enums/marital_status.json", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -292,7 +292,7 @@ func enumsNationalitiesJson() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "enums/nationalities.json", size: 3228, mode: os.FileMode(420), modTime: time.Unix(1510146082, 0)}
+	info := bindataFileInfo{name: "enums/nationalities.json", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -312,7 +312,7 @@ func migrations001_squashedSql() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "migrations/001_squashed.sql", size: 6499, mode: os.FileMode(420), modTime: time.Unix(1511194529, 0)}
+	info := bindataFileInfo{name: "migrations/001_squashed.sql", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -332,7 +332,7 @@ func migrations003_email_tokensSql() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "migrations/003_email_tokens.sql", size: 589, mode: os.FileMode(420), modTime: time.Unix(1511194529, 0)}
+	info := bindataFileInfo{name: "migrations/003_email_tokens.sql", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -352,7 +352,7 @@ func migrations004_wallets_refactorSql() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "migrations/004_wallets_refactor.sql", size: 798, mode: os.FileMode(420), modTime: time.Unix(1511352361, 0)}
+	info := bindataFileInfo{name: "migrations/004_wallets_refactor.sql", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -372,7 +372,7 @@ func migrations005_tfa_backends_refactorSql() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "migrations/005_tfa_backends_refactor.sql", size: 721, mode: os.FileMode(420), modTime: time.Unix(1511194529, 0)}
+	info := bindataFileInfo{name: "migrations/005_tfa_backends_refactor.sql", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -392,7 +392,7 @@ func migrations006_totp_constraintSql() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "migrations/006_totp_constraint.sql", size: 184, mode: os.FileMode(420), modTime: time.Unix(1511352361, 0)}
+	info := bindataFileInfo{name: "migrations/006_totp_constraint.sql", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -412,7 +412,7 @@ func migrations007_cascade_wallet_id_updateSql() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "migrations/007_cascade_wallet_id_update.sql", size: 901, mode: os.FileMode(420), modTime: time.Unix(1511373956, 0)}
+	info := bindataFileInfo{name: "migrations/007_cascade_wallet_id_update.sql", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -432,7 +432,7 @@ func migrations008_password_constraintSql() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "migrations/008_password_constraint.sql", size: 196, mode: os.FileMode(420), modTime: time.Unix(1511373956, 0)}
+	info := bindataFileInfo{name: "migrations/008_password_constraint.sql", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -452,7 +452,7 @@ func migrations009_drop_tfa_keychainSql() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "migrations/009_drop_tfa_keychain.sql", size: 403, mode: os.FileMode(420), modTime: time.Unix(1511373956, 0)}
+	info := bindataFileInfo{name: "migrations/009_drop_tfa_keychain.sql", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -472,7 +472,7 @@ func templatesAdmin_notificationHtml() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/admin_notification.html", size: 12180, mode: os.FileMode(420), modTime: time.Unix(1511194529, 0)}
+	info := bindataFileInfo{name: "templates/admin_notification.html", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -492,7 +492,7 @@ func templatesBaseHtml() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/base.html", size: 14037, mode: os.FileMode(420), modTime: time.Unix(1511194529, 0)}
+	info := bindataFileInfo{name: "templates/base.html", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -512,7 +512,7 @@ func templatesEmail_confirmHtml() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/email_confirm.html", size: 17066, mode: os.FileMode(420), modTime: time.Unix(1511194529, 0)}
+	info := bindataFileInfo{name: "templates/email_confirm.html", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -532,7 +532,7 @@ func templatesKyc_review_notificationHtml() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/kyc_review_notification.html", size: 77, mode: os.FileMode(420), modTime: time.Unix(1510146082, 0)}
+	info := bindataFileInfo{name: "templates/kyc_review_notification.html", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -552,7 +552,7 @@ func templatesLogin_notificationHtml() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/login_notification.html", size: 18548, mode: os.FileMode(420), modTime: time.Unix(1511194529, 0)}
+	info := bindataFileInfo{name: "templates/login_notification.html", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -572,7 +572,7 @@ func templatesOperations_notificationsDemurrageHtml() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/operations_notifications/demurrage.html", size: 41707, mode: os.FileMode(420), modTime: time.Unix(1511194529, 0)}
+	info := bindataFileInfo{name: "templates/operations_notifications/demurrage.html", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -592,7 +592,7 @@ func templatesOperations_notificationsManage_coins_emissionHtml() (*asset, error
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/operations_notifications/manage_coins_emission.html", size: 37708, mode: os.FileMode(420), modTime: time.Unix(1511194529, 0)}
+	info := bindataFileInfo{name: "templates/operations_notifications/manage_coins_emission.html", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -612,7 +612,7 @@ func templatesOperations_notificationsManage_forfeitHtml() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/operations_notifications/manage_forfeit.html", size: 37740, mode: os.FileMode(420), modTime: time.Unix(1511194529, 0)}
+	info := bindataFileInfo{name: "templates/operations_notifications/manage_forfeit.html", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -632,7 +632,7 @@ func templatesOperations_notificationsManage_invoiceHtml() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/operations_notifications/manage_invoice.html", size: 41713, mode: os.FileMode(420), modTime: time.Unix(1511194529, 0)}
+	info := bindataFileInfo{name: "templates/operations_notifications/manage_invoice.html", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -652,7 +652,7 @@ func templatesOperations_notificationsManage_offerHtml() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/operations_notifications/manage_offer.html", size: 49688, mode: os.FileMode(420), modTime: time.Unix(1511194529, 0)}
+	info := bindataFileInfo{name: "templates/operations_notifications/manage_offer.html", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -672,7 +672,7 @@ func templatesOperations_notificationsPaymentHtml() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/operations_notifications/payment.html", size: 47001, mode: os.FileMode(420), modTime: time.Unix(1511194529, 0)}
+	info := bindataFileInfo{name: "templates/operations_notifications/payment.html", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -692,7 +692,7 @@ func templatesRecovery_requestHtml() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/recovery_request.html", size: 16880, mode: os.FileMode(420), modTime: time.Unix(1511194529, 0)}
+	info := bindataFileInfo{name: "templates/recovery_request.html", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }

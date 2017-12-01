@@ -101,6 +101,7 @@ func CtxDoorman(d doorman.Doorman) func(context.Context) context.Context {
 	}
 }
 
-func Doorman(r *http.Request) doorman.Doorman {
-	return r.Context().Value(doormanCtxKey).(doorman.Doorman)
+func Doorman(r *http.Request, constraints ...doorman.SignerConstraint) error {
+	d := r.Context().Value(doormanCtxKey).(doorman.Doorman)
+	return d.Check(r, constraints...)
 }
