@@ -149,8 +149,8 @@ func (q *TFAQ) Consume(token string) (bool, error) {
 func (q *TFAQ) Verify(bid int64, token string) error {
 	sql := sq.Update(tfaTable).
 		Where(sq.Eq{
-			"backend_id": bid,
-			"token":      token,
+			"backend": bid,
+			"token":   token,
 		}).
 		Set("verified", true)
 
