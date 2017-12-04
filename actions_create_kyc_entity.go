@@ -124,11 +124,11 @@ func (action *CreateKYCEntityAction) blockAccount() {
 		return
 	}
 
-	if account.AccountType == xdr.AccountTypeGeneral {
+	if xdr.AccountType(account.AccountType) == xdr.AccountTypeGeneral {
 		// block user
 		err = action.App.horizon.Transaction(&horizon.TransactionBuilder{Source: action.App.MasterKP()}).
 			Op(&horizon.ManageAccountOp{
-				AccountType: account.AccountType,
+				AccountType: xdr.AccountType(account.AccountType),
 				AccountID:   action.AccountID,
 				AddReasons:  xdr.BlockReasonsKycUpdate,
 			}).Sign(action.App.AccountManagerKP()).Submit()
