@@ -8,7 +8,9 @@ import (
 	"github.com/go-chi/chi"
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/ape/problems"
+	"gitlab.com/swarmfund/api/internal/api/movetoape"
 	"gitlab.com/swarmfund/api/internal/api/resources"
+	"gitlab.com/swarmfund/go/doorman"
 )
 
 type GetUserResponse struct {
@@ -18,7 +20,11 @@ type GetUserResponse struct {
 func GetUser(w http.ResponseWriter, r *http.Request) {
 	address := chi.URLParam(r, "address")
 
-	// TODO check allowed
+	// TODO unhardcode
+	if err := Doorman(r, doorman.SignerOf("GD7AHJHCDSQI6LVMEJEE2FTNCA2LJQZ4R64GUI3PWANSVEO4GEOWB636")); err != nil {
+		movetoape.RenderDoormanErr(w, err)
+		return
+	}
 
 	user, err := UsersQ(r).ByAddress(address)
 	if err != nil {
