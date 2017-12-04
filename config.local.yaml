@@ -1,5 +1,5 @@
 api:
-  database_url: postgres://postgres@localhost/api?sslmode=disable
+  database_url: postgres://postgres@localhost/api_swarm?sslmode=disable
   horizon_url: http://localhost:8000
   account_manager: SBMFQCGDVJBC2NYBRPURK3ISC4XJGGOLHMGHF7MIHVXE2DIQSMY6NYRH
   skip_signature_check: true

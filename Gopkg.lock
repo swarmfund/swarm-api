@@ -101,7 +101,7 @@
   branch = "master"
   name = "github.com/jmoiron/sqlx"
   packages = [".","reflectx"]
-  revision = "3379e5993990b1f927fc8db926485e6f6becf2d2"
+  revision = "99f3ad6d85ae53d0fecf788ab62d0e9734b3c117"
 
 [[projects]]
   branch = "master"
@@ -286,8 +286,8 @@
 [[projects]]
   name = "gitlab.com/distributed_lab/logan"
   packages = ["."]
-  revision = "922f51806a13e6afc6603df5923730b60bb7dfea"
-  version = "v2.0"
+  revision = "7302865ec11ed497b745a7415fc6e59a26e0631b"
+  version = "v3.1"
 
 [[projects]]
   branch = "master"
@@ -308,16 +308,16 @@
   version = "v1"
 
 [[projects]]
-  branch = "feature/doorman"
+  branch = "master"
   name = "gitlab.com/swarmfund/go"
   packages = ["amount","crc16","doorman","doorman/data","hash","keypair","network","resources","signcontrol","strkey","xdr"]
-  revision = "02d9d4a6712b53a6a092cdd4daf281d8d91ffb2d"
+  revision = "3b21e34fd6ec7b9a18c921d76522f2996b95c80d"
 
 [[projects]]
   branch = "master"
   name = "gitlab.com/swarmfund/horizon-connector"
   packages = [".","internal/resources"]
-  revision = "6c194158eb29f0cb0a1705e0fbe1098922193ef4"
+  revision = "82effe63b3cb7a4b95a52c90883d8274d72e2617"
 
 [[projects]]
   branch = "master"
@@ -329,19 +329,19 @@
   branch = "master"
   name = "golang.org/x/net"
   packages = ["context","http2","http2/hpack","idna","lex/httplex"]
-  revision = "894f8ed5849b15b810ae41e9590a0d05395bba27"
+  revision = "a8b9294777976932365dabb6640cf1468d95c70f"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/sys"
   packages = ["unix","windows"]
-  revision = "1006bb3484c92b19a5b6612452e038b554fadb9c"
+  revision = "8b4580aae2a0dd0c231a45d3ccb8434ff533b840"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/text"
   packages = ["collate","collate/build","internal/colltab","internal/gen","internal/tag","internal/triegen","internal/ucd","language","secure/bidirule","transform","unicode/bidi","unicode/cldr","unicode/norm","unicode/rangetable"]
-  revision = "572a2b141f625f4360cf42a41a43622067e0510b"
+  revision = "556d234e9c5239918de4d1fe247d1fe004e71764"
 
 [[projects]]
   name = "gopkg.in/gorp.v1"
@@ -364,6 +364,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "e6a85e58292be86f99cd2feafec82f95c361e4abdc60bd1eab8341fc76cf0cb2"
+  inputs-digest = "7ff6283ab3608a8867f46fe3281e5b4db798f13c8250c2a5c69af9237a895609"
   solver-name = "gps-cdcl"
   solver-version = 1

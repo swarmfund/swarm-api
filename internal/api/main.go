@@ -57,6 +57,9 @@ func Router(
 	r.Get("/kdf", handlers.GetKDF)
 
 	r.Route("/wallets", func(r chi.Router) {
+		// admin endpoints
+		r.Get("/", handlers.WalletsIndex)
+
 		// signup
 		r.Post("/", handlers.CreateWallet)
 
@@ -84,6 +87,11 @@ func Router(
 	r.Route("/users/{address}", func(r chi.Router) {
 		//r.Use(middlewares.CheckAllowed("address", doorman.SignerOf))
 		r.Put("/", handlers.CreateUser)
+
+		// documents
+		r.Route("/documents", func(r chi.Router) {
+
+		})
 	})
 
 	return r
