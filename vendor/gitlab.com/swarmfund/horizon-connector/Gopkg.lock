@@ -38,16 +38,10 @@
   version = "v3.0"
 
 [[projects]]
-  branch = "feature/reviewable_request"
+  branch = "master"
   name = "gitlab.com/swarmfund/go"
   packages = ["crc16","hash","keypair","network","strkey","xdr"]
-  revision = "b15b6a463f64c3803afe62836f71a86b4fc13ddd"
-
-[[projects]]
-  name = "gitlab.com/tokend/go"
-  packages = ["crc16","strkey"]
-  revision = "f70190acd2fef496ffb0da94d6d072a3f702efaf"
-  version = "v1.2.2"
+  revision = "3b21e34fd6ec7b9a18c921d76522f2996b95c80d"
 
 [[projects]]
   branch = "master"
@@ -64,6 +58,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "e739ef9b6dae17a47602490ff0c2b524a0abb3225538daf729fccbeffa372b58"
+  inputs-digest = "150c0018951805be9f67a5a16cd216f047244285b84358e5c8c7f1ace1333d73"
   solver-name = "gps-cdcl"
   solver-version = 1

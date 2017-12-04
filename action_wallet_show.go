@@ -71,7 +71,7 @@ func (action *ShowWalletAction) checkBlockState() {
 		return
 	}
 
-	if account.BlockReasons&xdr.BlockReasonsRecoveryRequest != 0 {
+	if xdr.BlockReasons(account.BlockReasons)&xdr.BlockReasonsRecoveryRequest != 0 {
 		action.Err = &problem.ForbiddenReasonRecovery
 		return
 	}

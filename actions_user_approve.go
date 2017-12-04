@@ -165,7 +165,7 @@ func (action *UserApproveAction) approveUser() {
 	}
 
 	ops := []horizon.Operation{}
-	if account.BlockReasons&xdr.BlockReasonsKycUpdate != 0 {
+	if xdr.BlockReasons(account.BlockReasons)&xdr.BlockReasonsKycUpdate != 0 {
 		ops = append(ops, &horizon.ManageAccountOp{
 			AccountID:     account.AccountID,
 			AccountType:   account.AccountType,

@@ -146,7 +146,7 @@ func (action *ApproveRecoveryRequestAction) blockAccount() {
 		return
 	}
 
-	if coreAccount.BlockReasons&xdr.BlockReasonsRecoveryRequest == 0 {
+	if xdr.BlockReasons(coreAccount.BlockReasons)&xdr.BlockReasonsRecoveryRequest == 0 {
 		err := action.App.horizon.Transaction(&horizon.TransactionBuilder{Source: action.App.MasterKP()}).
 			Op(&horizon.ManageAccountOp{
 				AccountID:   action.RecoveryRequest.AccountID,
