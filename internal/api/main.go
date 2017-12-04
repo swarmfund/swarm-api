@@ -86,7 +86,7 @@ func Router(
 
 	r.Route("/users", func(r chi.Router) {
 		r.Get("/", handlers.UsersIndex)
-		//r.Get("/{address}", handlers.GetUser)
+		r.Get("/{address}", handlers.GetUser)
 
 		r.Put("/{address}", handlers.CreateUser)
 
