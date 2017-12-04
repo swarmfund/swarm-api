@@ -62,8 +62,8 @@ func initWebActions(app *App) {
 
 	// user actions
 	//r.Post("/users", &CreateUserAction{})
-	r.Get("/users", &UserIndexAction{})
-	r.Get("/users/:id", &UserShowAction{})
+	//r.Get("/users", &UserIndexAction{})
+	//r.Get("/users/:id", &UserShowAction{})
 
 	// kyc
 	r.Patch("/users/:id", &PatchUserAction{})

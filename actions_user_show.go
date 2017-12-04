@@ -64,7 +64,7 @@ func (action *UserIndexAction) loadRecords() {
 		}
 	}
 
-	action.Err = u.Page(action.PagingParams).Select(&action.Records)
+	//action.Err = u.Page(action.PagingParams).Select(&action.Records)
 }
 
 func (action *UserIndexAction) loadPage() {

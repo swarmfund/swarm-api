@@ -8,12 +8,12 @@ import (
 	sq "github.com/lann/squirrel"
 	"github.com/lib/pq"
 	"github.com/pkg/errors"
-	"gitlab.com/swarmfund/api/db2"
 	"gitlab.com/swarmfund/api/internal/types"
 )
 
 const (
-	tableUser = "users"
+	tableUser      = "users"
+	tableUserLimit = 20
 )
 
 var (
@@ -72,7 +72,7 @@ type UsersQI interface {
 	SetEmail(address, email string) error
 
 	WithAddress(addresses ...string) UsersQI
-	Page(page db2.PageQuery) UsersQI
+	Page(page uint64) UsersQI
 	First() (*User, error)
 
 	Documents(version int64) DocumentsQI
@@ -279,12 +279,12 @@ func (q *UsersQ) ByAddresses(addresses []string) (result []User, err error) {
 	return result, err
 }
 
-func (q *UsersQ) Page(page db2.PageQuery) UsersQI {
+func (q *UsersQ) Page(page uint64) UsersQI {
 	if q.Err != nil {
 		return q
 	}
 
-	q.sql, q.Err = page.ApplyTo(q.sql, "u.id")
+	q.sql = q.sql.Offset(tableUserLimit * (page - 1)).Limit(tableUserLimit)
 	return q
 }
 
