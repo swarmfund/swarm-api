@@ -75,7 +75,7 @@ func (action *DeleteTFABackendsAction) checkAccountType() {
 		return
 	}
 
-	if account == nil || account.AccountType != xdr.AccountTypeNotVerified {
+	if account == nil || xdr.AccountType(account.AccountType) != xdr.AccountTypeNotVerified {
 		action.Err = &problem.Forbidden
 		return
 	}

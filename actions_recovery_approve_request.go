@@ -146,11 +146,11 @@ func (action *ApproveRecoveryRequestAction) blockAccount() {
 		return
 	}
 
-	if coreAccount.BlockReasons&xdr.BlockReasonsRecoveryRequest == 0 {
+	if xdr.BlockReasons(coreAccount.BlockReasons)&xdr.BlockReasonsRecoveryRequest == 0 {
 		err := action.App.horizon.Transaction(&horizon.TransactionBuilder{Source: action.App.MasterKP()}).
 			Op(&horizon.ManageAccountOp{
 				AccountID:   action.RecoveryRequest.AccountID,
-				AccountType: coreAccount.AccountType,
+				AccountType: xdr.AccountType(coreAccount.AccountType),
 				AddReasons:  xdr.BlockReasonsRecoveryRequest,
 			}).Sign(action.App.AccountManagerKP()).Submit()
 
@@ -206,7 +206,7 @@ func (action *ApproveRecoveryRequestAction) craftRedirect() {
 		return
 	}
 
-	switch account.AccountType {
+	switch xdr.AccountType(account.AccountType) {
 	case xdr.AccountTypeNotVerified:
 		action.RedirectPayload = redirect.RecoveryRequestShowCode(action.RecoveryRequest.Username, action.RecoveryRequest.Code, true)
 	case xdr.AccountTypeGeneral:

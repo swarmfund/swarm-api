@@ -30,4 +30,4 @@
 
 [[constraint]]
   name = "gitlab.com/swarmfund/go"
-  branch = "feature/reviewable_request"
+  branch = "master"

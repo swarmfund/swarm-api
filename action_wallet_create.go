@@ -176,7 +176,7 @@ func (action *CreateWalletAction) loadInitialWallet() {
 }
 
 func (action *CreateWalletAction) checkTFA() {
-	if action.Account.AccountType == xdr.AccountTypeNotVerified {
+	if xdr.AccountType(action.Account.AccountType) == xdr.AccountTypeNotVerified {
 		// allowing user without approved KYC to recover account with TFA
 		action.consumeTFA(action.InitialWallet, api.TFAActionRecovery)
 		if action.Err != nil {
@@ -191,7 +191,7 @@ func (action *CreateWalletAction) prepareRecoveryWallet() {
 }
 
 func (action *CreateWalletAction) postCreateWallet() {
-	if action.Account.AccountType == xdr.AccountTypeNotVerified {
+	if xdr.AccountType(action.Account.AccountType) == xdr.AccountTypeNotVerified {
 		err := action.recoveryApprove(action.RecoveryRequest, action.InitialWallet, &action.Wallet, "")
 		if err != nil {
 			action.Log.WithError(err).Error("failed to approve recovery request")

@@ -88,6 +88,7 @@ type WalletQ struct {
 func (q *WalletQ) New() WalletQI {
 	return &WalletQ{
 		parent: q.parent,
+		sql:    walletSelect,
 	}
 }
 

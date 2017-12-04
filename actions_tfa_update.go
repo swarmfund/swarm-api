@@ -75,7 +75,7 @@ func (action *UpdateTFABackendAction) checkAllowed() {
 		if account == nil {
 			return
 		}
-		if account.AccountType != xdr.AccountTypeNotVerified {
+		if xdr.AccountType(account.AccountType) != xdr.AccountTypeNotVerified {
 			return
 		}
 		action.Err = nil

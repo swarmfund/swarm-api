@@ -122,11 +122,11 @@
   version = "1.0.0"
 
 [[constraint]]
-  name = "gitlab.com/swarmfund/horizon-connector"
-
-[[override]]
   name = "gitlab.com/swarmfund/go"
-  branch = "feature/doorman"
+  branch = "master"
+
+[[constraint]]
+  name = "gitlab.com/swarmfund/horizon-connector"
 
 [[constraint]]
   branch = "master"
