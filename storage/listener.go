@@ -6,13 +6,13 @@ import (
 	"strings"
 	"time"
 
+	"github.com/minio/minio-go"
+	"github.com/pkg/errors"
+	"github.com/streadway/amqp"
 	"gitlab.com/swarmfund/api/config"
 	"gitlab.com/swarmfund/api/db2/api"
 	errors2 "gitlab.com/swarmfund/api/errors"
 	"gitlab.com/swarmfund/api/log"
-	"github.com/minio/minio-go"
-	"github.com/pkg/errors"
-	"github.com/streadway/amqp"
 )
 
 type Consumer struct {
@@ -27,7 +27,7 @@ type Consumer struct {
 }
 
 func NewConsumer(conf config.Storage, apiQ api.QInterface, storage *Connector) (*Consumer, error) {
-	conn, err := amqp.Dial(conf.Listener.BrokerURL)
+	conn, err := amqp.Dial(conf.ListenerBrokerURL)
 	if err != nil {
 		return nil, err
 	}
@@ -49,8 +49,8 @@ func NewConsumer(conf config.Storage, apiQ api.QInterface, storage *Connector) (
 
 func (c *Consumer) Prepare() error {
 	err := c.ch.ExchangeDeclare(
-		c.conf.Listener.Exchange,
-		c.conf.Listener.ExchangeType,
+		c.conf.ListenerExchange,
+		c.conf.ListenerExchangeType,
 		true,
 		false,
 		false,
@@ -84,8 +84,8 @@ func (c *Consumer) Prepare() error {
 
 	err = c.ch.QueueBind(
 		q.Name,
-		c.conf.Listener.BindingKey,
-		c.conf.Listener.Exchange,
+		c.conf.ListenerBindingKey,
+		c.conf.ListenerExchange,
 		false,
 		nil,
 	)
