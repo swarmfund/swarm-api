@@ -21,7 +21,10 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 	address := chi.URLParam(r, "address")
 
 	// TODO unhardcode
-	if err := Doorman(r, doorman.SignerOf("GD7AHJHCDSQI6LVMEJEE2FTNCA2LJQZ4R64GUI3PWANSVEO4GEOWB636")); err != nil {
+	if err := Doorman(r,
+		doorman.SignerOf(address),
+		doorman.SignerOf("GD7AHJHCDSQI6LVMEJEE2FTNCA2LJQZ4R64GUI3PWANSVEO4GEOWB636"),
+	); err != nil {
 		movetoape.RenderDoormanErr(w, err)
 		return
 	}
