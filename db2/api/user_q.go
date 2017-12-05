@@ -59,12 +59,13 @@ type UsersQI interface {
 
 	// Create expected to set inserted record ID on u
 	Create(u *User) error
+	Update(u *User) error
 	Delete(accountID string) error
 
 	// Change state methods
 	Approve(user *User) error
 	Reject(user *User) error
-	ChangeState(address string, state UserState) error
+	ChangeState(address types.Address, state UserState) error
 	LimitReviewState(address string, state UserLimitReviewState) error
 
 	// Update methods
@@ -134,6 +135,13 @@ func (q *UsersQ) LimitReviewRequests() UsersQI {
 	return q
 }
 
+func (q *UsersQ) Update(user *User) error {
+	stmt := updateUser(string(user.Address)).
+		Set("type", user.UserType)
+	_, err := q.parent.Exec(stmt)
+	return err
+}
+
 func (q *UsersQ) SetRecoveryState(address string, state UserRecoveryState) error {
 	sql := updateUser(address).
 		Set("recovery_state", state)
@@ -169,8 +177,8 @@ func (q *UsersQ) Approve(user *User) error {
 	return err
 }
 
-func (q *UsersQ) ChangeState(address string, state UserState) error {
-	sql := updateUser(address).
+func (q *UsersQ) ChangeState(address types.Address, state UserState) error {
+	sql := updateUser(string(address)).
 		Set("state", state)
 
 	_, err := q.parent.Exec(sql)
@@ -224,10 +232,10 @@ func (q *UsersQ) ByID(uid int64) (*User, error) {
 
 func (q *UsersQ) Create(u *User) error {
 	sql := insertUser.SetMap(map[string]interface{}{
-		"address":   u.Address,
-		"email":     u.Email,
-		"user_type": u.UserType,
-		"state":     u.State,
+		"address": u.Address,
+		"email":   u.Email,
+		"type":    u.UserType,
+		"state":   u.State,
 	}).Suffix("returning id")
 
 	err := q.parent.Get(&(u.ID), sql)

@@ -28,12 +28,12 @@ func (c *Consumer) ProcessKYCUpload(user *api.User, document *api.Document) erro
 		}
 	}
 
-	state := user.CheckState()
-	if state != user.State {
-		if err := c.apiQ.Users().ChangeState(string(user.Address), state); err != nil {
-			return errors.Wrap(err, "failed to update state")
-		}
-	}
+	//state := user.CheckState()
+	//if state != user.State {
+	//	if err := c.apiQ.Users().ChangeState(string(user.Address), state); err != nil {
+	//		return errors.Wrap(err, "failed to update state")
+	//	}
+	//}
 
 	return nil
 }

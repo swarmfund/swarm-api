@@ -72,18 +72,18 @@ func (action *CreateKYCEntityAction) loadUser() {
 func (action *CreateKYCEntityAction) performRequest() {
 	var record interface{}
 	switch action.Request.Type {
-	case api.KYCEntityTypeJointIdentity:
-		if action.User.UserType != api.UserTypeJoint {
-			action.Err = &problem.Forbidden
-			return
-		}
-		record = api.IdentityDetails{}
-	case api.KYCEntityTypeBusinessOwner, api.KYCEntityTypeBusinessSignatory:
-		if action.User.UserType != api.UserTypeBusiness {
-			action.Err = &problem.Forbidden
-			return
-		}
-		record = api.BusinessPerson{}
+	//case api.KYCEntityTypeJointIdentity:
+	//	if action.User.UserType != api.UserTypeJoint {
+	//		action.Err = &problem.Forbidden
+	//		return
+	//	}
+	//	record = api.IdentityDetails{}
+	//case api.KYCEntityTypeBusinessOwner, api.KYCEntityTypeBusinessSignatory:
+	//	if action.User.UserType != api.UserTypeBusiness {
+	//		action.Err = &problem.Forbidden
+	//		return
+	//	}
+	//	record = api.BusinessPerson{}
 	default:
 		action.SetInvalidField("type", errors.New("invalid"))
 		return
@@ -143,11 +143,11 @@ func (action *CreateKYCEntityAction) blockAccount() {
 func (action *CreateKYCEntityAction) updateState() {
 	state := action.User.CheckState()
 	if state != action.User.State {
-		err := action.APIQ().Users().ChangeState(string(action.User.Address), state)
-		if err != nil {
-			action.Log.WithError(err).Error("failed to update user state")
-			action.Err = &problem.ServerError
-			return
-		}
+		//err := action.APIQ().Users().ChangeState(string(action.User.Address), state)
+		//if err != nil {
+		//	action.Log.WithError(err).Error("failed to update user state")
+		//	action.Err = &problem.ServerError
+		//	return
+		//}
 	}
 }

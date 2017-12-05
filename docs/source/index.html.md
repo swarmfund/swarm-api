@@ -325,28 +325,68 @@ http://client.com/r/eyAic3RhdHVzIjoyMDAsImF...G4zbmZqbWZ4OXA1OGdlbzVzdHQ5In19
 
 ## User types
 
-| Value | Description     |
-| ----- | --------------- |
-| 1     | Individual user |
+| Value          | Description |
+| -------------- | ----------- |
+| "not_verified" |             |
+| "syndicate"    |             |
 
-## Create user
 
-```ruby
+## Create user 🔒
+
+```http
 PUT /users/GBT3XFWQUHUTKZMI22TVTWRA7UHV2LIO2BIFNRCH3CXWPYVYPTMXMDGC HTTP/1.1
 Content-Type: application/vnd.api+json
 
 {
 	"data": {
-		"attributes": {
-			"type": 1
-		}
+		"attributes": {}
 	}
 }
 
 HTTP/1.1 204
 ```
 
-Request should be signed.
+## Get user 🔒
+
+```http
+GET /users/GBT3XFWQUHUTKZMI22TVTWRA7UHV2LIO2BIFNRCH3CXWPYVYPTMXMDGC HTTP/1.1
+Content-Type: application/vnd.api+json
+
+
+HTTP/1.1 200
+Content-Type: application/vnd.api+json
+
+{
+    "data": {
+        "type": "syndicate",
+        "id": "GCCJPB7QQLNEMCJ72CQJ4ODAZFFGXHET5UPOGSDWT222GXQPMTO6ZQW3",
+        "attributes": {
+            "email": "test@test.com",
+            "state": "need_documents"
+        }
+    }
+}
+```
+
+
+
+## Change user type 🔒
+
+```http
+PATCH /users/GBT3XFWQUHUTKZMI22TVTWRA7UHV2LIO2BIFNRCH3CXWPYVYPTMXMDGC HTTP/1.1
+Content-Type: application/vnd.api+json
+
+
+HTTP/1.1 200
+Content-Type: application/vnd.api+json
+
+{
+    "data": {
+        "type": "syndicate"
+    }
+}
+```
+
 
 # Two-factor authentication
 

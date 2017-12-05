@@ -12,21 +12,20 @@ type RequiredDocument struct {
 }
 
 func (user *User) CheckState() UserState {
-	if err := user.Details().Validate(); err != nil {
-		return UserRejected
-	}
-
-	if !user.RejectReasons().Empty() {
-		return UserRejected
-	}
-
-	requiredDocs := user.Details().RequiredDocuments()
-	for _, check := range requiredDocs {
-		if ok := user.HaveDocument(check.EntityID, check.Type); !ok {
-			return UserNeedDocs
-		}
-	}
-
+	//if err := user.Details().Validate(); err != nil {
+	//	return UserRejected
+	//}
+	//
+	//if !user.RejectReasons().Empty() {
+	//	return UserRejected
+	//}
+	//
+	//requiredDocs := user.Details().RequiredDocuments()
+	//for _, check := range requiredDocs {
+	//	if ok := user.HaveDocument(check.EntityID, check.Type); !ok {
+	//		return UserNeedDocs
+	//	}
+	//}
 	return UserWaitingForApproval
 }
 

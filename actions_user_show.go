@@ -6,7 +6,6 @@ import (
 	"gitlab.com/swarmfund/api/db2/api"
 	"gitlab.com/swarmfund/api/render/hal"
 	"gitlab.com/swarmfund/api/render/problem"
-	"gitlab.com/swarmfund/api/resource"
 )
 
 // This file contains the actions:
@@ -68,11 +67,11 @@ func (action *UserIndexAction) loadRecords() {
 }
 
 func (action *UserIndexAction) loadPage() {
-	for _, record := range action.Records {
-		var res resource.User
-		res.Populate(&record)
-		action.Page.Add(res)
-	}
+	//for _, record := range action.Records {
+	//var res resource.User
+	//res.Populate(&record)
+	//action.Page.Add(res)
+	//}
 
 	action.Page.BaseURL = action.BaseURL()
 	action.Page.BasePath = action.Path()
@@ -102,9 +101,9 @@ func (action *UserShowAction) JSON() {
 		action.checkAllowed,
 		action.loadRecord,
 		func() {
-			var res resource.User
-			res.Populate(action.Record)
-			hal.Render(action.W, res)
+			//var res resource.User
+			//res.Populate(action.Record)
+			//hal.Render(action.W, res)
 		})
 }
 func (action *UserShowAction) loadParams() {

@@ -83,7 +83,7 @@ func UsersIndex(w http.ResponseWriter, r *http.Request) {
 	}
 	for _, record := range records {
 		response.Data = append(response.Data, resources.User{
-			Type: string(record.UserType),
+			Type: record.UserType,
 			ID:   record.Address,
 			Attributes: resources.UserAttributes{
 				Email: record.Email,
