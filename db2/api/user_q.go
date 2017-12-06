@@ -118,7 +118,7 @@ func (q *UsersQ) WithAddress(addresses ...string) UsersQI {
 }
 
 func (q *UsersQ) ByState(state types.UserState) UsersQI {
-	q.sql = q.sql.Where("state = ?", state)
+	q.sql = q.sql.Where("state & ? != 0", state)
 	return q
 }
 

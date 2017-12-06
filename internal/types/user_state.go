@@ -18,8 +18,18 @@ const (
 )
 
 var (
-	userStateMap        = map[UserState]string{}
-	userStateReverseMap = map[string]UserState{}
+	userStateMap = map[UserState]string{
+		UserStateNil:                "nil",
+		UserStateWaitingForApproval: "waiting_for_approval",
+		UserStateApproved:           "approved",
+		UserStateRejected:           "rejected",
+	}
+	userStateReverseMap = map[string]UserState{
+		"waiting_for_approval": UserStateWaitingForApproval,
+		"approved":             UserStateApproved,
+		"nil":                  UserStateNil,
+		"rejected":             UserStateRejected,
+	}
 	ErrUserStateInvalid = errors.New("user state invalid")
 )
 

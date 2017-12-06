@@ -9,7 +9,11 @@ search: true
 The TokenD API tries its best to follow [JSONAPI](http://jsonapi.org/format/1.0/).
 Most important parts of protocol will be included here, but to get better feel of what's going on it's advised to get yourself familiar with JSONAPI before continuing.
 
-🔒 means request requires signature.
+| Legend | Description                |
+| ------ | -------------------------- |
+| 🔒     | Request requires signature |
+
+
 
 ## Making requests
 
@@ -323,15 +327,25 @@ http://client.com/r/eyAic3RhdHVzIjoyMDAsImF...G4zbmZqbWZ4OXA1OGdlbzVzdHQ5In19
 
 # Users
 
-## User types
+#### Types
 
-| Value          | Mask |
-| -------------- | ---- |
-| "not_verified" | 1    |
-| "syndicate"    | 2    |
+| Value          | Filter |
+| -------------- | ------ |
+| `not_verified` | 1      |
+| `syndicate`    | 2      |
+
+#### States
+
+| Value                  | Filter | Description                      |
+| ---------------------- | ------ | -------------------------------- |
+| `nil`                  | 1      | Initial user state               |
+| `waiting_for_approval` | 2      | User is waiting for KYC approval |
+| `approved`             | 4      | User has approved KYC            |
+| `rejected`             | 8      | User has rejected KYC            |
 
 
-## Create user 🔒
+
+## Create 🔒
 
 ```http
 PUT /users/GBT3XFWQUHUTKZMI22TVTWRA7UHV2LIO2BIFNRCH3CXWPYVYPTMXMDGC HTTP/1.1
@@ -346,7 +360,7 @@ Content-Type: application/vnd.api+json
 HTTP/1.1 204
 ```
 
-## Get user 🔒
+## Get 🔒
 
 ```http
 GET /users/GBT3XFWQUHUTKZMI22TVTWRA7UHV2LIO2BIFNRCH3CXWPYVYPTMXMDGC HTTP/1.1
@@ -362,7 +376,7 @@ Content-Type: application/vnd.api+json
         "id": "GCCJPB7QQLNEMCJ72CQJ4ODAZFFGXHET5UPOGSDWT222GXQPMTO6ZQW3",
         "attributes": {
             "email": "test@test.com",
-            "state": "need_documents"
+            "state": "nil"
         }
     }
 }
@@ -370,7 +384,43 @@ Content-Type: application/vnd.api+json
 
 
 
-## Change user type 🔒
+## Index 🔒 
+
+```http
+GET /users HTTP/1.1
+Content-Type: application/vnd.api+json
+
+HTTP/1.1 200
+Content-Type: application/vnd.api+json
+
+{
+    "data": [
+        {
+            "type": "syndicate",
+            "id": "GCCJPB7QQLNEMCJ72CQJ4ODAZFFGXHET5UPOGSDWT222GXQPMTO6ZQW3",
+            "attributes": {
+                "email": "yr0a3ke29d78skm2030kep14i@test.com",
+                "state": "waiting_for_approval"
+            }
+        }
+    ],
+    "links": {
+        "self": "/users?page=1",
+        "next": "/users?page=2"
+    }
+}
+```
+
+
+
+| Parameter | Description                       |
+| --------- | --------------------------------- |
+| `page`    | Pagination cursor                 |
+| `state`   | Bit mask to filter users by state |
+
+
+
+## Change type 🔒
 
 ```http
 PATCH /users/GBT3XFWQUHUTKZMI22TVTWRA7UHV2LIO2BIFNRCH3CXWPYVYPTMXMDGC HTTP/1.1

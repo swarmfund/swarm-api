@@ -12,8 +12,8 @@ type (
 		Attributes UserAttributes `json:"attributes"`
 	}
 	UserAttributes struct {
-		Email string `json:"email"`
-		State string `json:"state"`
+		Email string          `json:"email"`
+		State types.UserState `json:"state"`
 	}
 )
 
@@ -23,7 +23,7 @@ func NewUser(user *api.User) User {
 		ID:   user.Address,
 		Attributes: UserAttributes{
 			Email: user.Email,
-			State: string(user.State),
+			State: user.State,
 		},
 	}
 }
