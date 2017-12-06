@@ -1,7 +1,6 @@
 package api
 
 import (
-	"github.com/pkg/errors"
 	"gitlab.com/swarmfund/api/db2"
 	"gitlab.com/swarmfund/api/db2/api"
 	"gitlab.com/swarmfund/api/render/hal"
@@ -48,20 +47,20 @@ func (action *UserIndexAction) loadParams() {
 }
 
 func (action *UserIndexAction) loadRecords() {
-	u := action.APIQ().Users()
-
-	if api.IsUserState(action.Status) {
-		u.ByState(api.UserState(action.Status))
-	} else {
-		switch action.Status {
-		case "poi_review":
-			u.LimitReviewRequests()
-		case "recovery":
-			u.RecoveryPending()
-		default:
-			action.SetInvalidField("status", errors.New("invalid"))
-		}
-	}
+	//u := action.APIQ().Users()
+	//
+	//if api.IsUserState(action.Status) {
+	//	u.ByState(api.UserState(action.Status))
+	//} else {
+	//	switch action.Status {
+	//	case "poi_review":
+	//		u.LimitReviewRequests()
+	//	case "recovery":
+	//		u.RecoveryPending()
+	//	default:
+	//		action.SetInvalidField("status", errors.New("invalid"))
+	//	}
+	//}
 
 	//action.Err = u.Page(action.PagingParams).Select(&action.Records)
 }

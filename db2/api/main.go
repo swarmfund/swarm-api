@@ -18,7 +18,7 @@ type QInterface interface {
 	PendingTransactionSigners() PendingTransactionSignersQI
 	PenTXSub() PenTXSubQI
 
-	KYCTracker() KYCTrackerQI
+	//KYCTracker() KYCTrackerQI
 
 	Notifications() NotificationsQI
 }

@@ -47,7 +47,7 @@ type UsersQI interface {
 	Participants(participants map[int64][]Participant) error
 
 	// Select methods
-	ByState(state UserState) UsersQI
+	ByState(state types.UserState) UsersQI
 	RecoveryPending() UsersQI
 	LimitReviewRequests() UsersQI
 
@@ -65,7 +65,7 @@ type UsersQI interface {
 	// Change state methods
 	Approve(user *User) error
 	Reject(user *User) error
-	ChangeState(address types.Address, state UserState) error
+	ChangeState(address types.Address, state types.UserState) error
 	LimitReviewState(address string, state UserLimitReviewState) error
 
 	// Update methods
@@ -117,7 +117,7 @@ func (q *UsersQ) WithAddress(addresses ...string) UsersQI {
 	return q
 }
 
-func (q *UsersQ) ByState(state UserState) UsersQI {
+func (q *UsersQ) ByState(state types.UserState) UsersQI {
 	q.sql = q.sql.Where("state = ?", state)
 	return q
 }
@@ -161,7 +161,7 @@ func (q *UsersQ) Approve(user *User) error {
 	sql := updateUser(string(user.Address)).
 		Where("documents_version = ?", user.DocumentsVersion).
 		Set("documents_version", user.DocumentsVersion+1).
-		Set("state", UserApproved).
+		Set("state", types.UserStateApproved).
 		Set("documents", user.Documents)
 	result, err := q.parent.Exec(sql)
 	if err != nil {
@@ -177,7 +177,7 @@ func (q *UsersQ) Approve(user *User) error {
 	return err
 }
 
-func (q *UsersQ) ChangeState(address types.Address, state UserState) error {
+func (q *UsersQ) ChangeState(address types.Address, state types.UserState) error {
 	sql := updateUser(string(address)).
 		Set("state", state)
 
@@ -260,7 +260,7 @@ func (q *UsersQ) Reject(user *User) error {
 		where address = $4
 		  and documents_version = $5`, tableUser)
 
-	result, err := q.parent.DB.Exec(sql, user.Documents, user.DocumentsVersion+1, UserRejected, user.Address, user.DocumentsVersion)
+	result, err := q.parent.DB.Exec(sql, user.Documents, user.DocumentsVersion+1, types.UserStateRejected, user.Address, user.DocumentsVersion)
 	if err != nil {
 		return err
 	}

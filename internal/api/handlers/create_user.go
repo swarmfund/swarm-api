@@ -71,7 +71,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 			Email:   wallet.Username,
 			// everybody is created equal
 			UserType: types.UserTypeNotVerified,
-			State:    api.UserNeedDocs,
+			State:    types.UserStateNil,
 		})
 		if err != nil {
 			return errors.Wrap(err, "failed to insert user")

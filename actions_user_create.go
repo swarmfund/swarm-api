@@ -117,22 +117,22 @@ func (action *CreateUserAction) ensureAccount() {
 }
 
 func (action *CreateUserAction) createUser() {
-	var err error
-	user := api.User{
-		Address: types.Address(action.Request.Address),
-		Email:   action.Wallet.Username,
-		//UserType: action.Request.UserType,
-		State: api.UserNeedDocs,
-	}
-
-	err = action.APIQ().Users().Create(&user)
-	if err == api.ErrUsersConflict {
-		action.Err = &problem.Conflict
-		return
-	}
-	if err != nil {
-		action.Log.WithError(err).Error("Failed to put user into db")
-		action.Err = &problem.ServerError
-		return
-	}
+	//var err error
+	//user := api.User{
+	//	Address: types.Address(action.Request.Address),
+	//	Email:   action.Wallet.Username,
+	//	//UserType: action.Request.UserType,
+	//	State: api.UserNeedDocs,
+	//}
+	//
+	//err = action.APIQ().Users().Create(&user)
+	//if err == api.ErrUsersConflict {
+	//	action.Err = &problem.Conflict
+	//	return
+	//}
+	//if err != nil {
+	//	action.Log.WithError(err).Error("Failed to put user into db")
+	//	action.Err = &problem.ServerError
+	//	return
+	//}
 }

@@ -20,7 +20,7 @@ type User struct {
 	// TODO join from wallets address->account_id
 	Email             string               `db:"email"`
 	UserType          types.UserType       `db:"type"`
-	State             UserState            `db:"state"`
+	State             types.UserState      `db:"state"`
 	Documents         Documents            `db:"documents"`
 	DocumentsVersion  int64                `db:"documents_version"`
 	RecoveryState     UserRecoveryState    `db:"recovery_state"`

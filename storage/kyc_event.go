@@ -8,9 +8,9 @@ import (
 )
 
 func (c *Consumer) ProcessKYCUpload(user *api.User, document *api.Document) error {
-	if user.State == api.UserWaitingForApproval {
-		return nil
-	}
+	//if user.State == api.UserWaitingForApproval {
+	//	return nil
+	//}
 
 	// TODO block by KYC reason if needed
 

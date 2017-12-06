@@ -325,10 +325,10 @@ http://client.com/r/eyAic3RhdHVzIjoyMDAsImF...G4zbmZqbWZ4OXA1OGdlbzVzdHQ5In19
 
 ## User types
 
-| Value          | Description |
-| -------------- | ----------- |
-| "not_verified" |             |
-| "syndicate"    |             |
+| Value          | Mask |
+| -------------- | ---- |
+| "not_verified" | 1    |
+| "syndicate"    | 2    |
 
 
 ## Create user 🔒

@@ -12,8 +12,7 @@ import (
 type UserType int32
 
 const (
-	_ UserType = iota
-	UserTypeNotVerified
+	UserTypeNotVerified UserType = 1 << iota
 	UserTypeSyndicate
 )
 
