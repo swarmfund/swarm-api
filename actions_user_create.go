@@ -10,8 +10,8 @@ import (
 )
 
 type CreateUserRequest struct {
-	Address  string       `json:"address" valid:"required"`
-	UserType api.UserType `json:"type" valid:"required"`
+	Address string `json:"address" valid:"required"`
+	//UserType api.UserType `json:"type" valid:"required"`
 }
 
 // CreateUserAction posts registration request to registration_requests table
@@ -40,9 +40,9 @@ func (action *CreateUserAction) JSON() {
 
 func (action *CreateUserAction) loadParams() {
 	action.UnmarshalBody(&action.Request)
-	if err := action.Request.UserType.Validate(); err != nil {
-		action.SetInvalidField("type", err)
-	}
+	//if err := action.Request.UserType.Validate(); err != nil {
+	//	action.SetInvalidField("type", err)
+	//}
 }
 
 func (action *CreateUserAction) checkAllowed() {
@@ -117,22 +117,22 @@ func (action *CreateUserAction) ensureAccount() {
 }
 
 func (action *CreateUserAction) createUser() {
-	var err error
-	user := api.User{
-		Address:  types.Address(action.Request.Address),
-		Email:    action.Wallet.Username,
-		UserType: action.Request.UserType,
-		State:    api.UserNeedDocs,
-	}
-
-	err = action.APIQ().Users().Create(&user)
-	if err == api.ErrUsersConflict {
-		action.Err = &problem.Conflict
-		return
-	}
-	if err != nil {
-		action.Log.WithError(err).Error("Failed to put user into db")
-		action.Err = &problem.ServerError
-		return
-	}
+	//var err error
+	//user := api.User{
+	//	Address: types.Address(action.Request.Address),
+	//	Email:   action.Wallet.Username,
+	//	//UserType: action.Request.UserType,
+	//	State: api.UserNeedDocs,
+	//}
+	//
+	//err = action.APIQ().Users().Create(&user)
+	//if err == api.ErrUsersConflict {
+	//	action.Err = &problem.Conflict
+	//	return
+	//}
+	//if err != nil {
+	//	action.Log.WithError(err).Error("Failed to put user into db")
+	//	action.Err = &problem.ServerError
+	//	return
+	//}
 }

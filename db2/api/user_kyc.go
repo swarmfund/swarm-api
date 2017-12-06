@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 
 	"github.com/pkg/errors"
+	"gitlab.com/swarmfund/api/internal/types"
 )
 
 type RequiredDocument struct {
@@ -11,23 +12,22 @@ type RequiredDocument struct {
 	EntityID int64
 }
 
-func (user *User) CheckState() UserState {
-	if err := user.Details().Validate(); err != nil {
-		return UserRejected
-	}
-
-	if !user.RejectReasons().Empty() {
-		return UserRejected
-	}
-
-	requiredDocs := user.Details().RequiredDocuments()
-	for _, check := range requiredDocs {
-		if ok := user.HaveDocument(check.EntityID, check.Type); !ok {
-			return UserNeedDocs
-		}
-	}
-
-	return UserWaitingForApproval
+func (user *User) CheckState() types.UserState {
+	//if err := user.Details().Validate(); err != nil {
+	//	return UserRejected
+	//}
+	//
+	//if !user.RejectReasons().Empty() {
+	//	return UserRejected
+	//}
+	//
+	//requiredDocs := user.Details().RequiredDocuments()
+	//for _, check := range requiredDocs {
+	//	if ok := user.HaveDocument(check.EntityID, check.Type); !ok {
+	//		return UserNeedDocs
+	//	}
+	//}
+	return types.UserStateWaitingForApproval
 }
 
 type CorporationDetails struct {

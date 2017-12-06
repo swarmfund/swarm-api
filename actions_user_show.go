@@ -1,12 +1,10 @@
 package api
 
 import (
-	"github.com/pkg/errors"
 	"gitlab.com/swarmfund/api/db2"
 	"gitlab.com/swarmfund/api/db2/api"
 	"gitlab.com/swarmfund/api/render/hal"
 	"gitlab.com/swarmfund/api/render/problem"
-	"gitlab.com/swarmfund/api/resource"
 )
 
 // This file contains the actions:
@@ -49,30 +47,30 @@ func (action *UserIndexAction) loadParams() {
 }
 
 func (action *UserIndexAction) loadRecords() {
-	u := action.APIQ().Users()
-
-	if api.IsUserState(action.Status) {
-		u.ByState(api.UserState(action.Status))
-	} else {
-		switch action.Status {
-		case "poi_review":
-			u.LimitReviewRequests()
-		case "recovery":
-			u.RecoveryPending()
-		default:
-			action.SetInvalidField("status", errors.New("invalid"))
-		}
-	}
+	//u := action.APIQ().Users()
+	//
+	//if api.IsUserState(action.Status) {
+	//	u.ByState(api.UserState(action.Status))
+	//} else {
+	//	switch action.Status {
+	//	case "poi_review":
+	//		u.LimitReviewRequests()
+	//	case "recovery":
+	//		u.RecoveryPending()
+	//	default:
+	//		action.SetInvalidField("status", errors.New("invalid"))
+	//	}
+	//}
 
 	//action.Err = u.Page(action.PagingParams).Select(&action.Records)
 }
 
 func (action *UserIndexAction) loadPage() {
-	for _, record := range action.Records {
-		var res resource.User
-		res.Populate(&record)
-		action.Page.Add(res)
-	}
+	//for _, record := range action.Records {
+	//var res resource.User
+	//res.Populate(&record)
+	//action.Page.Add(res)
+	//}
 
 	action.Page.BaseURL = action.BaseURL()
 	action.Page.BasePath = action.Path()
@@ -102,9 +100,9 @@ func (action *UserShowAction) JSON() {
 		action.checkAllowed,
 		action.loadRecord,
 		func() {
-			var res resource.User
-			res.Populate(action.Record)
-			hal.Render(action.W, res)
+			//var res resource.User
+			//res.Populate(action.Record)
+			//hal.Render(action.W, res)
 		})
 }
 func (action *UserShowAction) loadParams() {

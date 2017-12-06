@@ -19,8 +19,8 @@ type User struct {
 	Address types.Address `db:"address"`
 	// TODO join from wallets address->account_id
 	Email             string               `db:"email"`
-	UserType          UserType             `db:"user_type"`
-	State             UserState            `db:"state"`
+	UserType          types.UserType       `db:"type"`
+	State             types.UserState      `db:"state"`
 	Documents         Documents            `db:"documents"`
 	DocumentsVersion  int64                `db:"documents_version"`
 	RecoveryState     UserRecoveryState    `db:"recovery_state"`
@@ -40,71 +40,71 @@ type User struct {
 // Details will throw panic aggressively instead of returning error
 // to allow chain calls.
 func (user *User) Details() UserDetails {
-	entities := user.KYCEntities
+	//entities := user.KYCEntities
 	switch user.UserType {
-	case UserTypeIndividual:
-		details := IndividualDetails{}
-
-		bankDetails := entities.GetSingle(KYCEntityTypeBankDetails)
-		details.BankDetails.Populate(bankDetails)
-
-		personalDetails := entities.GetSingle(KYCEntityTypePersonalDetails)
-		details.PersonalDetails.Populate(personalDetails)
-
-		employment := entities.GetSingle(KYCEntityTypeEmploymentDetails)
-		details.EmploymentDetails.Populate(employment)
-
-		address := entities.GetSingle(KYCEntityTypeAddress)
-		details.Address.Populate(address)
-
-		return &details
-	case UserTypeJoint:
-		details := JointDetails{}
-
-		identityEntities := entities.Get(KYCEntityTypeJointIdentity)
-		details.Identities = map[int64]IdentityDetails{}
-		for _, entity := range identityEntities {
-			entity := entity
-			identity := IdentityDetails{}
-			identity.Populate(&entity)
-			details.Identities[entity.ID] = identity
-		}
-
-		return &details
-	case UserTypeBusiness:
-		details := BusinessDetails{}
-
-		ownerEntities := entities.Get(KYCEntityTypeBusinessOwner)
-		details.Owners = map[int64]BusinessPerson{}
-		for _, entity := range ownerEntities {
-			entity := entity
-			person := BusinessPerson{}
-			person.Populate(&entity)
-			details.Owners[entity.ID] = person
-		}
-
-		signatoryEntites := entities.Get(KYCEntityTypeBusinessSignatory)
-		details.Signatories = map[int64]BusinessPerson{}
-		for _, entity := range signatoryEntites {
-			entity := entity
-			person := BusinessPerson{}
-			person.Populate(&entity)
-			details.Signatories[entity.ID] = person
-		}
-
-		entity := entities.GetSingle(KYCEntityTypeCorporationDetails)
-		details.CorporationDetails.Populate(entity)
-
-		entity = entities.GetSingle(KYCEntityTypeRegisteredAddress)
-		details.RegisteredAddress.Populate(entity)
-
-		entity = entities.GetSingle(KYCEntityTypeFinancialDetails)
-		details.FinancialDetails.Populate(entity)
-
-		entity = entities.GetSingle(KYCEntityTypeCorrespondenceAddress)
-		details.CorrespondenceAddress.Populate(entity)
-
-		return &details
+	//case UserTypeIndividual:
+	//	details := IndividualDetails{}
+	//
+	//	bankDetails := entities.GetSingle(KYCEntityTypeBankDetails)
+	//	details.BankDetails.Populate(bankDetails)
+	//
+	//	personalDetails := entities.GetSingle(KYCEntityTypePersonalDetails)
+	//	details.PersonalDetails.Populate(personalDetails)
+	//
+	//	employment := entities.GetSingle(KYCEntityTypeEmploymentDetails)
+	//	details.EmploymentDetails.Populate(employment)
+	//
+	//	address := entities.GetSingle(KYCEntityTypeAddress)
+	//	details.Address.Populate(address)
+	//
+	//	return &details
+	//case UserTypeJoint:
+	//	details := JointDetails{}
+	//
+	//	identityEntities := entities.Get(KYCEntityTypeJointIdentity)
+	//	details.Identities = map[int64]IdentityDetails{}
+	//	for _, entity := range identityEntities {
+	//		entity := entity
+	//		identity := IdentityDetails{}
+	//		identity.Populate(&entity)
+	//		details.Identities[entity.ID] = identity
+	//	}
+	//
+	//	return &details
+	//case UserTypeBusiness:
+	//	details := BusinessDetails{}
+	//
+	//	ownerEntities := entities.Get(KYCEntityTypeBusinessOwner)
+	//	details.Owners = map[int64]BusinessPerson{}
+	//	for _, entity := range ownerEntities {
+	//		entity := entity
+	//		person := BusinessPerson{}
+	//		person.Populate(&entity)
+	//		details.Owners[entity.ID] = person
+	//	}
+	//
+	//	signatoryEntites := entities.Get(KYCEntityTypeBusinessSignatory)
+	//	details.Signatories = map[int64]BusinessPerson{}
+	//	for _, entity := range signatoryEntites {
+	//		entity := entity
+	//		person := BusinessPerson{}
+	//		person.Populate(&entity)
+	//		details.Signatories[entity.ID] = person
+	//	}
+	//
+	//	entity := entities.GetSingle(KYCEntityTypeCorporationDetails)
+	//	details.CorporationDetails.Populate(entity)
+	//
+	//	entity = entities.GetSingle(KYCEntityTypeRegisteredAddress)
+	//	details.RegisteredAddress.Populate(entity)
+	//
+	//	entity = entities.GetSingle(KYCEntityTypeFinancialDetails)
+	//	details.FinancialDetails.Populate(entity)
+	//
+	//	entity = entities.GetSingle(KYCEntityTypeCorrespondenceAddress)
+	//	details.CorrespondenceAddress.Populate(entity)
+	//
+	//	return &details
 	default:
 		panic("unknown details user type")
 	}
@@ -112,49 +112,49 @@ func (user *User) Details() UserDetails {
 
 func (user *User) RejectReasons() RejectReasons {
 	switch user.UserType {
-	case UserTypeIndividual:
-		docrr := DocumentsRejectReasons{}
-		entity := user.KYCEntities.GetSingle(KYCEntityTypeDocumentsRejectReasons)
-		docrr.Populate(entity)
-
-		reasons := IndividualRejectReasons{}
-		entity = user.KYCEntities.GetSingle(KYCEntityTypeIndividualRejectReasons)
-		reasons.Populate(entity)
-
-		reasons.Documents = docrr
-		return &reasons
-	case UserTypeJoint:
-		docrr := DocumentsRejectReasons{}
-		entity := user.KYCEntities.GetSingle(KYCEntityTypeDocumentsRejectReasons)
-		docrr.Populate(entity)
-
-		reasons := JointRejectReasons{}
-		entity = user.KYCEntities.GetSingle(KYCEntityTypeJointRejectReasons)
-		reasons.Populate(entity)
-		if reasons.IdentityDetails == nil {
-			reasons.IdentityDetails = map[string]IdentityDetails{}
-		}
-
-		reasons.Documents = docrr
-		return &reasons
-	case UserTypeBusiness:
-		docrr := DocumentsRejectReasons{}
-		entity := user.KYCEntities.GetSingle(KYCEntityTypeDocumentsRejectReasons)
-		docrr.Populate(entity)
-
-		reasons := BusinessRejectReasons{}
-		entity = user.KYCEntities.GetSingle(KYCEntityTypeBusinessRejectReasons)
-		reasons.Populate(entity)
-		if reasons.Owners == nil {
-			reasons.Owners = map[string]BusinessPerson{}
-		}
-		if reasons.Signatories == nil {
-			reasons.Signatories = map[string]BusinessPerson{}
-		}
-
-		reasons.Documents = docrr
-
-		return &reasons
+	//case UserTypeIndividual:
+	//	docrr := DocumentsRejectReasons{}
+	//	entity := user.KYCEntities.GetSingle(KYCEntityTypeDocumentsRejectReasons)
+	//	docrr.Populate(entity)
+	//
+	//	reasons := IndividualRejectReasons{}
+	//	entity = user.KYCEntities.GetSingle(KYCEntityTypeIndividualRejectReasons)
+	//	reasons.Populate(entity)
+	//
+	//	reasons.Documents = docrr
+	//	return &reasons
+	//case UserTypeJoint:
+	//	docrr := DocumentsRejectReasons{}
+	//	entity := user.KYCEntities.GetSingle(KYCEntityTypeDocumentsRejectReasons)
+	//	docrr.Populate(entity)
+	//
+	//	reasons := JointRejectReasons{}
+	//	entity = user.KYCEntities.GetSingle(KYCEntityTypeJointRejectReasons)
+	//	reasons.Populate(entity)
+	//	if reasons.IdentityDetails == nil {
+	//		reasons.IdentityDetails = map[string]IdentityDetails{}
+	//	}
+	//
+	//	reasons.Documents = docrr
+	//	return &reasons
+	//case UserTypeBusiness:
+	//	docrr := DocumentsRejectReasons{}
+	//	entity := user.KYCEntities.GetSingle(KYCEntityTypeDocumentsRejectReasons)
+	//	docrr.Populate(entity)
+	//
+	//	reasons := BusinessRejectReasons{}
+	//	entity = user.KYCEntities.GetSingle(KYCEntityTypeBusinessRejectReasons)
+	//	reasons.Populate(entity)
+	//	if reasons.Owners == nil {
+	//		reasons.Owners = map[string]BusinessPerson{}
+	//	}
+	//	if reasons.Signatories == nil {
+	//		reasons.Signatories = map[string]BusinessPerson{}
+	//	}
+	//
+	//	reasons.Documents = docrr
+	//
+	//	return &reasons
 	default:
 		panic("unknown reject reasons user type")
 	}

@@ -195,13 +195,13 @@ func (_m *TFAQI) SetBackendPriority(id int64, priority int) error {
 	return r0
 }
 
-// Verify provides a mock function with given fields: token
-func (_m *TFAQI) Verify(token string) error {
-	ret := _m.Called(token)
+// Verify provides a mock function with given fields: bid, token
+func (_m *TFAQI) Verify(bid int64, token string) error {
+	ret := _m.Called(bid, token)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(string) error); ok {
-		r0 = rf(token)
+	if rf, ok := ret.Get(0).(func(int64, string) error); ok {
+		r0 = rf(bid, token)
 	} else {
 		r0 = ret.Error(0)
 	}

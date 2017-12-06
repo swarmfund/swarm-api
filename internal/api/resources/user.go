@@ -7,21 +7,23 @@ import (
 
 type (
 	User struct {
-		Type       string         `json:"type"`
+		Type       types.UserType `json:"type"`
 		ID         types.Address  `json:"id"`
 		Attributes UserAttributes `json:"attributes"`
 	}
 	UserAttributes struct {
-		Email string `json:"email"`
+		Email string          `json:"email"`
+		State types.UserState `json:"state"`
 	}
 )
 
 func NewUser(user *api.User) User {
 	return User{
-		Type: string(user.UserType),
+		Type: user.UserType,
 		ID:   user.Address,
 		Attributes: UserAttributes{
 			Email: user.Email,
+			State: user.State,
 		},
 	}
 }

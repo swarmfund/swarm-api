@@ -222,12 +222,12 @@ func (action *UserApproveAction) rejectUser() {
 
 	var rrEntityType api.KYCEntityType
 	switch action.User.UserType {
-	case api.UserTypeIndividual:
-		rrEntityType = api.KYCEntityTypeIndividualRejectReasons
-	case api.UserTypeJoint:
-		rrEntityType = api.KYCEntityTypeJointRejectReasons
-	case api.UserTypeBusiness:
-		rrEntityType = api.KYCEntityTypeBusinessRejectReasons
+	//case api.UserTypeIndividual:
+	//	rrEntityType = api.KYCEntityTypeIndividualRejectReasons
+	//case api.UserTypeJoint:
+	//	rrEntityType = api.KYCEntityTypeJointRejectReasons
+	//case api.UserTypeBusiness:
+	//	rrEntityType = api.KYCEntityTypeBusinessRejectReasons
 	default:
 		panic("unknown user type")
 	}

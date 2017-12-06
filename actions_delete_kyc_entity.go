@@ -106,11 +106,11 @@ func (action *DeleteKYCEntityAction) blockAccount() {
 func (action *DeleteKYCEntityAction) updateState() {
 	state := action.User.CheckState()
 	if state != action.User.State {
-		err := action.APIQ().Users().ChangeState(string(action.User.Address), state)
-		if err != nil {
-			action.Log.WithError(err).Error("failed to update user state")
-			action.Err = &problem.ServerError
-			return
-		}
+		//err := action.APIQ().Users().ChangeState(string(action.User.Address), state)
+		//if err != nil {
+		//	action.Log.WithError(err).Error("failed to update user state")
+		//	action.Err = &problem.ServerError
+		//	return
+		//}
 	}
 }
