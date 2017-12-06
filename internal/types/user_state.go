@@ -49,8 +49,6 @@ func (t *UserState) UnmarshalJSON(data []byte) error {
 	}
 
 	switch v := tmp.(type) {
-	case float64:
-		*t = UserState(v)
 	case string:
 		*t = userStateReverseMap[v]
 	default:
