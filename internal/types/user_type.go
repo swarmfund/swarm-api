@@ -3,24 +3,35 @@ package types
 import (
 	"encoding/json"
 	"fmt"
-	"strconv"
+
+	"database/sql/driver"
 
 	"github.com/pkg/errors"
 )
 
+type UserType int32
+
 const (
-	_ UserType = iota
-	UserTypeIndividual
+	UserTypeNotVerified UserType = 1 << iota
+	UserTypeSyndicate
 )
 
 var (
+	userTypeReverseMap = map[string]UserType{
+		"not_verified": UserTypeNotVerified,
+		"syndicate":    UserTypeSyndicate,
+	}
+
+	userTypeMap = map[UserType]string{
+		UserTypeNotVerified: "not_verified",
+		UserTypeSyndicate:   "syndicate",
+	}
 	ErrUserTypeInvalid = errors.New("user type is invalid")
 )
 
-type UserType int
-
 func (t UserType) Validate() error {
-	if t < UserTypeIndividual || t > UserTypeIndividual {
+	_, ok := userTypeMap[t]
+	if !ok {
 		return ErrUserTypeInvalid
 	}
 	return nil
@@ -38,13 +49,26 @@ func (t *UserType) UnmarshalJSON(data []byte) error {
 	case float64:
 		*t = UserType(v)
 	case string:
-		i, err := strconv.ParseInt(v, 10, 64)
-		if err != nil {
-			return errors.Wrap(err, "failed to parse int")
-		}
-		*t = UserType(i)
+		*t = userTypeReverseMap[v]
 	default:
 		return fmt.Errorf("invalid value for %T: %v", t, v)
 	}
+	return nil
+}
+
+func (t UserType) MarshalJSON() ([]byte, error) {
+	return json.Marshal(userTypeMap[t])
+}
+
+func (t UserType) Value() (driver.Value, error) {
+	return int64(t), nil
+}
+
+func (t *UserType) Scan(src interface{}) error {
+	i, ok := src.(int64)
+	if !ok {
+		return fmt.Errorf("can't scan from %T", src)
+	}
+	*t = UserType(i)
 	return nil
 }

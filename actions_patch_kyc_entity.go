@@ -265,12 +265,12 @@ func (action *PatchKYCEntityAction) performRequest() {
 func (action *PatchKYCEntityAction) updateState() {
 	state := action.User.CheckState()
 	if state != action.User.State {
-		err := action.APIQ().Users().ChangeState(string(action.User.Address), state)
-		if err != nil {
-			action.Log.WithError(err).Error("failed to change user state")
-			action.Err = &problem.ServerError
-			return
-		}
+		//err := action.APIQ().Users().ChangeState(string(action.User.Address), state)
+		//if err != nil {
+		//	action.Log.WithError(err).Error("failed to change user state")
+		//	action.Err = &problem.ServerError
+		//	return
+		//}
 	}
 }
 

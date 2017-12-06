@@ -19,9 +19,7 @@ import (
 
 // FIXME google/jsonapi does not support custom types unmarshal, see PR #115 for details
 type CreateUserRequest struct {
-	Address  types.Address  `json:"address"`
-	Type     int            `json:"-" jsonapi:"attr,type"`
-	UserType types.UserType `json:"type"`
+	Address types.Address `json:"address"`
 }
 
 func NewCreateUserRequest(r *http.Request) (CreateUserRequest, error) {
@@ -31,14 +29,13 @@ func NewCreateUserRequest(r *http.Request) (CreateUserRequest, error) {
 	if err := jsonapi.UnmarshalPayload(r.Body, &request); err != nil {
 		return request, errors.Wrap(err, "failed to unmarshal")
 	}
-	request.UserType = types.UserType(request.Type)
+
 	return request, request.Validate()
 }
 
 func (r *CreateUserRequest) Validate() error {
 	return ValidateStruct(r,
 		Field(&r.Address),
-		Field(&r.UserType),
 	)
 }
 
@@ -72,9 +69,9 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 		err := q.Create(&api.User{
 			Address: request.Address,
 			Email:   wallet.Username,
-			// TODO unhardcode
-			UserType: api.UserTypeIndividual,
-			State:    api.UserNeedDocs,
+			// everybody is created equal
+			UserType: types.UserTypeNotVerified,
+			State:    types.UserStateNil,
 		})
 		if err != nil {
 			return errors.Wrap(err, "failed to insert user")
