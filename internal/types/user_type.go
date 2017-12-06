@@ -37,6 +37,14 @@ func (t UserType) Validate() error {
 	return nil
 }
 
+func (t UserType) String() string {
+	s, ok := userTypeMap[t]
+	if !ok {
+		return fmt.Sprintf("%d", t)
+	}
+	return s
+}
+
 // UnmarshalJSON custom unmarshaler supporting both JSON number and string
 func (t *UserType) UnmarshalJSON(data []byte) error {
 	var tmp interface{}
@@ -45,13 +53,15 @@ func (t *UserType) UnmarshalJSON(data []byte) error {
 		return errors.Wrap(err, "failed to unmarshal")
 	}
 
-	switch v := tmp.(type) {
-	case float64:
-		*t = UserType(v)
+	switch m := tmp.(type) {
 	case string:
-		*t = userTypeReverseMap[v]
+		v, ok := userTypeReverseMap[m]
+		if !ok {
+			return ErrUserTypeInvalid
+		}
+		*t = v
 	default:
-		return fmt.Errorf("invalid value for %T: %v", t, v)
+		return fmt.Errorf("invalid value for %T: %v", t, m)
 	}
 	return nil
 }

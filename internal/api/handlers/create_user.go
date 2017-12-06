@@ -3,51 +3,47 @@ package handlers
 import (
 	"net/http"
 
-	"fmt"
-
 	"github.com/go-chi/chi"
 	. "github.com/go-ozzo/ozzo-validation"
-	"github.com/google/jsonapi"
 	"github.com/pkg/errors"
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/ape/problems"
 	"gitlab.com/swarmfund/api/db2/api"
+	"gitlab.com/swarmfund/api/internal/api/movetoape"
 	"gitlab.com/swarmfund/api/internal/types"
+	"gitlab.com/swarmfund/go/doorman"
 	"gitlab.com/swarmfund/go/xdr"
 	"gitlab.com/swarmfund/horizon-connector"
 )
 
-// FIXME google/jsonapi does not support custom types unmarshal, see PR #115 for details
 type CreateUserRequest struct {
-	Address types.Address `json:"address"`
+	Address types.Address `json:"-"`
 }
 
 func NewCreateUserRequest(r *http.Request) (CreateUserRequest, error) {
 	request := CreateUserRequest{
 		Address: types.Address(chi.URLParam(r, "address")),
 	}
-	if err := jsonapi.UnmarshalPayload(r.Body, &request); err != nil {
-		return request, errors.Wrap(err, "failed to unmarshal")
-	}
-
 	return request, request.Validate()
 }
 
 func (r *CreateUserRequest) Validate() error {
 	return ValidateStruct(r,
-		Field(&r.Address),
+		Field(&r.Address, Required),
 	)
 }
 
 func CreateUser(w http.ResponseWriter, r *http.Request) {
 	request, err := NewCreateUserRequest(r)
 	if err != nil {
-		fmt.Println(err)
 		ape.RenderErr(w, problems.BadRequest(err)...)
 		return
 	}
 
-	// TODO check allowed
+	if err := Doorman(r, doorman.SignerOf(string(request.Address))); err != nil {
+		movetoape.RenderDoormanErr(w, err)
+		return
+	}
 
 	// wallet should exists and be verified when creating user
 	wallet, err := WalletQ(r).ByAccountID(request.Address)
@@ -58,10 +54,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if wallet == nil || !wallet.Verified {
-		ape.RenderErr(w, &jsonapi.ErrorObject{
-			Title:  http.StatusText(http.StatusForbidden),
-			Status: fmt.Sprintf("%d", http.StatusForbidden),
-		})
+		ape.RenderErr(w, movetoape.Forbidden("verification_required"))
 		return
 	}
 

@@ -1,9 +1,12 @@
 package types
 
 import (
-	"encoding/json"
 	"fmt"
 	"testing"
+
+	"encoding/json"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestUserType_Validate(t *testing.T) {
@@ -13,38 +16,37 @@ func TestUserType_Validate(t *testing.T) {
 	}{
 		{0, ErrUserTypeInvalid},
 		{1, nil},
-		{2, ErrUserTypeInvalid},
+		{2, nil},
+		{3, ErrUserTypeInvalid},
+		{4, ErrUserTypeInvalid},
 	}
 
 	for i, tc := range cases {
 		t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
-			tpe := UserType(tc.in)
-			if err := tpe.Validate(); err != tc.expected {
-				t.Fatalf("got %s expected %s", err, tc.expected)
-			}
+			//tpe := UserType(tc.in)
+			assert.EqualValues(t, UserType(tc.in).Validate(), tc.expected)
 		})
 	}
 }
 
 func TestUserType_UnmarshalJSON(t *testing.T) {
 	cases := []struct {
+		name     string
 		in       string
 		expected UserType
 		err      bool
 	}{
-		{`{"t":1}`, UserType(1), false},
-		{`{"t":"2"}`, UserType(2), false},
-		{`{"t":"individual"}`, UserType(0), true},
-		{`{"t":{}}"`, UserType(0), true},
-		{`{"t":[]}`, UserType(0), true},
-		{`{"t":{yolo}}`, UserType(0), true},
+		{"int", `1`, 1, true},
+		{"int as string", `"2"`, 0, true},
+		{"string", `"syndicate"`, 2, false},
+		{"object", `{}`, 0, true},
+		{"array", `[]`, 0, true},
+		{"invalid json", `}{`, 0, true},
 	}
 
-	for i, tc := range cases {
-		t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
-			var got struct {
-				T UserType `json:"t"`
-			}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			var got UserType
 			err := json.Unmarshal([]byte(tc.in), &got)
 			if err != nil && !tc.err {
 				t.Fatalf("expected nil error got %s", err)
@@ -52,8 +54,8 @@ func TestUserType_UnmarshalJSON(t *testing.T) {
 			if err == nil && tc.err {
 				t.Fatal("expected error got nil")
 			}
-			if err == nil && tc.expected != got.T {
-				t.Fatal("expected %d got %d", tc.expected, got)
+			if err == nil && tc.expected != got {
+				t.Fatalf("expected %d got %s", tc.expected, got)
 			}
 		})
 	}

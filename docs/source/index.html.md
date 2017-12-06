@@ -39,9 +39,10 @@ If not stated otherwise client should expect one of the following status codes:
 
 ## Application-specific error codes
 
-| Error code     | Description                              |
-| -------------- | ---------------------------------------- |
-| `tfa_required` | See [docs section](#two-factor-authentication) for details |
+| Error code              | Description                              |
+| ----------------------- | ---------------------------------------- |
+| `tfa_required`          | See [docs section](#two-factor-authentication) for details |
+| `verification_required` | Wallet with verified email is required before proceeding |
 
 # Wallets
 

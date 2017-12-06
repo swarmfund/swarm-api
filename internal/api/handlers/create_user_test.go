@@ -10,7 +10,6 @@ import (
 	"reflect"
 
 	"github.com/go-chi/chi"
-	"gitlab.com/swarmfund/api/internal/types"
 )
 
 // TODO move to ape
@@ -37,31 +36,13 @@ func TestNewCreateUserRequest(t *testing.T) {
 			"GCSWI5EKDRNXBRQUY2M27CSTYQHST2S6ONLC5W5V2O4E6OTABR4CRORF",
 			`{
 				"data": {
-					"attributes": {
-						"type": 1
-					}
+					"attributes": {}
 				}
 			}`,
 			false,
 			CreateUserRequest{
 				Address: "GCSWI5EKDRNXBRQUY2M27CSTYQHST2S6ONLC5W5V2O4E6OTABR4CRORF",
-				// FIXME I love jsonapi, see implementation for details
-				Type:     1,
-				UserType: types.UserType(1),
 			},
-		},
-		{
-			"string type",
-			"GCSWI5EKDRNXBRQUY2M27CSTYQHST2S6ONLC5W5V2O4E6OTABR4CRORF",
-			`{
-				"data": {
-					"attributes": {
-						"type": "1"
-					}
-				}
-			}`,
-			true,
-			CreateUserRequest{},
 		},
 	}
 
