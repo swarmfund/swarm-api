@@ -14,9 +14,7 @@ import (
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/ape/problems"
 	"gitlab.com/swarmfund/api/db2/api"
-	"gitlab.com/swarmfund/api/internal/api/movetoape"
 	"gitlab.com/swarmfund/api/internal/types"
-	"gitlab.com/swarmfund/go/doorman"
 )
 
 type (
@@ -25,7 +23,21 @@ type (
 		Data    PatchUserRequestData `json:"data"`
 	}
 	PatchUserRequestData struct {
-		Type *types.UserType `json:"type"`
+		Type          *types.UserType               `json:"type"`
+		Attributes    PatchUserRequestAttributes    `json:"attributes"`
+		Relationships PatchUserRequestRelationships `json:"relationships"`
+	}
+	PatchUserRequestAttributes struct {
+		State *types.UserState `json:"state"`
+	}
+	PatchUserRequestRelationships struct {
+		Transaction struct {
+			Data struct {
+				Attributes struct {
+					Envelope string `json:"envelope"`
+				}
+			} `json:"data"`
+		} `json:"transaction"`
 	}
 )
 
@@ -52,6 +64,12 @@ func (r PatchUserRequestData) Validate() error {
 	)
 }
 
+func (r PatchUserRequestAttributes) Validate() error {
+	return ValidateStruct(&r,
+		Field(&r.State),
+	)
+}
+
 func PatchUser(w http.ResponseWriter, r *http.Request) {
 	request, err := NewPatchUserRequest(r)
 	if err != nil {
@@ -59,11 +77,20 @@ func PatchUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// check allowed
-	if err := Doorman(r, doorman.SignerOf(request.Address)); err != nil {
-		movetoape.RenderDoormanErr(w, err)
-		return
-	}
+	//if request.Data.Attributes.State != nil {
+	//	// should be signed by admin
+	//	// TODO unhardcode
+	//	if err := Doorman(r, doorman.SignerOf("GD7AHJHCDSQI6LVMEJEE2FTNCA2LJQZ4R64GUI3PWANSVEO4GEOWB636")); err != nil {
+	//		movetoape.RenderDoormanErr(w, err)
+	//		return
+	//	}
+	//} else {
+	//	// user signature will do
+	//	if err := Doorman(r, doorman.SignerOf(request.Address)); err != nil {
+	//		movetoape.RenderDoormanErr(w, err)
+	//		return
+	//	}
+	//}
 
 	user, err := UsersQ(r).ByAddress(request.Address)
 	if err != nil {
@@ -89,17 +116,37 @@ func PatchUser(w http.ResponseWriter, r *http.Request) {
 		user.UserType = *request.Data.Type
 	}
 
+	if request.Data.Attributes.State != nil {
+		if user.State != *request.Data.Attributes.State {
+			if user.State != types.UserStateWaitingForApproval {
+				ape.RenderErr(w, problems.BadRequest(Errors{
+					"/data/attributes/state": errors.New("state transaction is not allowed"),
+				})...)
+				return
+			}
+			if request.Data.Relationships.Transaction.Data.Attributes.Envelope == "" {
+				ape.RenderErr(w, problems.BadRequest(Errors{
+					"/data/relationships/transaction/data/attributes/envelope": errors.New("required when updating state"),
+				})...)
+				return
+			}
+			user.State = *request.Data.Attributes.State
+		}
+	}
+
+	user.State = user.CheckState()
+
 	err = UsersQ(r).Transaction(func(q api.UsersQI) error {
 		if err := q.Update(user); err != nil {
 			return errors.Wrap(err, "failed to update user")
 		}
 
-		state := user.CheckState()
-		if state != user.State {
-			if err := q.ChangeState(user.Address, state); err != nil {
-				return errors.Wrap(err, "failed to change user state")
+		if tx := request.Data.Relationships.Transaction.Data.Attributes.Envelope; tx != "" {
+			if err := Horizon(r).SubmitTX(tx); err != nil {
+				return errors.Wrap(err, "failed to submit transaction")
 			}
 		}
+
 		return nil
 	})
 	if err != nil {

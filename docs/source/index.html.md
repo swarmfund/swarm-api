@@ -420,14 +420,12 @@ Content-Type: application/vnd.api+json
 
 
 
-## Change type 🔒
+## Update 🔒
+
+> set user type
 
 ```http
 PATCH /users/GBT3XFWQUHUTKZMI22TVTWRA7UHV2LIO2BIFNRCH3CXWPYVYPTMXMDGC HTTP/1.1
-Content-Type: application/vnd.api+json
-
-
-HTTP/1.1 200
 Content-Type: application/vnd.api+json
 
 {
@@ -435,7 +433,43 @@ Content-Type: application/vnd.api+json
         "type": "syndicate"
     }
 }
+
+HTTP/1.1 204
 ```
+
+> approve user
+
+```http
+PATCH /users/ HTTP/1.1
+Content-Type: application/vnd.api+json
+
+{
+	"data": {
+		"attributes": {
+			"state": "approved"
+		},
+		"relationships": {
+			"transaction": {
+				"data": {
+					"attributes": {
+						"envelope": "AAA...AAA"
+					}
+				}
+			}	
+		}
+	}
+}
+
+HTTP/1.1 204
+```
+
+
+
+| Field                    | User | Admin | Description                              |
+| ------------------------ | ---- | ----- | ---------------------------------------- |
+| `/data/type`             | +    | -     | Updating user type is allowed only if current type is `not_verified` |
+| `/data/attributes/state` | -    | +     | Used by admin to update state from `waiting_for_approval` to `rejected` or `approved` |
+
 
 
 # Two-factor authentication

@@ -137,7 +137,10 @@ func (q *UsersQ) LimitReviewRequests() UsersQI {
 
 func (q *UsersQ) Update(user *User) error {
 	stmt := updateUser(string(user.Address)).
-		Set("type", user.UserType)
+		SetMap(map[string]interface{}{
+			"type":  user.UserType,
+			"state": user.State,
+		})
 	_, err := q.parent.Exec(stmt)
 	return err
 }
