@@ -1,8 +1,8 @@
 package notificator
 
 import (
+	"bytes"
 	"fmt"
-
 	"net/url"
 
 	"github.com/pkg/errors"
@@ -50,15 +50,20 @@ func (c *Connector) SendVerificationLink(email string, payload clienturl.Payload
 	if err != nil {
 		return errors.Wrap(err, "failed to encode payload")
 	}
-	// template:
-	// c.conf.EmailConfirmation
-	subject := "Swarm Fund Email Verification"
-	text := fmt.Sprintf(`Follow this link to confirm your email: %s/%s`, c.conf.ClientRouter, encoded)
+	letter := Letter{
+		Header: "Swarm Fund Email Verification",
+		Link:   fmt.Sprintf("%s/%s", c.conf.ClientRouter, encoded),
+	}
 
+	var buff bytes.Buffer
+	err = c.conf.EmailConfirmation.Execute(&buff, letter)
+	if err != nil {
+		return errors.Wrap(err, "Error while populating template for notify approval")
+	}
 	msg := &notificator.EmailRequestPayload{
 		Destination: email,
-		Subject:     subject,
-		Message:     text,
+		Subject:     letter.Header,
+		Message:     buff.String(),
 	}
 
 	return c.send(NotificatorTypeVerificationEmail, email, msg)
