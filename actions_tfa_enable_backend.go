@@ -68,7 +68,7 @@ func (action *EnableTFABackendAction) performRequest() {
 	//switch action.Request.Type {
 	//case api.TFABackendGoogleTOTP:
 	//	key, err := totp.Generate(totp.GenerateOpts{
-	//		Issuer:      "{{ .Project }}",
+	//		Issuer:      "Swarm Fund",
 	//		AccountName: action.wallet.Username,
 	//	})
 	//	if err != nil {

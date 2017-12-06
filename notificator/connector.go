@@ -51,7 +51,7 @@ func (c *Connector) SendVerificationLink(email string, payload clienturl.Payload
 		return errors.Wrap(err, "failed to encode payload")
 	}
 
-	subject := "{{ .Project }} email verification"
+	subject := "Swarm Fund Email Verification"
 	text := fmt.Sprintf(`Follow this link to confirm your email: %s/%s`, c.conf.ClientRouter, encoded)
 
 	msg := &notificator.EmailRequestPayload{
@@ -87,15 +87,15 @@ func (c *Connector) NotifyKYCReviewPending(recipient string) error {
 }
 
 func (c *Connector) NotifyApproval(email string) error {
-	header := "{{ .Project }} account approved"
-	msg := "Your account was just approved at {{ .Project }}. "
+	header := "Swarm Fund Account Approved"
+	msg := "Your account was just approved at Swarm Fund. "
 
 	letter := Letter{Header: header, Body: msg, Link: ""}
 	return c.sendKycNotification(email, letter)
 }
 
 func (c *Connector) NotifyRejection(email string) error {
-	header := "{{ .Project }} account rejected"
+	header := "Swarm Fund Account Rejected"
 	msg := "Your request was rejected by the administrator. Log in to your account for more details."
 
 	letter := Letter{Header: header, Body: msg, Link: ""}
@@ -127,7 +127,7 @@ func (c *Connector) sendKycNotification(email string, letter Letter) error {
 
 func (c *Connector) SendRecoveryRequest(email, token, rejectReason string) (*notificator.Response, error) {
 	//letter := Letter{
-	//	Header: "{{ .Project }} wallet recovery",
+	//	Header: "Swarm Fund wallet recovery",
 	//	Link: fmt.Sprintf("%s/wallets/recovery?token=%s",
 	//		c.conf.RecoveryRequest.RedirectURL, token),
 	//}
@@ -156,7 +156,7 @@ func (c *Connector) SendRecoveryRequest(email, token, rejectReason string) (*not
 
 func (c *Connector) SendNewDeviceLogin(email string, device api.AuthorizedDevice) error {
 	//letter := LoginNoticeLetter{
-	//	Header:       "{{ .Project }}",
+	//	Header:       "Swarm Fund",
 	//	BrowserFull:  device.Details.BrowserFull,
 	//	BrowserShort: device.Details.Browser,
 	//	Date:         time.Now().Format("Mon Jan _2 15:04:05 2006"),
