@@ -53,7 +53,6 @@ deploy:dev:
   only:
     - dev
     # TODO: remove this when the dev branch is added
-    - staging
     - master
 
 deploy:staging:
