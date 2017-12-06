@@ -50,7 +50,8 @@ func (c *Connector) SendVerificationLink(email string, payload clienturl.Payload
 	if err != nil {
 		return errors.Wrap(err, "failed to encode payload")
 	}
-
+	// template:
+	// c.conf.EmailConfirmation
 	subject := "Swarm Fund Email Verification"
 	text := fmt.Sprintf(`Follow this link to confirm your email: %s/%s`, c.conf.ClientRouter, encoded)
 
