@@ -1,5 +1,13 @@
 package types
 
+import (
+	"database/sql/driver"
+	"encoding/json"
+	"fmt"
+
+	"github.com/pkg/errors"
+)
+
 type UserState int32
 
 const (
@@ -10,5 +18,50 @@ const (
 )
 
 var (
-	userStateMap = map[UserType]string{}
+	userStateMap        = map[UserState]string{}
+	userStateReverseMap = map[string]UserState{}
+	ErrUserStateInvalid = errors.New("user state invalid")
 )
+
+func (t UserState) Validate() error {
+	_, ok := userStateMap[t]
+	if !ok {
+		return ErrUserStateInvalid
+	}
+	return nil
+}
+
+func (t *UserState) UnmarshalJSON(data []byte) error {
+	var tmp interface{}
+
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return errors.Wrap(err, "failed to unmarshal")
+	}
+
+	switch v := tmp.(type) {
+	case float64:
+		*t = UserState(v)
+	case string:
+		*t = userStateReverseMap[v]
+	default:
+		return fmt.Errorf("invalid value for %T: %v", t, v)
+	}
+	return nil
+}
+
+func (t UserState) MarshalJSON() ([]byte, error) {
+	return json.Marshal(userStateMap[t])
+}
+
+func (t UserState) Value() (driver.Value, error) {
+	return int64(t), nil
+}
+
+func (t *UserState) Scan(src interface{}) error {
+	i, ok := src.(int64)
+	if !ok {
+		return fmt.Errorf("can't scan from %T", src)
+	}
+	*t = UserState(i)
+	return nil
+}

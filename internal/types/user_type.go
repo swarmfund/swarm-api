@@ -30,7 +30,8 @@ var (
 )
 
 func (t UserType) Validate() error {
-	if t < UserTypeNotVerified || t > UserTypeSyndicate {
+	_, ok := userTypeMap[t]
+	if !ok {
 		return ErrUserTypeInvalid
 	}
 	return nil
