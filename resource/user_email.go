@@ -2,27 +2,26 @@ package resource
 
 import (
 	"gitlab.com/swarmfund/api/db2/api"
+	"gitlab.com/swarmfund/api/internal/types"
 )
 
 type ShortenUserDetails struct {
-	UserType  string  `json:"user_type"`
-	UserState string  `json:"user_state"`
-	Email     string  `json:"email"`
-	FullName  *string `json:"full_name,omitempty"`
+	UserType  types.UserType  `json:"user_type"`
+	UserState types.UserState `json:"user_state"`
+	Email     string          `json:"email"`
 }
 
 type ShortenUsersDetails struct {
-	Users map[string]ShortenUserDetails `json:"users"`
+	Users map[types.Address]ShortenUserDetails `json:"users"`
 }
 
 func (d *ShortenUsersDetails) Populate(records []api.User) {
-	d.Users = map[string]ShortenUserDetails{}
+	d.Users = map[types.Address]ShortenUserDetails{}
 	for _, record := range records {
-		d.Users[string(record.Address)] = ShortenUserDetails{
-			UserType:  string(record.UserType),
-			UserState: string(record.State),
+		d.Users[record.Address] = ShortenUserDetails{
+			UserType:  record.UserType,
+			UserState: record.State,
 			Email:     record.Email,
-			FullName:  record.Details().DisplayName(),
 		}
 	}
 }
