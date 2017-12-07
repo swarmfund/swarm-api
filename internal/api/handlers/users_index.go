@@ -6,17 +6,16 @@ import (
 
 	"fmt"
 
-	"strconv"
-
 	"net/url"
 
-	"github.com/go-ozzo/ozzo-validation"
+	. "github.com/go-ozzo/ozzo-validation"
 	"github.com/pkg/errors"
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/ape/problems"
 	"gitlab.com/swarmfund/api/db2/api"
 	"gitlab.com/swarmfund/api/internal/api/movetoape"
 	"gitlab.com/swarmfund/api/internal/api/resources"
+	"gitlab.com/swarmfund/api/internal/api/urlval"
 	"gitlab.com/swarmfund/api/internal/types"
 	"gitlab.com/swarmfund/go/doorman"
 )
@@ -24,17 +23,12 @@ import (
 type (
 	UsersIndexResponse struct {
 		Data  UsersIndexResponseData `json:"data"`
-		Links Links                  `json:"links"`
+		Links urlval.FilterLinks     `json:"links"`
 	}
 	UsersIndexResponseData []resources.User
-	Links                  struct {
-		Self string `json:"self"`
-		Prev string `json:"prev,omitempty"`
-		Next string `json:"next,omitempty"`
-	}
-	UserIndexFilters struct {
-		Page  uint64
-		State *uint64
+	UserIndexFilters       struct {
+		Page  uint64  `url:"page"`
+		State *uint64 `url:"state"`
 	}
 )
 
@@ -47,38 +41,28 @@ func (f *UserIndexFilters) Query() url.Values {
 	return query
 }
 
-func UsersIndex(w http.ResponseWriter, r *http.Request) {
-	var err error
-	query := r.URL.Query()
+func NewUserFilters(r *http.Request) (UserIndexFilters, error) {
 	filters := UserIndexFilters{
 		Page: 1,
 	}
-	pageRaw := query.Get("page")
-	if pageRaw != "" {
-		filters.Page, err = strconv.ParseUint(pageRaw, 0, 64)
-		if err != nil {
-			ape.RenderErr(w, problems.BadRequest(validation.Errors{
-				"page": errors.New("positive integer expected"),
-			})...)
-			return
-		}
-		if filters.Page == 0 {
-			ape.RenderErr(w, problems.BadRequest(validation.Errors{
-				"page": errors.New("should be positive"),
-			})...)
-			return
-		}
+	if err := urlval.Decode(r.URL.Query(), &filters); err != nil {
+		return filters, errors.Wrap(err, "failed to populate")
 	}
-	stateRaw := query.Get("state")
-	if stateRaw != "" {
-		state, err := strconv.ParseUint(stateRaw, 0, 64)
-		if err != nil {
-			ape.RenderErr(w, problems.BadRequest(validation.Errors{
-				"state": errors.New("positive integer expected"),
-			})...)
-			return
-		}
-		filters.State = &state
+	return filters, filters.Validate()
+}
+
+func (r UserIndexFilters) Validate() error {
+	return ValidateStruct(&r,
+		Field(&r.Page, Min(uint64(1))),
+		Field(&r.State, Min(uint64(1))),
+	)
+}
+
+func UsersIndex(w http.ResponseWriter, r *http.Request) {
+	filters, err := NewUserFilters(r)
+	if err != nil {
+		ape.RenderErr(w, problems.BadRequest(err)...)
+		return
 	}
 
 	// TODO unhardcode
@@ -108,28 +92,7 @@ func UsersIndex(w http.ResponseWriter, r *http.Request) {
 		response.Data = append(response.Data, resources.NewUser(&record))
 	}
 
-	query = filters.Query()
-	response.Links.Self = fmt.Sprintf("%s?%s", r.URL.Path, query.Encode())
-
-	filters.Page += 1
-	query = filters.Query()
-	response.Links.Next = fmt.Sprintf("%s?%s", r.URL.Path, query.Encode())
-
-	if filters.Page > 2 {
-		filters.Page -= 2
-		query = filters.Query()
-		response.Links.Prev = fmt.Sprintf("%s?%s", r.URL.Path, query.Encode())
-	}
+	response.Links = urlval.Encode(r, filters)
 
 	json.NewEncoder(w).Encode(&response)
-}
-
-type FilterLinks struct {
-	Self string `json:"self"`
-	Next string `json:"next"`
-	Prev string `json:"prev,omitempty"`
-}
-
-func NewFilterLinks(r *http.Request, filter interface{}) {
-
 }

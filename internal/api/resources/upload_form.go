@@ -15,18 +15,18 @@ type UploadFormAttributes struct {
 	Key            string `json:"key"`
 	Policy         string `json:"policy"`
 	URL            string `json:"url"`
-	XAMZAlgorithm  string `json:"x-amz-algorithm"`
-	XAMZCredential string `json:"x-amz-credential"`
-	XAMZDate       string `json:"x-amz-date"`
-	XAMZSignature  string `json:"x-amz-signature"`
+	XAMZAlgorithm  string `json:"x-amz-algorithm" mapstructure:"x-amz-algorithm"`
+	XAMZCredential string `json:"x-amz-credential" mapstructure:"x-amz-credential"`
+	XAMZDate       string `json:"x-amz-date" mapstructure:"x-amz-date"`
+	XAMZSignature  string `json:"x-amz-signature" mapstructure:"x-amz-signature"`
 }
 
-func NewUploadForm(form map[string]string) *UploadForm {
+func NewUploadForm(form map[string]string) UploadForm {
 	r := UploadForm{
 		Type: "upload_policy",
 	}
-	if err := mapstructure.Decode(&r.Attributes, form); err != nil {
+	if err := mapstructure.Decode(&form, &r.Attributes); err != nil {
 		panic(errors.Wrap(err, "failed to decode upload policy"))
 	}
-	return &r
+	return r
 }

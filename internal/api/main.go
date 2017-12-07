@@ -93,7 +93,7 @@ func Router(
 		r.Patch("/{address}", handlers.PatchUser)
 
 		// documents
-		r.Route("/documents", func(r chi.Router) {
+		r.Route("/{address}/documents", func(r chi.Router) {
 			r.Post("/", handlers.PutDocument)
 		})
 	})
