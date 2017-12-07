@@ -123,3 +123,13 @@ func UsersIndex(w http.ResponseWriter, r *http.Request) {
 
 	json.NewEncoder(w).Encode(&response)
 }
+
+type FilterLinks struct {
+	Self string `json:"self"`
+	Next string `json:"next"`
+	Prev string `json:"prev,omitempty"`
+}
+
+func NewFilterLinks(r *http.Request, filter interface{}) {
+
+}

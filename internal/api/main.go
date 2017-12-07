@@ -15,6 +15,7 @@ import (
 	"gitlab.com/swarmfund/api/internal/data"
 	"gitlab.com/swarmfund/api/internal/secondfactor"
 	"gitlab.com/swarmfund/api/log"
+	"gitlab.com/swarmfund/api/storage"
 	"gitlab.com/swarmfund/go/doorman"
 	"gitlab.com/swarmfund/go/keypair"
 	"gitlab.com/swarmfund/horizon-connector"
@@ -23,7 +24,7 @@ import (
 func Router(
 	entry *log.Entry, walletQ api.WalletQI, tokensQ data.EmailTokensQ,
 	usersQ api.UsersQI, doorman doorman.Doorman, horizon *horizon.Connector,
-	accountManager keypair.KP, tfaQ api.TFAQI,
+	accountManager keypair.KP, tfaQ api.TFAQI, storage *storage.Connector,
 ) chi.Router {
 	r := chi.NewRouter()
 
@@ -47,6 +48,7 @@ func Router(
 			handlers.CtxAccountManagerKP(accountManager),
 			handlers.CtxTFAQ(tfaQ),
 			handlers.CtxDoorman(doorman),
+			handlers.CtxStorage(storage),
 		),
 	)
 	r.NotFound(func(w http.ResponseWriter, r *http.Request) {
@@ -92,7 +94,7 @@ func Router(
 
 		// documents
 		r.Route("/documents", func(r chi.Router) {
-
+			r.Post("/", handlers.PutDocument)
 		})
 	})
 

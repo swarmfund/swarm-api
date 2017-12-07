@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"gitlab.com/swarmfund/api/db2/api"
+	"gitlab.com/swarmfund/api/internal/types"
 	"gitlab.com/swarmfund/api/render/hal"
 	"gitlab.com/swarmfund/api/render/problem"
 	"gitlab.com/swarmfund/api/storage"
@@ -47,7 +48,7 @@ func (action *PutDocumentAction) JSON() {
 }
 
 func (action *PutDocumentAction) checkAvailable() {
-	if action.App.Config().Storage().DisableStorage {
+	if action.App.Config().Storage().Disabled {
 		action.Log.Warn("storage service disabled")
 		action.Err = &problem.P{
 			Status: http.StatusServiceUnavailable,
@@ -114,7 +115,7 @@ func (action *PutDocumentAction) checkContentType() {
 
 func (action *PutDocumentAction) performRequest() {
 	action.Document = storage.Document{
-		AccountID: action.AccountID,
+		AccountID: types.Address(action.AccountID),
 		Type:      action.Request.DocumentType,
 		EntityID:  action.Request.EntityID,
 		Version:   utils.GenerateToken(),
@@ -156,7 +157,7 @@ func (action *PutDocumentAction) performRequest() {
 
 func (action *PutDocumentAction) signForm() {
 	form, err := action.App.Storage().UploadFormData(
-		action.Document.AccountID, action.Document.Key(),
+		string(action.Document.AccountID), action.Document.Key(),
 	)
 	if err != nil {
 		action.Log.WithError(err).Error("failed to build form data")
