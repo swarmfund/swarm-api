@@ -653,3 +653,25 @@ HTTP/1.1 204
 ```
 `DELETE /wallets/{wallet-id}/factors/{factor}`
 
+# Documents
+
+## Upload 🔒
+
+```http
+POST /users/GBT3XFWQUHUTKZMI22TVTWRA7UHV2LIO2BIFNRCH3CXWPYVYPTMXMDGC/documents
+Content-Type: application/vnd.api+json
+Accept: application/vnd.api+json
+
+{
+	"data": {
+     	"type": "asset_logo",
+     	"attributes": {
+        	"content_type": "image/png"
+     	}
+	}
+}
+
+HTTP/1.1 200
+Conten
+```
+
