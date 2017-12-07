@@ -20,8 +20,8 @@ import (
 
 type (
 	ChangeWalletIDRequest struct {
-		CurrentWalletID string                    `json:"-"`
 		WalletID        string                    `json:"wallet_id" jsonapi:"primary,wallet"`
+		CurrentWalletID string                    `json:"-"`
 		AccountID       string                    `json:"account_id" jsonapi:"attr,account_id"`
 		Salt            string                    `json:"salt" jsonapi:"attr,salt"`
 		KeychainData    string                    `json:"keychain_data" jsonapi:"attr,keychain_data"`

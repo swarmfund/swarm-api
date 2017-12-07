@@ -80,54 +80,54 @@ func (action *PatchUserAction) patchDetails() {
 
 	// TODO begin tx
 
-	details := action.Request.Details
+	//details := action.Request.Details
 	update := map[api.KYCEntityType]interface{}{}
 
-	switch action.User.UserType {
-	case api.UserTypeIndividual:
-		rejectReasons := api.IndividualRejectReasons{}
-		entity := action.User.KYCEntities.GetSingle(api.KYCEntityTypeIndividualRejectReasons)
-		rejectReasons.Populate(entity)
-		if details.BankDetails != nil {
-			update[api.KYCEntityTypeBankDetails] = details.BankDetails
-			rejectReasons.BankDetails = api.BankDetails{}
-		}
-		if details.EmploymentDetails != nil {
-			update[api.KYCEntityTypeEmploymentDetails] = details.EmploymentDetails
-			rejectReasons.EmploymentDetails = api.EmploymentDetails{}
-		}
-		if details.PersonalDetails != nil {
-			update[api.KYCEntityTypePersonalDetails] = details.PersonalDetails
-			rejectReasons.PersonalDetails = api.PersonDetails{}
-		}
-		if details.Address != nil {
-			update[api.KYCEntityTypeAddress] = details.Address
-			rejectReasons.Address = api.Address{}
-		}
-		update[api.KYCEntityTypeIndividualRejectReasons] = rejectReasons
-	case api.UserTypeJoint:
-	case api.UserTypeBusiness:
-		rejectReasons := api.BusinessRejectReasons{}
-		entity := action.User.KYCEntities.GetSingle(api.KYCEntityTypeBusinessRejectReasons)
-		rejectReasons.Populate(entity)
-		if details.FinancialDetails != nil {
-			update[api.KYCEntityTypeFinancialDetails] = details.FinancialDetails
-			rejectReasons.FinancialDetails = api.FinancialDetails{}
-		}
-		if details.RegisteredAddress != nil {
-			update[api.KYCEntityTypeRegisteredAddress] = details.RegisteredAddress
-			rejectReasons.RegisteredAddress = api.Address{}
-		}
-		if details.CorrespondenceAddress != nil {
-			update[api.KYCEntityTypeCorrespondenceAddress] = details.CorrespondenceAddress
-			rejectReasons.CorrespondenceAddress = api.Address{}
-		}
-		if details.CorporationDetails != nil {
-			update[api.KYCEntityTypeCorporationDetails] = details.CorporationDetails
-			rejectReasons.CorporationDetails = api.CorporationDetails{}
-		}
-		update[api.KYCEntityTypeBusinessRejectReasons] = rejectReasons
-	}
+	//switch action.User.UserType {
+	//case api.UserTypeIndividual:
+	//	rejectReasons := api.IndividualRejectReasons{}
+	//	entity := action.User.KYCEntities.GetSingle(api.KYCEntityTypeIndividualRejectReasons)
+	//	rejectReasons.Populate(entity)
+	//	if details.BankDetails != nil {
+	//		update[api.KYCEntityTypeBankDetails] = details.BankDetails
+	//		rejectReasons.BankDetails = api.BankDetails{}
+	//	}
+	//	if details.EmploymentDetails != nil {
+	//		update[api.KYCEntityTypeEmploymentDetails] = details.EmploymentDetails
+	//		rejectReasons.EmploymentDetails = api.EmploymentDetails{}
+	//	}
+	//	if details.PersonalDetails != nil {
+	//		update[api.KYCEntityTypePersonalDetails] = details.PersonalDetails
+	//		rejectReasons.PersonalDetails = api.PersonDetails{}
+	//	}
+	//	if details.Address != nil {
+	//		update[api.KYCEntityTypeAddress] = details.Address
+	//		rejectReasons.Address = api.Address{}
+	//	}
+	//	update[api.KYCEntityTypeIndividualRejectReasons] = rejectReasons
+	//case api.UserTypeJoint:
+	//case api.UserTypeBusiness:
+	//	rejectReasons := api.BusinessRejectReasons{}
+	//	entity := action.User.KYCEntities.GetSingle(api.KYCEntityTypeBusinessRejectReasons)
+	//	rejectReasons.Populate(entity)
+	//	if details.FinancialDetails != nil {
+	//		update[api.KYCEntityTypeFinancialDetails] = details.FinancialDetails
+	//		rejectReasons.FinancialDetails = api.FinancialDetails{}
+	//	}
+	//	if details.RegisteredAddress != nil {
+	//		update[api.KYCEntityTypeRegisteredAddress] = details.RegisteredAddress
+	//		rejectReasons.RegisteredAddress = api.Address{}
+	//	}
+	//	if details.CorrespondenceAddress != nil {
+	//		update[api.KYCEntityTypeCorrespondenceAddress] = details.CorrespondenceAddress
+	//		rejectReasons.CorrespondenceAddress = api.Address{}
+	//	}
+	//	if details.CorporationDetails != nil {
+	//		update[api.KYCEntityTypeCorporationDetails] = details.CorporationDetails
+	//		rejectReasons.CorporationDetails = api.CorporationDetails{}
+	//	}
+	//	update[api.KYCEntityTypeBusinessRejectReasons] = rejectReasons
+	//}
 
 	if len(update) == 0 {
 		return
@@ -194,12 +194,12 @@ func (action *PatchUserAction) blockAccount() {
 func (action *PatchUserAction) updateState() {
 	state := action.User.CheckState()
 	if state != action.User.State {
-		err := action.APIQ().Users().ChangeState(string(action.User.Address), state)
-		if err != nil {
-			action.Log.WithError(err).Error("failed to update user state")
-			action.Err = &problem.ServerError
-			return
-		}
+		//err := action.APIQ().Users().ChangeState(string(action.User.Address), state)
+		//if err != nil {
+		//	action.Log.WithError(err).Error("failed to update user state")
+		//	action.Err = &problem.ServerError
+		//	return
+		//}
 	}
 
 	// TODO commit tx

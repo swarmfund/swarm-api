@@ -2,9 +2,7 @@ package api
 
 import (
 	"gitlab.com/swarmfund/api/db2/api"
-	"gitlab.com/swarmfund/api/render/hal"
 	"gitlab.com/swarmfund/api/render/problem"
-	"gitlab.com/swarmfund/api/resource"
 )
 
 type GetWalletOrganizationAction struct {
@@ -15,7 +13,7 @@ type GetWalletOrganizationAction struct {
 	Wallet *api.Wallet
 	User   *api.User
 
-	Resource resource.User
+	//Resource resource.User
 }
 
 func (action *GetWalletOrganizationAction) JSON() {
@@ -26,7 +24,7 @@ func (action *GetWalletOrganizationAction) JSON() {
 		action.loadRecord,
 		action.loadResource,
 		func() {
-			hal.Render(action.W, action.Resource)
+			//hal.Render(action.W, action.Resource)
 		},
 	)
 }
@@ -81,5 +79,5 @@ func (action *GetWalletOrganizationAction) loadRecord() {
 }
 
 func (action *GetWalletOrganizationAction) loadResource() {
-	action.Resource.Populate(action.User)
+	//action.Resource.Populate(action.User)
 }

@@ -86,10 +86,11 @@ func Router(
 		})
 	})
 
-	r.Route("/users/{address}", func(r chi.Router) {
-		// TODO storage available middleware
-		//r.Use(middlewares.CheckAllowed("address", doorman.SignerOf))
-		r.Put("/", handlers.CreateUser)
+	r.Route("/users", func(r chi.Router) {
+		r.Get("/", handlers.UsersIndex)
+		r.Get("/{address}", handlers.GetUser)
+		r.Put("/{address}", handlers.CreateUser)
+		r.Patch("/{address}", handlers.PatchUser)
 
 		// documents
 		r.Route("/documents", func(r chi.Router) {

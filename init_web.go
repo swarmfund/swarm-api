@@ -60,20 +60,12 @@ func initWebActions(app *App) {
 	r.Post("/details", &DetailsAction{})
 	r.Post("/participants", &ParticipantsAction{})
 
-	// user actions
-	//r.Post("/users", &CreateUserAction{})
-	r.Get("/users", &UserIndexAction{})
-	r.Get("/users/:id", &UserShowAction{})
-
 	// kyc
 	r.Patch("/users/:id", &PatchUserAction{})
 	r.Post("/users/:user/entities", &CreateKYCEntityAction{})
 	r.Patch("/users/:user/entities/:entity", &PatchKYCEntityAction{})
 	r.Delete("/users/:user/entities/:entity", &DeleteKYCEntityAction{})
 	r.Post("/users/:user/approve", &UserApproveAction{})
-
-	//r.Post("/users/unverified/delete", &DeleteWalletAction{})
-	//r.Post("/users/unverified/resend_token", &ResendTokenAction{})
 
 	// documents
 	r.Get("/users/:id/documents", &GetUserDocsAction{})
@@ -83,14 +75,7 @@ func initWebActions(app *App) {
 
 	// wallet
 	r.Get("/wallets/unverified", &GetUnverifiedWalletsAction{})
-	//r.Get("/wallets/verify", &VerifyWalletAction{})
 
-	//r.Post("/wallets/create", &CreateWalletAction{})
-	//r.Post("/wallets/update", &UpdateWalletAction{})
-	//r.Post("/wallets/get_tfa_secret", &GetTfaKeychainAction{})
-
-	//r.Post("/wallets/show", &ShowWalletAction{})
-	//r.Post("/wallets/show_login_params", &ShowLoginParamsAction{})
 	r.Patch("/wallets/:id", &PatchWalletAction{})
 	r.Get("/wallets/:id/organization", &GetWalletOrganizationAction{})
 
@@ -102,15 +87,6 @@ func initWebActions(app *App) {
 	r.Get("/recoveries", &GetRecoveryRequestsAction{})
 	r.Get("/recoveries/:id", &GetRecoveryRequestAction{})
 	r.Post("/users/:id/recovery", &ResolveUserRecoveryRequestAction{})
-
-	// 2fa
-	//r.Get("/tfa", &GetTFAAction{})
-	//r.Post("/tfa", &EnableTFABackendAction{})
-	//r.Patch("/tfa/:tfa", &UpdateTFABackendAction{})
-	//r.Get("/tfa/verify", &VerifyTFAAction{})
-
-	//   admin endpoint
-	//r.Post("/tfa/delete", &DeleteTFABackendsAction{})
 
 	// limit review
 	r.Get("/users/:id/poi", &UserProofOfIncomeIndexAction{})
@@ -132,8 +108,6 @@ func initWebActions(app *App) {
 
 	r.Get("/notifications/:id", &GetNotificationsAction{})
 	r.Patch("/notifications/:id", &PatchNotificationsAction{})
-
-	//r.Get("/kdf_params", &KdfParamsAction{})
 
 	r.NotFound(&NotFoundAction{})
 }
