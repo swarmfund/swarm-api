@@ -15,9 +15,9 @@ import (
 	"gitlab.com/swarmfund/api/log"
 	"gitlab.com/swarmfund/api/render/problem"
 	"gitlab.com/swarmfund/api/tfa"
-	"gitlab.com/swarmfund/api/toid"
 	"gitlab.com/swarmfund/go/xdr"
 	horizon "gitlab.com/swarmfund/horizon-connector"
+	"gitlab.com/tokend/api/toid"
 )
 
 // Action is the "base type" for all actions in horizon.  It provides
@@ -51,15 +51,6 @@ func (action *Action) GetPagingParams() (cursor string, order string, limit uint
 	}
 
 	cursor, order, limit = action.Base.GetPagingParams()
-
-	if cursor == "now" {
-		tid := toid.ID{
-			LedgerSequence:   ledger.CurrentState().HistoryLatest,
-			TransactionOrder: toid.TransactionMask,
-			OperationOrder:   toid.OperationMask,
-		}
-		cursor = tid.String()
-	}
 
 	return
 }

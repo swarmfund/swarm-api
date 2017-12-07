@@ -7,11 +7,10 @@ import (
 	"time"
 
 	"github.com/minio/minio-go"
-	"github.com/pkg/errors"
 	"github.com/streadway/amqp"
+	"gitlab.com/distributed_lab/logan/v3/errors"
 	"gitlab.com/swarmfund/api/config"
 	"gitlab.com/swarmfund/api/db2/api"
-	errors2 "gitlab.com/swarmfund/api/errors"
 	"gitlab.com/swarmfund/api/log"
 )
 
@@ -123,7 +122,7 @@ func (c *Consumer) Consume() {
 func (c *Consumer) processMessage(msg amqp.Delivery) (err error) {
 	defer func() {
 		if r := recover(); r != nil {
-			err = errors2.FromPanic(r)
+			err = errors.FromPanic(r)
 		}
 	}()
 	var message Message

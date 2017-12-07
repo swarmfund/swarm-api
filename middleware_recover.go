@@ -3,10 +3,10 @@ package api
 import (
 	"net/http"
 
-	"gitlab.com/swarmfund/api/errors"
-	"gitlab.com/swarmfund/api/render/problem"
 	gctx "github.com/goji/context"
 	"github.com/zenazn/goji/web"
+	"gitlab.com/distributed_lab/logan/v3/errors"
+	"gitlab.com/swarmfund/api/render/problem"
 )
 
 // RecoverMiddleware helps the server recover from panics.  It ensures that

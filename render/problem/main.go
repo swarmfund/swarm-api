@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/go-errors/errors"
 	"gitlab.com/swarmfund/api/context/requestid"
 	"gitlab.com/swarmfund/api/log"
-	"github.com/go-errors/errors"
 	"golang.org/x/net/context"
 )
 
@@ -86,7 +86,7 @@ func render(ctx context.Context, w http.ResponseWriter, p P) {
 
 	if err != nil {
 		err := errors.Wrap(err, 1)
-		log.Ctx(ctx).WithStack(err).Error(err)
+		log.Ctx(ctx).Error(err)
 		http.Error(w, "error rendering problem", http.StatusInternalServerError)
 		return
 	}
@@ -107,7 +107,7 @@ func renderErr(ctx context.Context, w http.ResponseWriter, err error) {
 	// If this error is not a registered error
 	// log it and replace it with a 500 error
 	if !ok {
-		log.Ctx(ctx).WithStack(err).Error(err)
+		log.Ctx(ctx).Error(err)
 		p = ServerError
 	}
 

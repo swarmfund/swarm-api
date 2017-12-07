@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"gitlab.com/swarmfund/api/db2/api"
+	"gitlab.com/swarmfund/api/internal/lorem"
 	"gitlab.com/swarmfund/api/internal/types"
 	"gitlab.com/swarmfund/api/render/hal"
 	"gitlab.com/swarmfund/api/render/problem"
@@ -118,7 +119,7 @@ func (action *PutDocumentAction) performRequest() {
 		AccountID: types.Address(action.AccountID),
 		Type:      action.Request.DocumentType,
 		EntityID:  action.Request.EntityID,
-		Version:   utils.GenerateToken(),
+		Version:   lorem.Token(),
 		Extension: storage.ContentTypeExtension(action.Request.ContentType),
 	}
 
