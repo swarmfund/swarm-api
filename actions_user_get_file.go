@@ -32,7 +32,7 @@ func (action *GetUserFileAction) JSON() {
 }
 
 func (action *GetUserFileAction) checkAvailable() {
-	if action.App.Config().Storage().DisableStorage {
+	if action.App.Config().Storage().Disabled {
 		action.Log.Warn("storage service disabled")
 		action.Err = &problem.P{
 			Status: http.StatusServiceUnavailable,

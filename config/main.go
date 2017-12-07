@@ -47,7 +47,3 @@ func (c *ViperConfig) Init() error {
 	}
 	return nil
 }
-
-func (c *ViperConfig) Storage() Storage {
-	return Storage{}
-}

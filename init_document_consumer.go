@@ -5,7 +5,7 @@ const (
 )
 
 func initConsumer(app *App) {
-	//if app.config.Storage.DisableStorage {
+	//if app.config.Storage.Disabled {
 	//	return
 	//}
 	//entry := log.WithField("service", ServiceDocumentConsumer)

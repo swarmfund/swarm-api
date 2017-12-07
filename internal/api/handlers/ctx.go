@@ -7,6 +7,7 @@ import (
 	"gitlab.com/swarmfund/api/db2/api"
 	"gitlab.com/swarmfund/api/internal/data"
 	"gitlab.com/swarmfund/api/log"
+	"gitlab.com/swarmfund/api/storage"
 	"gitlab.com/swarmfund/go/doorman"
 	"gitlab.com/swarmfund/go/keypair"
 	"gitlab.com/swarmfund/horizon-connector"
@@ -23,6 +24,7 @@ const (
 	accountManagerKPCtxKey
 	tfaQCtxKey
 	doormanCtxKey
+	storageCtxKey
 )
 
 func CtxWalletQ(q api.WalletQI) func(context.Context) context.Context {
@@ -104,4 +106,14 @@ func CtxDoorman(d doorman.Doorman) func(context.Context) context.Context {
 func Doorman(r *http.Request, constraints ...doorman.SignerConstraint) error {
 	d := r.Context().Value(doormanCtxKey).(doorman.Doorman)
 	return d.Check(r, constraints...)
+}
+
+func CtxStorage(s *storage.Connector) func(context.Context) context.Context {
+	return func(ctx context.Context) context.Context {
+		return context.WithValue(ctx, storageCtxKey, s)
+	}
+}
+
+func Storage(r *http.Request) *storage.Connector {
+	return r.Context().Value(storageCtxKey).(*storage.Connector)
 }
