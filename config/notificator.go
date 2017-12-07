@@ -1,8 +1,11 @@
 package config
 
 import (
+	"html/template"
+
 	"github.com/pkg/errors"
 	"gitlab.com/distributed_lab/figure"
+	"gitlab.com/swarmfund/api/assets"
 )
 
 const (
@@ -19,7 +22,7 @@ type Notificator struct {
 	Public       string
 	ClientRouter string
 
-	//EmailConfirmation      EmailConfirmation
+	EmailConfirmation *template.Template
 	//KYCApproval            KYCApproval
 	//RecoveryRequest        RecoveryRequest
 	//LoginNotification      LoginNotification
@@ -34,6 +37,7 @@ func (c *ViperConfig) Notificator() Notificator {
 		if err := figure.Out(notificatorConfig).From(config).Please(); err != nil {
 			panic(errors.Wrap(err, "failed to figure out notificator"))
 		}
+		notificatorConfig.EmailConfirmation = assets.Templates.Lookup("email_confirm")
 	}
 	return *notificatorConfig
 }

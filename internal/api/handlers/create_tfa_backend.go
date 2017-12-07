@@ -92,7 +92,7 @@ func CreateTFABackend(w http.ResponseWriter, r *http.Request) {
 
 	switch request.Data.Type {
 	case types.WalletFactorTOTP:
-		backend, err = tfa.NewTOTPBackend("{{ .Project }}", wallet.Username)
+		backend, err = tfa.NewTOTPBackend("Swarm Fund", wallet.Username)
 		if err != nil {
 			Log(r).WithError(err).Error("failed to generate backend")
 			ape.RenderErr(w, problems.InternalError())
