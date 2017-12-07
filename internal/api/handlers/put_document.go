@@ -29,6 +29,9 @@ type (
 	PutDocumentRequestAttributes struct {
 		ContentType string `json:"content_type"`
 	}
+	PutDocumentResponse struct {
+		Data resources.UploadForm `json:"data"`
+	}
 )
 
 func NewPutDocumentRequest(r *http.Request) (PutDocumentRequest, error) {
@@ -93,5 +96,8 @@ func PutDocument(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	json.NewEncoder(w).Encode(resources.NewUploadForm(form))
+	response := PutDocumentResponse{
+		Data: resources.NewUploadForm(form),
+	}
+	json.NewEncoder(w).Encode(response)
 }

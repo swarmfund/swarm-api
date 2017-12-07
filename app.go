@@ -95,8 +95,7 @@ func (a *App) Serve() {
 		a.horizon,
 		a.AccountManagerKP(),
 		a.APIQ().TFA(),
-		nil,
-		//a.Storage(),
+		a.Storage(),
 	)
 	r.Mount("/", a.web.router)
 	http.Handle("/", r)
