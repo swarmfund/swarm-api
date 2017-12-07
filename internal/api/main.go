@@ -87,8 +87,8 @@ func Router(
 	r.Route("/users", func(r chi.Router) {
 		r.Get("/", handlers.UsersIndex)
 		r.Get("/{address}", handlers.GetUser)
-
 		r.Put("/{address}", handlers.CreateUser)
+		r.Patch("/{address}", handlers.PatchUser)
 
 		// documents
 		r.Route("/documents", func(r chi.Router) {

@@ -9,7 +9,11 @@ search: true
 The TokenD API tries its best to follow [JSONAPI](http://jsonapi.org/format/1.0/).
 Most important parts of protocol will be included here, but to get better feel of what's going on it's advised to get yourself familiar with JSONAPI before continuing.
 
-🔒 means request requires signature.
+| Legend | Description                |
+| ------ | -------------------------- |
+| 🔒     | Request requires signature |
+
+
 
 ## Making requests
 
@@ -35,9 +39,10 @@ If not stated otherwise client should expect one of the following status codes:
 
 ## Application-specific error codes
 
-| Error code     | Description                              |
-| -------------- | ---------------------------------------- |
-| `tfa_required` | See [docs section](#two-factor-authentication) for details |
+| Error code              | Description                              |
+| ----------------------- | ---------------------------------------- |
+| `tfa_required`          | See [docs section](#two-factor-authentication) for details |
+| `verification_required` | Wallet with verified email is required before proceeding |
 
 # Wallets
 
@@ -323,22 +328,135 @@ http://client.com/r/eyAic3RhdHVzIjoyMDAsImF...G4zbmZqbWZ4OXA1OGdlbzVzdHQ5In19
 
 # Users
 
-## User types
+#### Types
 
-| Value | Description     |
-| ----- | --------------- |
-| 1     | Individual user |
+| Value          | Filter |
+| -------------- | ------ |
+| `not_verified` | 1      |
+| `syndicate`    | 2      |
 
-## Create user
+#### States
 
-```ruby
+| Value                  | Filter | Description                      |
+| ---------------------- | ------ | -------------------------------- |
+| `nil`                  | 1      | Initial user state               |
+| `waiting_for_approval` | 2      | User is waiting for KYC approval |
+| `approved`             | 4      | User has approved KYC            |
+| `rejected`             | 8      | User has rejected KYC            |
+
+
+
+## Create 🔒
+
+```http
 PUT /users/GBT3XFWQUHUTKZMI22TVTWRA7UHV2LIO2BIFNRCH3CXWPYVYPTMXMDGC HTTP/1.1
 Content-Type: application/vnd.api+json
 
 {
 	"data": {
+		"attributes": {}
+	}
+}
+
+HTTP/1.1 204
+```
+
+## Get 🔒
+
+```http
+GET /users/GBT3XFWQUHUTKZMI22TVTWRA7UHV2LIO2BIFNRCH3CXWPYVYPTMXMDGC HTTP/1.1
+Content-Type: application/vnd.api+json
+
+
+HTTP/1.1 200
+Content-Type: application/vnd.api+json
+
+{
+    "data": {
+        "type": "syndicate",
+        "id": "GCCJPB7QQLNEMCJ72CQJ4ODAZFFGXHET5UPOGSDWT222GXQPMTO6ZQW3",
+        "attributes": {
+            "email": "test@test.com",
+            "state": "nil"
+        }
+    }
+}
+```
+
+
+
+## Index 🔒 
+
+```http
+GET /users HTTP/1.1
+Content-Type: application/vnd.api+json
+
+HTTP/1.1 200
+Content-Type: application/vnd.api+json
+
+{
+    "data": [
+        {
+            "type": "syndicate",
+            "id": "GCCJPB7QQLNEMCJ72CQJ4ODAZFFGXHET5UPOGSDWT222GXQPMTO6ZQW3",
+            "attributes": {
+                "email": "yr0a3ke29d78skm2030kep14i@test.com",
+                "state": "waiting_for_approval"
+            }
+        }
+    ],
+    "links": {
+        "self": "/users?page=1",
+        "next": "/users?page=2"
+    }
+}
+```
+
+
+
+| Parameter | Description                       |
+| --------- | --------------------------------- |
+| `page`    | Pagination cursor                 |
+| `state`   | Bit mask to filter users by state |
+
+
+
+## Update 🔒
+
+> set user type
+
+```http
+PATCH /users/GBT3XFWQUHUTKZMI22TVTWRA7UHV2LIO2BIFNRCH3CXWPYVYPTMXMDGC HTTP/1.1
+Content-Type: application/vnd.api+json
+
+{
+    "data": {
+        "type": "syndicate"
+    }
+}
+
+HTTP/1.1 204
+```
+
+> approve user
+
+```http
+PATCH /users/ HTTP/1.1
+Content-Type: application/vnd.api+json
+
+{
+	"data": {
 		"attributes": {
-			"type": 1
+			"state": "approved"
+		},
+		"relationships": {
+			"transaction": {
+				"data": {
+					"attributes": {
+						"envelope": "AAA...AAA"
+					}
+				}
+			}	
 		}
 	}
 }
@@ -346,7 +464,14 @@ Content-Type: application/vnd.api+json
 HTTP/1.1 204
 ```
 
-Request should be signed.
+
+
+| Field                    | User | Admin | Description                              |
+| ------------------------ | ---- | ----- | ---------------------------------------- |
+| `/data/type`             | +    | -     | Updating user type is allowed only if current type is `not_verified` |
+| `/data/attributes/state` | -    | +     | Used by admin to update state from `waiting_for_approval` to `rejected` or `approved` |
+
+
 
 # Two-factor authentication
 

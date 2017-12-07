@@ -47,7 +47,7 @@ type UsersQI interface {
 	Participants(participants map[int64][]Participant) error
 
 	// Select methods
-	ByState(state UserState) UsersQI
+	ByState(state types.UserState) UsersQI
 	RecoveryPending() UsersQI
 	LimitReviewRequests() UsersQI
 
@@ -59,12 +59,13 @@ type UsersQI interface {
 
 	// Create expected to set inserted record ID on u
 	Create(u *User) error
+	Update(u *User) error
 	Delete(accountID string) error
 
 	// Change state methods
 	Approve(user *User) error
 	Reject(user *User) error
-	ChangeState(address string, state UserState) error
+	ChangeState(address types.Address, state types.UserState) error
 	LimitReviewState(address string, state UserLimitReviewState) error
 
 	// Update methods
@@ -116,8 +117,8 @@ func (q *UsersQ) WithAddress(addresses ...string) UsersQI {
 	return q
 }
 
-func (q *UsersQ) ByState(state UserState) UsersQI {
-	q.sql = q.sql.Where("state = ?", state)
+func (q *UsersQ) ByState(state types.UserState) UsersQI {
+	q.sql = q.sql.Where("state & ? != 0", state)
 	return q
 }
 
@@ -132,6 +133,16 @@ func (q *UsersQ) LimitReviewRequests() UsersQI {
 	}
 	q.sql = q.sql.Where("limit_review_state = ?", UserLimitReviewPending)
 	return q
+}
+
+func (q *UsersQ) Update(user *User) error {
+	stmt := updateUser(string(user.Address)).
+		SetMap(map[string]interface{}{
+			"type":  user.UserType,
+			"state": user.State,
+		})
+	_, err := q.parent.Exec(stmt)
+	return err
 }
 
 func (q *UsersQ) SetRecoveryState(address string, state UserRecoveryState) error {
@@ -153,7 +164,7 @@ func (q *UsersQ) Approve(user *User) error {
 	sql := updateUser(string(user.Address)).
 		Where("documents_version = ?", user.DocumentsVersion).
 		Set("documents_version", user.DocumentsVersion+1).
-		Set("state", UserApproved).
+		Set("state", types.UserStateApproved).
 		Set("documents", user.Documents)
 	result, err := q.parent.Exec(sql)
 	if err != nil {
@@ -169,8 +180,8 @@ func (q *UsersQ) Approve(user *User) error {
 	return err
 }
 
-func (q *UsersQ) ChangeState(address string, state UserState) error {
-	sql := updateUser(address).
+func (q *UsersQ) ChangeState(address types.Address, state types.UserState) error {
+	sql := updateUser(string(address)).
 		Set("state", state)
 
 	_, err := q.parent.Exec(sql)
@@ -224,10 +235,10 @@ func (q *UsersQ) ByID(uid int64) (*User, error) {
 
 func (q *UsersQ) Create(u *User) error {
 	sql := insertUser.SetMap(map[string]interface{}{
-		"address":   u.Address,
-		"email":     u.Email,
-		"user_type": u.UserType,
-		"state":     u.State,
+		"address": u.Address,
+		"email":   u.Email,
+		"type":    u.UserType,
+		"state":   u.State,
 	}).Suffix("returning id")
 
 	err := q.parent.Get(&(u.ID), sql)
@@ -252,7 +263,7 @@ func (q *UsersQ) Reject(user *User) error {
 		where address = $4
 		  and documents_version = $5`, tableUser)
 
-	result, err := q.parent.DB.Exec(sql, user.Documents, user.DocumentsVersion+1, UserRejected, user.Address, user.DocumentsVersion)
+	result, err := q.parent.DB.Exec(sql, user.Documents, user.DocumentsVersion+1, types.UserStateRejected, user.Address, user.DocumentsVersion)
 	if err != nil {
 		return err
 	}

@@ -228,12 +228,12 @@ func (action *CreateWalletAction) updateSigner() {
 		return
 	}
 
-	err = action.APIQ().Users().ChangeState(action.Wallet.AccountID, api.UserRejected)
-	if err != nil {
-		action.Log.WithError(err).Error("failed to update user state")
-		action.Err = &problem.ServerError
-		return
-	}
+	//err = action.APIQ().Users().ChangeState(action.Wallet.AccountID, api.UserRejected)
+	//if err != nil {
+	//	action.Log.WithError(err).Error("failed to update user state")
+	//	action.Err = &problem.ServerError
+	//	return
+	//}
 }
 
 func (action *CreateWalletAction) updateUser() {

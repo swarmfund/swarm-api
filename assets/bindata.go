@@ -18,6 +18,7 @@
 // migrations/007_cascade_wallet_id_update.sql
 // migrations/008_password_constraint.sql
 // migrations/009_drop_tfa_keychain.sql
+// migrations/010_users_refactoring.sql
 // templates/admin_notification.html
 // templates/base.html
 // templates/email_confirm.html
@@ -767,6 +768,7 @@ var _bindata = map[string]func() (*asset, error){
 	"migrations/007_cascade_wallet_id_update.sql":                   migrations007_cascade_wallet_id_updateSql,
 	"migrations/008_password_constraint.sql":                        migrations008_password_constraintSql,
 	"migrations/009_drop_tfa_keychain.sql":                          migrations009_drop_tfa_keychainSql,
+	"migrations/010_users_refactoring.sql":                          migrations010_users_refactoringSql,
 	"templates/admin_notification.html":                             templatesAdmin_notificationHtml,
 	"templates/base.html":                                           templatesBaseHtml,
 	"templates/email_confirm.html":                                  templatesEmail_confirmHtml,
@@ -843,6 +845,7 @@ var _bintree = &bintree{nil, map[string]*bintree{
 		"007_cascade_wallet_id_update.sql": &bintree{migrations007_cascade_wallet_id_updateSql, map[string]*bintree{}},
 		"008_password_constraint.sql":      &bintree{migrations008_password_constraintSql, map[string]*bintree{}},
 		"009_drop_tfa_keychain.sql":        &bintree{migrations009_drop_tfa_keychainSql, map[string]*bintree{}},
+		"010_users_refactoring.sql":        &bintree{migrations010_users_refactoringSql, map[string]*bintree{}},
 	}},
 	"templates": &bintree{nil, map[string]*bintree{
 		"admin_notification.html":      &bintree{templatesAdmin_notificationHtml, map[string]*bintree{}},

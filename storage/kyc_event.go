@@ -8,9 +8,9 @@ import (
 )
 
 func (c *Consumer) ProcessKYCUpload(user *api.User, document *api.Document) error {
-	if user.State == api.UserWaitingForApproval {
-		return nil
-	}
+	//if user.State == api.UserWaitingForApproval {
+	//	return nil
+	//}
 
 	// TODO block by KYC reason if needed
 
@@ -28,12 +28,12 @@ func (c *Consumer) ProcessKYCUpload(user *api.User, document *api.Document) erro
 		}
 	}
 
-	state := user.CheckState()
-	if state != user.State {
-		if err := c.apiQ.Users().ChangeState(string(user.Address), state); err != nil {
-			return errors.Wrap(err, "failed to update state")
-		}
-	}
+	//state := user.CheckState()
+	//if state != user.State {
+	//	if err := c.apiQ.Users().ChangeState(string(user.Address), state); err != nil {
+	//		return errors.Wrap(err, "failed to update state")
+	//	}
+	//}
 
 	return nil
 }

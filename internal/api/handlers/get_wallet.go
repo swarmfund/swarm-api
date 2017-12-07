@@ -1,13 +1,12 @@
 package handlers
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/go-chi/chi"
-	"github.com/google/jsonapi"
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/ape/problems"
+	"gitlab.com/swarmfund/api/internal/api/movetoape"
 	"gitlab.com/swarmfund/api/internal/api/resources"
 	"gitlab.com/swarmfund/api/internal/secondfactor"
 	"gitlab.com/swarmfund/api/internal/types"
@@ -29,11 +28,7 @@ func GetWallet(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if !wallet.Verified {
-		ape.RenderErr(w, &jsonapi.ErrorObject{
-			Title:  http.StatusText(http.StatusForbidden),
-			Status: fmt.Sprintf("%d", http.StatusForbidden),
-			Detail: "Email should be verified before login",
-		})
+		ape.RenderErr(w, movetoape.Forbidden("verification_required"))
 		return
 	}
 
