@@ -50,7 +50,7 @@ func (c *Connector) SendVerificationLink(email string, payload clienturl.Payload
 	if err != nil {
 		return errors.Wrap(err, "failed to encode payload")
 	}
-	letter := Letter{
+	letter := &Letter{
 		Header: "Swarm Fund Email Verification",
 		Link:   fmt.Sprintf("%s/%s", c.conf.ClientRouter, encoded),
 	}
