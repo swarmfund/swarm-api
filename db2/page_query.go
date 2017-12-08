@@ -226,13 +226,3 @@ func NewPageQuery(
 
 	return
 }
-
-// MustPageQuery behaves as NewPageQuery, but panics upon error
-func MustPageQuery(cursor string, order string, limit uint64) PageQuery {
-	r, err := NewPageQuery(cursor, order, limit)
-	if err != nil {
-		panic(err)
-	}
-
-	return r
-}

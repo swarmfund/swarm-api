@@ -8,12 +8,13 @@ import (
 
 	"net/url"
 
-	"gitlab.com/swarmfund/api/db2/api"
 	"github.com/pkg/errors"
+	"gitlab.com/swarmfund/api/db2/api"
+	"gitlab.com/swarmfund/api/internal/types"
 )
 
 type Document struct {
-	AccountID string
+	AccountID types.Address
 	Type      api.DocumentType
 	EntityID  int64
 	Version   string

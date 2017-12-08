@@ -23,6 +23,8 @@ const (
 	DocumentTypeSignedForm
 	DocumentTypeRecoveryPhoto
 	DocumentTypeProofOfIncome // 15
+	//
+	DocumentTypeAssetLogo
 )
 
 var (

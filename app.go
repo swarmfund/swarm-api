@@ -95,6 +95,7 @@ func (a *App) Serve() {
 		a.horizon,
 		a.AccountManagerKP(),
 		a.APIQ().TFA(),
+		a.Storage(),
 	)
 	r.Mount("/", a.web.router)
 	http.Handle("/", r)
@@ -151,7 +152,11 @@ func (action *Action) Notificator() *notificator.Connector {
 }
 
 func (a *App) Storage() *storage.Connector {
-	return a.storage
+	connector, err := storage.New(a.Config().Storage())
+	if err != nil {
+		panic(err)
+	}
+	return connector
 }
 
 // UpdateStellarCoreInfo updates the value of coreVersion and networkPassphrase
