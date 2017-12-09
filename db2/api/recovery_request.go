@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/guregu/null"
-	"gitlab.com/swarmfund/api/utils"
+	"gitlab.com/swarmfund/api/internal/lorem"
 )
 
 type RecoveryRequest struct {
@@ -31,8 +31,8 @@ func NewRecoveryRequest(wallet *Wallet) (*RecoveryRequest, error) {
 		WalletID:   wallet.Id,
 		AccountID:  accountID,
 		Username:   wallet.Username,
-		EmailToken: utils.GenerateToken(),
-		Code:       utils.GenerateShortToken(),
+		EmailToken: lorem.Token(),
+		Code:       lorem.Token(),
 	}, nil
 }
 

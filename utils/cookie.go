@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"gitlab.com/swarmfund/api/internal/lorem"
 	"gitlab.com/swarmfund/go/hash"
 )
 
@@ -15,7 +16,7 @@ func DeviceUIDCookie(id, domain string) *http.Cookie {
 	cookieName := DeviceUIDCookieName(id)
 	return &http.Cookie{
 		Name:     cookieName,
-		Value:    GenerateToken(),
+		Value:    lorem.Token(),
 		Path:     "/",
 		Domain:   domain,
 		HttpOnly: true,

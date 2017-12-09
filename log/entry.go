@@ -1,7 +1,6 @@
 package log
 
 import (
-	"gitlab.com/swarmfund/api/errors"
 	"github.com/sirupsen/logrus"
 )
 
@@ -15,10 +14,6 @@ func (e *Entry) WithField(key string, value interface{}) *Entry {
 
 func (e *Entry) WithFields(fields F) *Entry {
 	return &Entry{*e.Entry.WithFields(logrus.Fields(fields))}
-}
-
-func (e *Entry) WithStack(err error) *Entry {
-	return e.WithField("stack", errors.Stack(err))
 }
 
 // Debugf logs a message at the debug severity.

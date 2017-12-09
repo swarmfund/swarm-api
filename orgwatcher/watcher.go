@@ -6,12 +6,12 @@ import (
 	"net/url"
 	"time"
 
+	"gitlab.com/distributed_lab/logan/v3/errors"
+	sse "gitlab.com/distributed_lab/sse-go"
 	"gitlab.com/swarmfund/api/db2/api"
-	"gitlab.com/swarmfund/api/errors"
 	"gitlab.com/swarmfund/api/log"
 	"gitlab.com/swarmfund/go/keypair"
 	horizon "gitlab.com/swarmfund/horizon-connector"
-	sse "gitlab.com/distributed_lab/sse-go"
 )
 
 var (
@@ -63,7 +63,7 @@ func (w *SignerWatcher) processEvents() {
 	defer func() {
 		if r := recover(); r != nil {
 			err := errors.FromPanic(r)
-			w.log.WithStack(err).WithError(err).Error("panicked")
+			w.log.WithError(err).Error("panicked")
 		}
 	}()
 	var op SetOptionsOp
