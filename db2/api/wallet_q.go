@@ -8,7 +8,6 @@ import (
 	sq "github.com/lann/squirrel"
 	"github.com/lib/pq"
 	"github.com/pkg/errors"
-	"gitlab.com/swarmfund/api/db2"
 	"gitlab.com/swarmfund/api/internal/types"
 	"gitlab.com/swarmfund/api/tfa"
 )
@@ -26,6 +25,7 @@ var walletInsert = sq.Insert("wallets")
 var walletUpdate = sq.Update("wallets")
 
 const (
+	tableWalletsLimit            = 2
 	walletsKDFFkeyConstraint     = `wallets_kdf_fkey`
 	walletsWalletIDKeyConstraint = `wallets_wallet_id_key`
 )
@@ -74,8 +74,8 @@ type WalletQI interface {
 	// delete all wallets except provided one
 	SetActive(accountID, walletID string) error
 
-	Page(query db2.PageQuery) WalletQI
-	Unverified() WalletQI
+	Page(uint64) WalletQI
+	ByState(uint64) WalletQI
 	Select() ([]Wallet, error)
 }
 
@@ -148,11 +148,11 @@ func (q *WalletQ) DeletePasswordFactor(walletID string) error {
 	return err
 }
 
-func (q *WalletQ) Page(query db2.PageQuery) WalletQI {
+func (q *WalletQ) Page(page uint64) WalletQI {
 	if q.Err != nil {
 		return q
 	}
-	q.sql, q.Err = query.ApplyTo(q.sql, "w.id")
+	q.sql = q.sql.Offset(tableWalletsLimit * (page - 1)).Limit(tableWalletsLimit)
 	return q
 }
 
@@ -277,11 +277,17 @@ func (q *WalletQ) ByWalletID(walletId string) (*Wallet, error) {
 	return &result, err
 }
 
-func (q *WalletQ) Unverified() WalletQI {
+func (q *WalletQ) ByState(state uint64) WalletQI {
 	if q.Err != nil {
 		return q
 	}
-	q.sql = q.sql.Where("w.verified = ?", false)
+	// TODO proper state filters
+	if state&uint64(1) != 0 {
+		q.sql = q.sql.Where("et.confirmed= ?", false)
+	} else if state&uint64(2) != 0 {
+		q.sql = q.sql.Where("et.confirmed = ?", true)
+	}
+
 	return q
 }
 

@@ -4,10 +4,6 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"fmt"
-
-	"net/url"
-
 	. "github.com/go-ozzo/ozzo-validation"
 	"github.com/pkg/errors"
 	"gitlab.com/distributed_lab/ape"
@@ -31,15 +27,6 @@ type (
 		State *uint64 `url:"state"`
 	}
 )
-
-func (f *UserIndexFilters) Query() url.Values {
-	query := url.Values{}
-	query.Add("page", fmt.Sprintf("%d", f.Page))
-	if f.State != nil {
-		query.Add("state", fmt.Sprintf("%d", *f.State))
-	}
-	return query
-}
 
 func NewUserFilters(r *http.Request) (UserIndexFilters, error) {
 	filters := UserIndexFilters{
