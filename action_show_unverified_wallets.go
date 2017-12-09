@@ -4,7 +4,6 @@ import (
 	"gitlab.com/swarmfund/api/db2"
 	"gitlab.com/swarmfund/api/db2/api"
 	"gitlab.com/swarmfund/api/render/hal"
-	"gitlab.com/swarmfund/api/render/problem"
 	"gitlab.com/swarmfund/api/resource"
 )
 
@@ -40,14 +39,14 @@ func (action *GetUnverifiedWalletsAction) checkAllowed() {
 }
 
 func (action *GetUnverifiedWalletsAction) loadRecords() {
-	wallets, err := action.APIQ().Wallet().Page(action.PagingParams).Unverified().Select()
-	if err != nil {
-		action.Log.WithError(err).Error("failed to get wallets")
-		action.Err = &problem.ServerError
-		return
-	}
+	//wallets, err := action.APIQ().Wallet().Page(action.PagingParams).Unverified().Select()
+	//if err != nil {
+	//	action.Log.WithError(err).Error("failed to get wallets")
+	//	action.Err = &problem.ServerError
+	//	return
+	//}
 
-	action.Records = wallets
+	//action.Records = wallets
 }
 
 func (action *GetUnverifiedWalletsAction) loadPage() {
