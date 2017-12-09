@@ -5,6 +5,8 @@ import (
 
 	"encoding/json"
 
+	"strings"
+
 	sq "github.com/lann/squirrel"
 	"github.com/lib/pq"
 	"github.com/pkg/errors"
@@ -25,7 +27,7 @@ var walletInsert = sq.Insert("wallets")
 var walletUpdate = sq.Update("wallets")
 
 const (
-	tableWalletsLimit            = 2
+	tableWalletsLimit            = 10
 	walletsKDFFkeyConstraint     = `wallets_kdf_fkey`
 	walletsWalletIDKeyConstraint = `wallets_wallet_id_key`
 )
@@ -281,11 +283,18 @@ func (q *WalletQ) ByState(state uint64) WalletQI {
 	if q.Err != nil {
 		return q
 	}
-	// TODO proper state filters
-	if state&uint64(1) != 0 {
-		q.sql = q.sql.Where("et.confirmed= ?", false)
-	} else if state&uint64(2) != 0 {
-		q.sql = q.sql.Where("et.confirmed = ?", true)
+	conditions := []string{}
+
+	if state&uint64(types.WalletStateNotVerified) != 0 {
+		conditions = append(conditions, "et.confirmed = false")
+	}
+
+	if state&uint64(types.WalletStateVerified) != 0 {
+		conditions = append(conditions, "et.confirmed = true")
+	}
+
+	if len(conditions) > 0 {
+		q.sql = q.sql.Where(strings.Join(conditions, " OR "))
 	}
 
 	return q
