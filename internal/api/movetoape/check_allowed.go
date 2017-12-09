@@ -3,6 +3,7 @@ package movetoape
 import (
 	"net/http"
 
+	"github.com/pkg/errors"
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/ape/problems"
 	"gitlab.com/swarmfund/go/signcontrol"
@@ -15,6 +16,6 @@ func RenderDoormanErr(w http.ResponseWriter, err error) {
 	case nil:
 		panic("expected not nil error")
 	default:
-		ape.RenderErr(w, problems.InternalError())
+		panic(errors.Wrap(err, "unexpected doorman error"))
 	}
 }
