@@ -465,6 +465,7 @@ Content-Type: application/vnd.api+json
 | --------- | --------------------------------- |
 | `page`    | Pagination cursor                 |
 | `state`   | Bit mask to filter users by state |
+| `type`    | Bit mask to filter users by type  |
 
 
 

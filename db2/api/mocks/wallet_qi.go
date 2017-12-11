@@ -2,7 +2,6 @@
 package mocks
 
 import api "gitlab.com/swarmfund/api/db2/api"
-import db2 "gitlab.com/swarmfund/api/db2"
 import mock "github.com/stretchr/testify/mock"
 import tfa "gitlab.com/swarmfund/api/tfa"
 import types "gitlab.com/swarmfund/api/internal/types"
@@ -102,6 +101,22 @@ func (_m *WalletQI) ByID(id int64) (*api.Wallet, error) {
 	}
 
 	return r0, r1
+}
+
+// ByState provides a mock function with given fields: _a0
+func (_m *WalletQI) ByState(_a0 uint64) api.WalletQI {
+	ret := _m.Called(_a0)
+
+	var r0 api.WalletQI
+	if rf, ok := ret.Get(0).(func(uint64) api.WalletQI); ok {
+		r0 = rf(_a0)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(api.WalletQI)
+		}
+	}
+
+	return r0
 }
 
 // ByWalletID provides a mock function with given fields: walletId
@@ -234,13 +249,13 @@ func (_m *WalletQI) OrganizationWatcherCursor() (string, error) {
 	return r0, r1
 }
 
-// Page provides a mock function with given fields: query
-func (_m *WalletQI) Page(query db2.PageQuery) api.WalletQI {
-	ret := _m.Called(query)
+// Page provides a mock function with given fields: _a0
+func (_m *WalletQI) Page(_a0 uint64) api.WalletQI {
+	ret := _m.Called(_a0)
 
 	var r0 api.WalletQI
-	if rf, ok := ret.Get(0).(func(db2.PageQuery) api.WalletQI); ok {
-		r0 = rf(query)
+	if rf, ok := ret.Get(0).(func(uint64) api.WalletQI); ok {
+		r0 = rf(_a0)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(api.WalletQI)
@@ -319,22 +334,6 @@ func (_m *WalletQI) Transaction(_a0 func(api.WalletQI) error) error {
 		r0 = rf(_a0)
 	} else {
 		r0 = ret.Error(0)
-	}
-
-	return r0
-}
-
-// Unverified provides a mock function with given fields:
-func (_m *WalletQI) Unverified() api.WalletQI {
-	ret := _m.Called()
-
-	var r0 api.WalletQI
-	if rf, ok := ret.Get(0).(func() api.WalletQI); ok {
-		r0 = rf()
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(api.WalletQI)
-		}
 	}
 
 	return r0
