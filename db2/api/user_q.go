@@ -48,6 +48,8 @@ type UsersQI interface {
 
 	// Select methods
 	ByState(state types.UserState) UsersQI
+	ByType(tpe types.UserType) UsersQI
+
 	RecoveryPending() UsersQI
 	LimitReviewRequests() UsersQI
 
@@ -119,6 +121,11 @@ func (q *UsersQ) WithAddress(addresses ...string) UsersQI {
 
 func (q *UsersQ) ByState(state types.UserState) UsersQI {
 	q.sql = q.sql.Where("state & ? != 0", state)
+	return q
+}
+
+func (q *UsersQ) ByType(tpe types.UserType) UsersQI {
+	q.sql = q.sql.Where("type & ? != 0", tpe)
 	return q
 }
 

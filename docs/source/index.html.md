@@ -296,7 +296,7 @@ HTTP/1.1 204
 ## Index
 
 ```http
-GET /wallets?page=1
+GET /wallets?page=1 HTTP/1.1
 Content-Type: application/vnd.api+json
 Accept: application/vnd.api+json
 
@@ -465,6 +465,7 @@ Content-Type: application/vnd.api+json
 | --------- | --------------------------------- |
 | `page`    | Pagination cursor                 |
 | `state`   | Bit mask to filter users by state |
+| `type`    | Bit mask to filter users by type  |
 
 
 

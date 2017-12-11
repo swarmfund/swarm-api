@@ -25,6 +25,7 @@ type (
 	UserIndexFilters       struct {
 		Page  uint64  `url:"page"`
 		State *uint64 `url:"state"`
+		Type  *uint64 `url:"type"`
 	}
 )
 
@@ -42,6 +43,7 @@ func (r UserIndexFilters) Validate() error {
 	return ValidateStruct(&r,
 		Field(&r.Page, Min(uint64(1))),
 		Field(&r.State, Min(uint64(1))),
+		Field(&r.Type, Min(uint64(1))),
 	)
 }
 
@@ -64,6 +66,10 @@ func UsersIndex(w http.ResponseWriter, r *http.Request) {
 
 	if filters.State != nil {
 		q = q.ByState(types.UserState(*filters.State))
+	}
+
+	if filters.Type != nil {
+		q = q.ByType(types.UserType(*filters.Type))
 	}
 
 	if err := q.Select(&records); err != nil {
