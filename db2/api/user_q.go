@@ -49,6 +49,8 @@ type UsersQI interface {
 	// Select methods
 	ByState(state types.UserState) UsersQI
 	ByType(tpe types.UserType) UsersQI
+	EmailMatches(string) UsersQI
+	AddressMatches(string) UsersQI
 
 	RecoveryPending() UsersQI
 	LimitReviewRequests() UsersQI
@@ -126,6 +128,16 @@ func (q *UsersQ) ByState(state types.UserState) UsersQI {
 
 func (q *UsersQ) ByType(tpe types.UserType) UsersQI {
 	q.sql = q.sql.Where("type & ? != 0", tpe)
+	return q
+}
+
+func (q *UsersQ) EmailMatches(str string) UsersQI {
+	q.sql = q.sql.Where("email ilike '%?%'", str)
+	return q
+}
+
+func (q *UsersQ) AddressMatches(str string) UsersQI {
+	q.sql = q.sql.Where("address ilike '%?%', str")
 	return q
 }
 
