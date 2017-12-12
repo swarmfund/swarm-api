@@ -132,12 +132,12 @@ func (q *UsersQ) ByType(tpe types.UserType) UsersQI {
 }
 
 func (q *UsersQ) EmailMatches(str string) UsersQI {
-	q.sql = q.sql.Where("email ilike '%?%'", str)
+	q.sql = q.sql.Where("email ilike ?", fmt.Sprint("%", str, "%"))
 	return q
 }
 
 func (q *UsersQ) AddressMatches(str string) UsersQI {
-	q.sql = q.sql.Where("address ilike '%?%', str")
+	q.sql = q.sql.Where("address ilike ?", fmt.Sprint("%", str, "%"))
 	return q
 }
 

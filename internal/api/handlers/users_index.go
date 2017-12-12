@@ -79,7 +79,7 @@ func UsersIndex(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if filters.Address != nil {
-		q = q.AddressMatches(*filters.Email)
+		q = q.AddressMatches(*filters.Address)
 	}
 
 	if err := q.Select(&records); err != nil {

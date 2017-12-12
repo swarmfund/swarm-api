@@ -461,11 +461,13 @@ Content-Type: application/vnd.api+json
 
 
 
-| Parameter | Description                       |
-| --------- | --------------------------------- |
-| `page`    | Pagination cursor                 |
-| `state`   | Bit mask to filter users by state |
-| `type`    | Bit mask to filter users by type  |
+| Parameter | Description                              |
+| --------- | ---------------------------------------- |
+| `page`    | Pagination cursor                        |
+| `state`   | Bit mask to filter users by state        |
+| `type`    | Bit mask to filter users by type         |
+| `email`   | Substring to match against user emails   |
+| `address` | Substring to match against account addresses |
 
 
 
