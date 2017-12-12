@@ -77,7 +77,7 @@ func (action *PendingTransactionCreateAction) checkTFA() {
 
 	for _, operation := range action.Envelope.Tx.Operations {
 		switch operation.Body.Type {
-		case xdr.OperationTypeManageOffer, xdr.OperationTypePayment, xdr.OperationTypeManageForfeitRequest:
+		case xdr.OperationTypeManageOffer, xdr.OperationTypePayment, xdr.OperationTypeCreateWithdrawalRequest:
 			signer, err := action.App.pendingSubmitter.GetSigner(action.TX)
 			if err != nil {
 				action.Log.WithError(err).Error("failed to get tx signer")

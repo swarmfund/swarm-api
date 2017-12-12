@@ -137,7 +137,7 @@
   branch = "master"
   name = "github.com/minio/go-homedir"
   packages = ["."]
-  revision = "21304a94172ae3a09dee2cd86a12fb6f842138c7"
+  revision = "4d76aabb80b22bad8695d3904e943f1fb5e6199f"
 
 [[projects]]
   name = "github.com/minio/minio-go"
@@ -261,7 +261,7 @@
 
 [[projects]]
   name = "github.com/stretchr/testify"
-  packages = ["assert","mock","require"]
+  packages = ["assert","mock"]
   revision = "69483b4bd14f5845b5a1e55bca19e954e827f1d0"
   version = "v1.1.4"
 
@@ -285,7 +285,7 @@
 
 [[projects]]
   name = "gitlab.com/distributed_lab/logan"
-  packages = ["."]
+  packages = [".","v3/errors","v3/fields"]
   revision = "7302865ec11ed497b745a7415fc6e59a26e0631b"
   version = "v3.1"
 
@@ -311,7 +311,7 @@
   branch = "master"
   name = "gitlab.com/swarmfund/go"
   packages = ["amount","crc16","doorman","doorman/data","hash","keypair","network","resources","signcontrol","strkey","xdr"]
-  revision = "3b21e34fd6ec7b9a18c921d76522f2996b95c80d"
+  revision = "17d5ed7a4e0f2c070498f6ad6ec7bda3b0d36d94"
 
 [[projects]]
   branch = "master"
@@ -364,6 +364,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "7ff6283ab3608a8867f46fe3281e5b4db798f13c8250c2a5c69af9237a895609"
+  inputs-digest = "144a2ef42a00bb40740bed47c10015db55c1f28c7b871a2c8a711433d1736fee"
   solver-name = "gps-cdcl"
   solver-version = 1
