@@ -6,9 +6,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/minio/minio-go"
 	"gitlab.com/swarmfund/api/config"
 	"gitlab.com/swarmfund/api/log"
-	"github.com/minio/minio-go"
 )
 
 type Connector struct {
@@ -34,7 +34,8 @@ func (c *Connector) UploadFormData(bucket, key string) (map[string]string, error
 
 	policy.SetBucket(strings.ToLower(bucket))
 	policy.SetKey(strings.ToLower(key))
-	policy.SetExpires(time.Now().UTC().Add(c.conf.FormDataExpire))
+	// TODO investigate expire
+	//policy.SetExpires(time.Now().UTC().Add(c.conf.FormDataExpire))
 	policy.SetContentLengthRange(c.conf.MinContentLength, c.conf.MaxContentLength)
 
 	url, formData, err := c.minio.PresignedPostPolicy(policy)
