@@ -23,9 +23,11 @@ type (
 	}
 	UsersIndexResponseData []resources.User
 	UserIndexFilters       struct {
-		Page  uint64  `url:"page"`
-		State *uint64 `url:"state"`
-		Type  *uint64 `url:"type"`
+		Page    uint64  `url:"page"`
+		State   *uint64 `url:"state"`
+		Type    *uint64 `url:"type"`
+		Email   *string `url:"email"`
+		Address *string `url:"address"`
 	}
 )
 
@@ -70,6 +72,14 @@ func UsersIndex(w http.ResponseWriter, r *http.Request) {
 
 	if filters.Type != nil {
 		q = q.ByType(types.UserType(*filters.Type))
+	}
+
+	if filters.Email != nil {
+		q = q.EmailMatches(*filters.Email)
+	}
+
+	if filters.Address != nil {
+		q = q.AddressMatches(*filters.Address)
 	}
 
 	if err := q.Select(&records); err != nil {
