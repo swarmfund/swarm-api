@@ -124,7 +124,7 @@ func PatchUser(w http.ResponseWriter, r *http.Request) {
 				})...)
 				return
 			}
-			if request.Data.Relationships.Transaction.Data.Attributes.Envelope == "" {
+			if *request.Data.Attributes.State != types.UserStateRejected && request.Data.Relationships.Transaction.Data.Attributes.Envelope == "" {
 				ape.RenderErr(w, problems.BadRequest(Errors{
 					"/data/relationships/transaction/data/attributes/envelope": errors.New("required when updating state"),
 				})...)
