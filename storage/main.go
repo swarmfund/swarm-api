@@ -35,7 +35,7 @@ func (c *Connector) UploadFormData(bucket, key string) (map[string]string, error
 	policy.SetBucket(strings.ToLower(bucket))
 	policy.SetKey(strings.ToLower(key))
 	// TODO investigate expire
-	//policy.SetExpires(time.Now().UTC().Add(c.conf.FormDataExpire))
+	policy.SetExpires(time.Now().UTC().Add(72 * time.Hour))
 	policy.SetContentLengthRange(c.conf.MinContentLength, c.conf.MaxContentLength)
 
 	url, formData, err := c.minio.PresignedPostPolicy(policy)
