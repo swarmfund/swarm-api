@@ -35,8 +35,11 @@ func Decode(values url.Values, dest interface{}) error {
 				return errors.Wrapf(err, "failed to parse %s to uint64", tag)
 			}
 			rval.Field(i).Set(reflect.ValueOf(&uint))
+		case *string:
+			str := values.Get(tag)
+			rval.Field(i).Set(reflect.ValueOf(&str))
 		default:
-			fmt.Println("unknown type")
+			panic(fmt.Sprintf("unknown type %T", rval.Field(i).Interface()))
 		}
 	}
 	return nil
@@ -65,6 +68,8 @@ func Encode(r *http.Request, filters interface{}) FilterLinks {
 		switch rval.Field(i).Interface().(type) {
 		case *uint64:
 			encodeUint64Pointer(queries, tag, rval.Field(i))
+		case *string:
+			encodeStringPointer(queries, tag, rval.Field(i))
 		}
 	}
 	links := FilterLinks{
@@ -77,17 +82,24 @@ func Encode(r *http.Request, filters interface{}) FilterLinks {
 	return links
 }
 
+func encodeStringPointer(queries []url.Values, tag string, value reflect.Value) {
+	if value.IsNil() {
+		return
+	}
+	str := reflect.Indirect(value).String()
+	for _, query := range queries {
+		query.Add(tag, str)
+	}
+}
+
 func encodeUint64Pointer(queries []url.Values, tag string, value reflect.Value) {
 	if value.IsNil() {
 		return
 	}
 	uint := reflect.Indirect(value).Uint()
-	// prev
-	queries[0].Add(tag, fmt.Sprintf("%d", uint))
-	// self
-	queries[1].Add(tag, fmt.Sprintf("%d", uint))
-	// next
-	queries[2].Add(tag, fmt.Sprintf("%d", uint))
+	for _, query := range queries {
+		query.Add(tag, fmt.Sprintf("%d", uint))
+	}
 }
 
 func encodePage(queries []url.Values, tag string, value reflect.Value) {
