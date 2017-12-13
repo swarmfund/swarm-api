@@ -134,7 +134,10 @@ func PatchUser(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	user.State = user.CheckState()
+	// if state we not provided explicitly
+	if request.Data.Attributes.State == nil {
+		user.State = user.CheckState()
+	}
 
 	err = UsersQ(r).Transaction(func(q api.UsersQI) error {
 		if err := q.Update(user); err != nil {
