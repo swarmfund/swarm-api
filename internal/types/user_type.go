@@ -1,84 +1,9 @@
 package types
 
-import (
-	"encoding/json"
-	"fmt"
-
-	"database/sql/driver"
-
-	"github.com/pkg/errors"
-)
-
+//go:generate jsonenums -type=UserType -tprefix=false -transform=snake
 type UserType int32
 
 const (
 	UserTypeNotVerified UserType = 1 << iota
 	UserTypeSyndicate
 )
-
-var (
-	userTypeReverseMap = map[string]UserType{
-		"not_verified": UserTypeNotVerified,
-		"syndicate":    UserTypeSyndicate,
-	}
-
-	userTypeMap = map[UserType]string{
-		UserTypeNotVerified: "not_verified",
-		UserTypeSyndicate:   "syndicate",
-	}
-	ErrUserTypeInvalid = errors.New("user type is invalid")
-)
-
-func (t UserType) Validate() error {
-	_, ok := userTypeMap[t]
-	if !ok {
-		return ErrUserTypeInvalid
-	}
-	return nil
-}
-
-func (t UserType) String() string {
-	s, ok := userTypeMap[t]
-	if !ok {
-		return fmt.Sprintf("%d", t)
-	}
-	return s
-}
-
-// UnmarshalJSON custom unmarshaler supporting both JSON number and string
-func (t *UserType) UnmarshalJSON(data []byte) error {
-	var tmp interface{}
-
-	if err := json.Unmarshal(data, &tmp); err != nil {
-		return errors.Wrap(err, "failed to unmarshal")
-	}
-
-	switch m := tmp.(type) {
-	case string:
-		v, ok := userTypeReverseMap[m]
-		if !ok {
-			return ErrUserTypeInvalid
-		}
-		*t = v
-	default:
-		return fmt.Errorf("invalid value for %T: %v", t, m)
-	}
-	return nil
-}
-
-func (t UserType) MarshalJSON() ([]byte, error) {
-	return json.Marshal(userTypeMap[t])
-}
-
-func (t UserType) Value() (driver.Value, error) {
-	return int64(t), nil
-}
-
-func (t *UserType) Scan(src interface{}) error {
-	i, ok := src.(int64)
-	if !ok {
-		return fmt.Errorf("can't scan from %T", src)
-	}
-	*t = UserType(i)
-	return nil
-}
