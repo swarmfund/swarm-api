@@ -1,13 +1,27 @@
 api:
-  database_url: postgres://postgres@localhost/api_swarm?sslmode=disable
+  database_url: postgres://sheb:2222@localhost/api?sslmode=disable
   horizon_url: http://localhost:8000
   account_manager: SBMFQCGDVJBC2NYBRPURK3ISC4XJGGOLHMGHF7MIHVXE2DIQSMY6NYRH
   skip_signature_check: true
 
+notificator:
+  client_router: http://localhost:8888/hredir
+  endpoint: http://18.195.18.3:9009
+  #secret: foo
+  #public: bar
+
+http:
+  host: localhost
+  port: 8001
+
+log:
+  level: info
+
+
 storage:
   # gracefully disable storage services
   disabled: true
-  host: "localhost:9000"
+  host: "18.195.18.3:9000"
   # minio credentials
   access_key: "2SRMRAST49JEIMUUKWKH"
   secret_key: "vm7+HyjPijP6xgzzjsxJrUs7dJgim0mj+K/lD2im"
@@ -24,15 +38,6 @@ storage:
   force_ssl: false
   form_data_expire: 50000
 
-notificator:
-  client_router: http://localhost:8888/hredir
-  endpoint: http://95.85.47.33:7000
-  #secret: foo
-  #public: bar
-
-http:
-  host: localhost
-  port: 8001
-
-log:
-  level: info
+wallet_cleaner:
+  enabled: true
+  expiration: 48h

@@ -12,6 +12,7 @@ type Config interface {
 	Storage() Storage
 	Log() Log
 	Notificator() Notificator
+	WalletCleaner() WalletCleaner
 }
 
 type ViperConfig struct {

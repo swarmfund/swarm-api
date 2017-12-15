@@ -61,6 +61,8 @@ type WalletQI interface {
 	// LoadWallet
 	ByEmail(username string) (*Wallet, error)
 	ByWalletID(walletId string) (*Wallet, error)
+	DeleteWallets(walletIDs []string) error
+
 	// it's all S3 fault
 	RecoveryWallet(lowercaseWalletID, username string) (*Wallet, error)
 
@@ -277,6 +279,16 @@ func (q *WalletQ) ByWalletID(walletId string) (*Wallet, error) {
 	}
 
 	return &result, err
+}
+
+func (q *WalletQ) DeleteWallets(walletIDs []string) error {
+	if len(walletIDs) == 0 {
+		return nil
+	}
+
+	sqq := sq.Delete("wallets").Where(sq.Eq{"wallet_id": walletIDs})
+	_, err := q.parent.Exec(sqq)
+	return err
 }
 
 func (q *WalletQ) ByState(state uint64) WalletQI {
