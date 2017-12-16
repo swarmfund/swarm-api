@@ -293,6 +293,53 @@ HTTP/1.1 204
 
 <aside class="notice">Previously known as <code>POST /wallets/update</code></aside>
 
+## Index
+
+```http
+GET /wallets?page=1 HTTP/1.1
+Content-Type: application/vnd.api+json
+Accept: application/vnd.api+json
+
+HTTP/1.1 200
+Content-Type: application/vnd.api+json
+
+{
+    "data": [
+        {
+            "attributes": {
+                "account_id": "GCCJPB7QQLNEMCJ72CQJ4ODAZFFGXHET5UPOGSDWT222GXQPMTO6ZQW3", 
+                "email": "yr0a3ke29d78skm2030kep14i@test.com", 
+                "keychain_data": "foo", 
+                "verified": true
+            }, 
+            "id": "912svl5uj6hxtypnonryhkt9", 
+            "type": "wallet"
+        }
+    ], 
+    "links": {
+        "next": "/wallets?page=3", 
+        "prev": "/wallets?page=1", 
+        "self": "/wallets?page=2"
+    }
+}
+
+
+```
+
+| Parameters | Description                     |
+| ---------- | ------------------------------- |
+| `page`     |                                 |
+| `state`    | Mask to filter wallets by state |
+
+### Wallet states
+
+| State | Description                  |
+| ----- | ---------------------------- |
+| `1`   | email has not been confirmed |
+| `2`   | email has been confirmed     |
+
+
+
 # Client redirects
 
 > link format
@@ -414,10 +461,13 @@ Content-Type: application/vnd.api+json
 
 
 
-| Parameter | Description                       |
-| --------- | --------------------------------- |
-| `page`    | Pagination cursor                 |
-| `state`   | Bit mask to filter users by state |
+| Parameter | Description                              |
+| --------- | ---------------------------------------- |
+| `page`    | Pagination cursor                        |
+| `state`   | Bit mask to filter users by state        |
+| `type`    | Bit mask to filter users by type         |
+| `email`   | Substring to match against user emails   |
+| `address` | Substring to match against account addresses |
 
 
 

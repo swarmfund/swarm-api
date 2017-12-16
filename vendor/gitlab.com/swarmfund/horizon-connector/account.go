@@ -4,7 +4,7 @@ type Account struct {
 	AccountID    string           `json:"account_id"`
 	AccountType  int32            `json:"account_type_i"`
 	Sequence     string           `json:"sequence"`
-	BlockReasons int32  	      `json:"block_reasons_i"`
+	BlockReasons int32  	      `json:"block_reasons"`
 	Balances     []Balance        `json:"balances"`
 	Signers      []Signer         `json:"signers"`
 	Policies     AccountPolicies  `json:"policies"`

@@ -11,11 +11,9 @@ before_script:
   - 'echo -e "Host gitlab\n\tHostName gitlab.com\n\tIdentityFile ~/.ssh/id_rsa\n\tUser git\n" >> ~/.ssh/config'
 
 stages:
-  - prebuild
   - build
   - delivery
   - deploy
-  - postdeploy
 
 build:
   stage: build
@@ -32,7 +30,6 @@ build:
       paths:
         - bin/api
   only:
-    - master
     - staging
     - dev
 
@@ -41,7 +38,6 @@ delivery:
   script:
     - rsync bin/api ubuntu@$HOST_DEV:artifacts/api/${CI_COMMIT_SHA:0:8}/
   only:
-    - master
     - staging
     - dev
 
@@ -52,8 +48,6 @@ deploy:dev:
     - curl -X POST http://$HOST_DEV:8842/ec96h_fVyGnrRXZ0X9r8RQ
   only:
     - dev
-    # TODO: remove this when the dev branch is added
-    - master
 
 deploy:staging:
   stage: deploy
@@ -76,5 +70,4 @@ pages:
     paths:
       - public
   only:
-    - master
     - dev

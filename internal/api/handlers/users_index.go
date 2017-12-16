@@ -4,10 +4,6 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"fmt"
-
-	"net/url"
-
 	. "github.com/go-ozzo/ozzo-validation"
 	"github.com/pkg/errors"
 	"gitlab.com/distributed_lab/ape"
@@ -27,19 +23,13 @@ type (
 	}
 	UsersIndexResponseData []resources.User
 	UserIndexFilters       struct {
-		Page  uint64  `url:"page"`
-		State *uint64 `url:"state"`
+		Page    uint64  `url:"page"`
+		State   *uint64 `url:"state"`
+		Type    *uint64 `url:"type"`
+		Email   *string `url:"email"`
+		Address *string `url:"address"`
 	}
 )
-
-func (f *UserIndexFilters) Query() url.Values {
-	query := url.Values{}
-	query.Add("page", fmt.Sprintf("%d", f.Page))
-	if f.State != nil {
-		query.Add("state", fmt.Sprintf("%d", *f.State))
-	}
-	return query
-}
 
 func NewUserFilters(r *http.Request) (UserIndexFilters, error) {
 	filters := UserIndexFilters{
@@ -55,6 +45,7 @@ func (r UserIndexFilters) Validate() error {
 	return ValidateStruct(&r,
 		Field(&r.Page, Min(uint64(1))),
 		Field(&r.State, Min(uint64(1))),
+		Field(&r.Type, Min(uint64(1))),
 	)
 }
 
@@ -77,6 +68,18 @@ func UsersIndex(w http.ResponseWriter, r *http.Request) {
 
 	if filters.State != nil {
 		q = q.ByState(types.UserState(*filters.State))
+	}
+
+	if filters.Type != nil {
+		q = q.ByType(types.UserType(*filters.Type))
+	}
+
+	if filters.Email != nil {
+		q = q.EmailMatches(*filters.Email)
+	}
+
+	if filters.Address != nil {
+		q = q.AddressMatches(*filters.Address)
 	}
 
 	if err := q.Select(&records); err != nil {

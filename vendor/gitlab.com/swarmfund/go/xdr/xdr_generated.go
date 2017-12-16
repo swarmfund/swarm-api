@@ -1,11 +1,13 @@
 // Package xdr is generated from:
 //
+//  xdr/raw/Stellar-SCP.x
 //  xdr/raw/Stellar-ledger-entries-account-limits.x
 //  xdr/raw/Stellar-ledger-entries-account-type-limits.x
 //  xdr/raw/Stellar-ledger-entries-account.x
 //  xdr/raw/Stellar-ledger-entries-asset-pair.x
 //  xdr/raw/Stellar-ledger-entries-asset.x
 //  xdr/raw/Stellar-ledger-entries-balance.x
+//  xdr/raw/Stellar-ledger-entries-external-system-id.x
 //  xdr/raw/Stellar-ledger-entries-fee.x
 //  xdr/raw/Stellar-ledger-entries-invoice.x
 //  xdr/raw/Stellar-ledger-entries-offer.x
@@ -18,12 +20,12 @@
 //  xdr/raw/Stellar-operation-create-account.x
 //  xdr/raw/Stellar-operation-create-issuance-request.x
 //  xdr/raw/Stellar-operation-create-preissuance-request.x
+//  xdr/raw/Stellar-operation-create-withdrawal-request.x
 //  xdr/raw/Stellar-operation-direct-debit.x
 //  xdr/raw/Stellar-operation-manage-account.x
 //  xdr/raw/Stellar-operation-manage-asset-pair.x
 //  xdr/raw/Stellar-operation-manage-asset.x
 //  xdr/raw/Stellar-operation-manage-balance.x
-//  xdr/raw/Stellar-operation-manage-forfeit-request.x
 //  xdr/raw/Stellar-operation-manage-invoice.x
 //  xdr/raw/Stellar-operation-manage-offer.x
 //  xdr/raw/Stellar-operation-payment.x
@@ -36,7 +38,7 @@
 //  xdr/raw/Stellar-overlay.x
 //  xdr/raw/Stellar-reviewable-request-asset.x
 //  xdr/raw/Stellar-reviewable-request-issuance.x
-//  xdr/raw/Stellar-SCP.x
+//  xdr/raw/Stellar-reviewable-request-withdrawal.x
 //  xdr/raw/Stellar-transaction.x
 //  xdr/raw/Stellar-types.x
 //
@@ -61,6 +63,478 @@ func Unmarshal(r io.Reader, v interface{}) (int, error) {
 func Marshal(w io.Writer, v interface{}) (int, error) {
 	// delegate to xdr package's Marshal
 	return xdr.Marshal(w, v)
+}
+
+// Value is an XDR Typedef defines as:
+//
+//   typedef opaque Value<>;
+//
+type Value []byte
+
+// ScpBallot is an XDR Struct defines as:
+//
+//   struct SCPBallot
+//    {
+//        uint32 counter; // n
+//        Value value;    // x
+//    };
+//
+type ScpBallot struct {
+	Counter Uint32 `json:"counter,omitempty"`
+	Value   Value  `json:"value,omitempty"`
+}
+
+// ScpStatementType is an XDR Enum defines as:
+//
+//   enum SCPStatementType
+//    {
+//        PREPARE = 0,
+//        CONFIRM = 1,
+//        EXTERNALIZE = 2,
+//        NOMINATE = 3
+//    };
+//
+type ScpStatementType int32
+
+const (
+	ScpStatementTypePrepare     ScpStatementType = 0
+	ScpStatementTypeConfirm     ScpStatementType = 1
+	ScpStatementTypeExternalize ScpStatementType = 2
+	ScpStatementTypeNominate    ScpStatementType = 3
+)
+
+var ScpStatementTypeAll = []ScpStatementType{
+	ScpStatementTypePrepare,
+	ScpStatementTypeConfirm,
+	ScpStatementTypeExternalize,
+	ScpStatementTypeNominate,
+}
+
+var scpStatementTypeMap = map[int32]string{
+	0: "ScpStatementTypePrepare",
+	1: "ScpStatementTypeConfirm",
+	2: "ScpStatementTypeExternalize",
+	3: "ScpStatementTypeNominate",
+}
+
+var scpStatementTypeShortMap = map[int32]string{
+	0: "prepare",
+	1: "confirm",
+	2: "externalize",
+	3: "nominate",
+}
+
+var scpStatementTypeRevMap = map[string]int32{
+	"ScpStatementTypePrepare":     0,
+	"ScpStatementTypeConfirm":     1,
+	"ScpStatementTypeExternalize": 2,
+	"ScpStatementTypeNominate":    3,
+}
+
+// ValidEnum validates a proposed value for this enum.  Implements
+// the Enum interface for ScpStatementType
+func (e ScpStatementType) ValidEnum(v int32) bool {
+	_, ok := scpStatementTypeMap[v]
+	return ok
+}
+func (e ScpStatementType) isFlag() bool {
+	for i := len(ScpStatementTypeAll) - 1; i >= 0; i-- {
+		expected := ScpStatementType(2) << uint64(len(ScpStatementTypeAll)-1) >> uint64(len(ScpStatementTypeAll)-i)
+		if expected != ScpStatementTypeAll[i] {
+			return false
+		}
+	}
+	return true
+}
+
+// String returns the name of `e`
+func (e ScpStatementType) String() string {
+	name, _ := scpStatementTypeMap[int32(e)]
+	return name
+}
+
+func (e ScpStatementType) ShortString() string {
+	name, _ := scpStatementTypeShortMap[int32(e)]
+	return name
+}
+
+func (e ScpStatementType) MarshalJSON() ([]byte, error) {
+	if e.isFlag() {
+		// marshal as mask
+		result := flag{
+			Value: int32(e),
+		}
+		for _, value := range ScpStatementTypeAll {
+			if (value & e) == value {
+				result.Flags = append(result.Flags, flagValue{
+					Value: int32(value),
+					Name:  value.ShortString(),
+				})
+			}
+		}
+		return json.Marshal(&result)
+	} else {
+		// marshal as enum
+		result := enum{
+			Value:  int32(e),
+			String: e.ShortString(),
+		}
+		return json.Marshal(&result)
+	}
+}
+
+func (e *ScpStatementType) UnmarshalJSON(data []byte) error {
+	var t value
+	if err := json.Unmarshal(data, &t); err != nil {
+		return err
+	}
+	*e = ScpStatementType(t.Value)
+	return nil
+}
+
+// ScpNomination is an XDR Struct defines as:
+//
+//   struct SCPNomination
+//    {
+//        Hash quorumSetHash; // D
+//        Value votes<>;      // X
+//        Value accepted<>;   // Y
+//    };
+//
+type ScpNomination struct {
+	QuorumSetHash Hash    `json:"quorumSetHash,omitempty"`
+	Votes         []Value `json:"votes,omitempty"`
+	Accepted      []Value `json:"accepted,omitempty"`
+}
+
+// ScpStatementPrepare is an XDR NestedStruct defines as:
+//
+//   struct
+//            {
+//                Hash quorumSetHash;       // D
+//                SCPBallot ballot;         // b
+//                SCPBallot* prepared;      // p
+//                SCPBallot* preparedPrime; // p'
+//                uint32 nC;                // c.n
+//                uint32 nH;                // h.n
+//            }
+//
+type ScpStatementPrepare struct {
+	QuorumSetHash Hash       `json:"quorumSetHash,omitempty"`
+	Ballot        ScpBallot  `json:"ballot,omitempty"`
+	Prepared      *ScpBallot `json:"prepared,omitempty"`
+	PreparedPrime *ScpBallot `json:"preparedPrime,omitempty"`
+	NC            Uint32     `json:"nC,omitempty"`
+	NH            Uint32     `json:"nH,omitempty"`
+}
+
+// ScpStatementConfirm is an XDR NestedStruct defines as:
+//
+//   struct
+//            {
+//                SCPBallot ballot;   // b
+//                uint32 nPrepared;   // p.n
+//                uint32 nCommit;     // c.n
+//                uint32 nH;          // h.n
+//                Hash quorumSetHash; // D
+//            }
+//
+type ScpStatementConfirm struct {
+	Ballot        ScpBallot `json:"ballot,omitempty"`
+	NPrepared     Uint32    `json:"nPrepared,omitempty"`
+	NCommit       Uint32    `json:"nCommit,omitempty"`
+	NH            Uint32    `json:"nH,omitempty"`
+	QuorumSetHash Hash      `json:"quorumSetHash,omitempty"`
+}
+
+// ScpStatementExternalize is an XDR NestedStruct defines as:
+//
+//   struct
+//            {
+//                SCPBallot commit;         // c
+//                uint32 nH;                // h.n
+//                Hash commitQuorumSetHash; // D used before EXTERNALIZE
+//            }
+//
+type ScpStatementExternalize struct {
+	Commit              ScpBallot `json:"commit,omitempty"`
+	NH                  Uint32    `json:"nH,omitempty"`
+	CommitQuorumSetHash Hash      `json:"commitQuorumSetHash,omitempty"`
+}
+
+// ScpStatementPledges is an XDR NestedUnion defines as:
+//
+//   union switch (SCPStatementType type)
+//        {
+//        case PREPARE:
+//            struct
+//            {
+//                Hash quorumSetHash;       // D
+//                SCPBallot ballot;         // b
+//                SCPBallot* prepared;      // p
+//                SCPBallot* preparedPrime; // p'
+//                uint32 nC;                // c.n
+//                uint32 nH;                // h.n
+//            } prepare;
+//        case CONFIRM:
+//            struct
+//            {
+//                SCPBallot ballot;   // b
+//                uint32 nPrepared;   // p.n
+//                uint32 nCommit;     // c.n
+//                uint32 nH;          // h.n
+//                Hash quorumSetHash; // D
+//            } confirm;
+//        case EXTERNALIZE:
+//            struct
+//            {
+//                SCPBallot commit;         // c
+//                uint32 nH;                // h.n
+//                Hash commitQuorumSetHash; // D used before EXTERNALIZE
+//            } externalize;
+//        case NOMINATE:
+//            SCPNomination nominate;
+//        }
+//
+type ScpStatementPledges struct {
+	Type        ScpStatementType         `json:"type,omitempty"`
+	Prepare     *ScpStatementPrepare     `json:"prepare,omitempty"`
+	Confirm     *ScpStatementConfirm     `json:"confirm,omitempty"`
+	Externalize *ScpStatementExternalize `json:"externalize,omitempty"`
+	Nominate    *ScpNomination           `json:"nominate,omitempty"`
+}
+
+// SwitchFieldName returns the field name in which this union's
+// discriminant is stored
+func (u ScpStatementPledges) SwitchFieldName() string {
+	return "Type"
+}
+
+// ArmForSwitch returns which field name should be used for storing
+// the value for an instance of ScpStatementPledges
+func (u ScpStatementPledges) ArmForSwitch(sw int32) (string, bool) {
+	switch ScpStatementType(sw) {
+	case ScpStatementTypePrepare:
+		return "Prepare", true
+	case ScpStatementTypeConfirm:
+		return "Confirm", true
+	case ScpStatementTypeExternalize:
+		return "Externalize", true
+	case ScpStatementTypeNominate:
+		return "Nominate", true
+	}
+	return "-", false
+}
+
+// NewScpStatementPledges creates a new  ScpStatementPledges.
+func NewScpStatementPledges(aType ScpStatementType, value interface{}) (result ScpStatementPledges, err error) {
+	result.Type = aType
+	switch ScpStatementType(aType) {
+	case ScpStatementTypePrepare:
+		tv, ok := value.(ScpStatementPrepare)
+		if !ok {
+			err = fmt.Errorf("invalid value, must be ScpStatementPrepare")
+			return
+		}
+		result.Prepare = &tv
+	case ScpStatementTypeConfirm:
+		tv, ok := value.(ScpStatementConfirm)
+		if !ok {
+			err = fmt.Errorf("invalid value, must be ScpStatementConfirm")
+			return
+		}
+		result.Confirm = &tv
+	case ScpStatementTypeExternalize:
+		tv, ok := value.(ScpStatementExternalize)
+		if !ok {
+			err = fmt.Errorf("invalid value, must be ScpStatementExternalize")
+			return
+		}
+		result.Externalize = &tv
+	case ScpStatementTypeNominate:
+		tv, ok := value.(ScpNomination)
+		if !ok {
+			err = fmt.Errorf("invalid value, must be ScpNomination")
+			return
+		}
+		result.Nominate = &tv
+	}
+	return
+}
+
+// MustPrepare retrieves the Prepare value from the union,
+// panicing if the value is not set.
+func (u ScpStatementPledges) MustPrepare() ScpStatementPrepare {
+	val, ok := u.GetPrepare()
+
+	if !ok {
+		panic("arm Prepare is not set")
+	}
+
+	return val
+}
+
+// GetPrepare retrieves the Prepare value from the union,
+// returning ok if the union's switch indicated the value is valid.
+func (u ScpStatementPledges) GetPrepare() (result ScpStatementPrepare, ok bool) {
+	armName, _ := u.ArmForSwitch(int32(u.Type))
+
+	if armName == "Prepare" {
+		result = *u.Prepare
+		ok = true
+	}
+
+	return
+}
+
+// MustConfirm retrieves the Confirm value from the union,
+// panicing if the value is not set.
+func (u ScpStatementPledges) MustConfirm() ScpStatementConfirm {
+	val, ok := u.GetConfirm()
+
+	if !ok {
+		panic("arm Confirm is not set")
+	}
+
+	return val
+}
+
+// GetConfirm retrieves the Confirm value from the union,
+// returning ok if the union's switch indicated the value is valid.
+func (u ScpStatementPledges) GetConfirm() (result ScpStatementConfirm, ok bool) {
+	armName, _ := u.ArmForSwitch(int32(u.Type))
+
+	if armName == "Confirm" {
+		result = *u.Confirm
+		ok = true
+	}
+
+	return
+}
+
+// MustExternalize retrieves the Externalize value from the union,
+// panicing if the value is not set.
+func (u ScpStatementPledges) MustExternalize() ScpStatementExternalize {
+	val, ok := u.GetExternalize()
+
+	if !ok {
+		panic("arm Externalize is not set")
+	}
+
+	return val
+}
+
+// GetExternalize retrieves the Externalize value from the union,
+// returning ok if the union's switch indicated the value is valid.
+func (u ScpStatementPledges) GetExternalize() (result ScpStatementExternalize, ok bool) {
+	armName, _ := u.ArmForSwitch(int32(u.Type))
+
+	if armName == "Externalize" {
+		result = *u.Externalize
+		ok = true
+	}
+
+	return
+}
+
+// MustNominate retrieves the Nominate value from the union,
+// panicing if the value is not set.
+func (u ScpStatementPledges) MustNominate() ScpNomination {
+	val, ok := u.GetNominate()
+
+	if !ok {
+		panic("arm Nominate is not set")
+	}
+
+	return val
+}
+
+// GetNominate retrieves the Nominate value from the union,
+// returning ok if the union's switch indicated the value is valid.
+func (u ScpStatementPledges) GetNominate() (result ScpNomination, ok bool) {
+	armName, _ := u.ArmForSwitch(int32(u.Type))
+
+	if armName == "Nominate" {
+		result = *u.Nominate
+		ok = true
+	}
+
+	return
+}
+
+// ScpStatement is an XDR Struct defines as:
+//
+//   struct SCPStatement
+//    {
+//        NodeID nodeID;    // v
+//        uint64 slotIndex; // i
+//
+//        union switch (SCPStatementType type)
+//        {
+//        case PREPARE:
+//            struct
+//            {
+//                Hash quorumSetHash;       // D
+//                SCPBallot ballot;         // b
+//                SCPBallot* prepared;      // p
+//                SCPBallot* preparedPrime; // p'
+//                uint32 nC;                // c.n
+//                uint32 nH;                // h.n
+//            } prepare;
+//        case CONFIRM:
+//            struct
+//            {
+//                SCPBallot ballot;   // b
+//                uint32 nPrepared;   // p.n
+//                uint32 nCommit;     // c.n
+//                uint32 nH;          // h.n
+//                Hash quorumSetHash; // D
+//            } confirm;
+//        case EXTERNALIZE:
+//            struct
+//            {
+//                SCPBallot commit;         // c
+//                uint32 nH;                // h.n
+//                Hash commitQuorumSetHash; // D used before EXTERNALIZE
+//            } externalize;
+//        case NOMINATE:
+//            SCPNomination nominate;
+//        }
+//        pledges;
+//    };
+//
+type ScpStatement struct {
+	NodeId    NodeId              `json:"nodeID,omitempty"`
+	SlotIndex Uint64              `json:"slotIndex,omitempty"`
+	Pledges   ScpStatementPledges `json:"pledges,omitempty"`
+}
+
+// ScpEnvelope is an XDR Struct defines as:
+//
+//   struct SCPEnvelope
+//    {
+//        SCPStatement statement;
+//        Signature signature;
+//    };
+//
+type ScpEnvelope struct {
+	Statement ScpStatement `json:"statement,omitempty"`
+	Signature Signature    `json:"signature,omitempty"`
+}
+
+// ScpQuorumSet is an XDR Struct defines as:
+//
+//   struct SCPQuorumSet
+//    {
+//        uint32 threshold;
+//        PublicKey validators<>;
+//        SCPQuorumSet innerSets<>;
+//    };
+//
+type ScpQuorumSet struct {
+	Threshold  Uint32         `json:"threshold,omitempty"`
+	Validators []PublicKey    `json:"validators,omitempty"`
+	InnerSets  []ScpQuorumSet `json:"innerSets,omitempty"`
 }
 
 // AccountLimitsEntryExt is an XDR NestedUnion defines as:
@@ -295,6 +769,15 @@ func (e SignerType) ValidEnum(v int32) bool {
 	_, ok := signerTypeMap[v]
 	return ok
 }
+func (e SignerType) isFlag() bool {
+	for i := len(SignerTypeAll) - 1; i >= 0; i-- {
+		expected := SignerType(2) << uint64(len(SignerTypeAll)-1) >> uint64(len(SignerTypeAll)-i)
+		if expected != SignerTypeAll[i] {
+			return false
+		}
+	}
+	return true
+}
 
 // String returns the name of `e`
 func (e SignerType) String() string {
@@ -308,22 +791,36 @@ func (e SignerType) ShortString() string {
 }
 
 func (e SignerType) MarshalJSON() ([]byte, error) {
-	return []byte("\"" + e.String() + "\""), nil
+	if e.isFlag() {
+		// marshal as mask
+		result := flag{
+			Value: int32(e),
+		}
+		for _, value := range SignerTypeAll {
+			if (value & e) == value {
+				result.Flags = append(result.Flags, flagValue{
+					Value: int32(value),
+					Name:  value.ShortString(),
+				})
+			}
+		}
+		return json.Marshal(&result)
+	} else {
+		// marshal as enum
+		result := enum{
+			Value:  int32(e),
+			String: e.ShortString(),
+		}
+		return json.Marshal(&result)
+	}
 }
 
-func (e *SignerType) UnmarshalJSON(d []byte) error {
-	var raw string
-	err := json.Unmarshal(d, &raw)
-	if err != nil {
+func (e *SignerType) UnmarshalJSON(data []byte) error {
+	var t value
+	if err := json.Unmarshal(data, &t); err != nil {
 		return err
 	}
-
-	value, ok := signerTypeRevMap[raw]
-	if !ok {
-		return fmt.Errorf("unexpected json value: %s", raw)
-	}
-
-	*e = SignerType(value)
+	*e = SignerType(t.Value)
 	return nil
 }
 
@@ -559,6 +1056,15 @@ func (e AccountPolicies) ValidEnum(v int32) bool {
 	_, ok := accountPoliciesMap[v]
 	return ok
 }
+func (e AccountPolicies) isFlag() bool {
+	for i := len(AccountPoliciesAll) - 1; i >= 0; i-- {
+		expected := AccountPolicies(2) << uint64(len(AccountPoliciesAll)-1) >> uint64(len(AccountPoliciesAll)-i)
+		if expected != AccountPoliciesAll[i] {
+			return false
+		}
+	}
+	return true
+}
 
 // String returns the name of `e`
 func (e AccountPolicies) String() string {
@@ -572,22 +1078,36 @@ func (e AccountPolicies) ShortString() string {
 }
 
 func (e AccountPolicies) MarshalJSON() ([]byte, error) {
-	return []byte("\"" + e.String() + "\""), nil
+	if e.isFlag() {
+		// marshal as mask
+		result := flag{
+			Value: int32(e),
+		}
+		for _, value := range AccountPoliciesAll {
+			if (value & e) == value {
+				result.Flags = append(result.Flags, flagValue{
+					Value: int32(value),
+					Name:  value.ShortString(),
+				})
+			}
+		}
+		return json.Marshal(&result)
+	} else {
+		// marshal as enum
+		result := enum{
+			Value:  int32(e),
+			String: e.ShortString(),
+		}
+		return json.Marshal(&result)
+	}
 }
 
-func (e *AccountPolicies) UnmarshalJSON(d []byte) error {
-	var raw string
-	err := json.Unmarshal(d, &raw)
-	if err != nil {
+func (e *AccountPolicies) UnmarshalJSON(data []byte) error {
+	var t value
+	if err := json.Unmarshal(data, &t); err != nil {
 		return err
 	}
-
-	value, ok := accountPoliciesRevMap[raw]
-	if !ok {
-		return fmt.Errorf("unexpected json value: %s", raw)
-	}
-
-	*e = AccountPolicies(value)
+	*e = AccountPolicies(t.Value)
 	return nil
 }
 
@@ -656,6 +1176,15 @@ func (e AccountType) ValidEnum(v int32) bool {
 	_, ok := accountTypeMap[v]
 	return ok
 }
+func (e AccountType) isFlag() bool {
+	for i := len(AccountTypeAll) - 1; i >= 0; i-- {
+		expected := AccountType(2) << uint64(len(AccountTypeAll)-1) >> uint64(len(AccountTypeAll)-i)
+		if expected != AccountTypeAll[i] {
+			return false
+		}
+	}
+	return true
+}
 
 // String returns the name of `e`
 func (e AccountType) String() string {
@@ -669,22 +1198,36 @@ func (e AccountType) ShortString() string {
 }
 
 func (e AccountType) MarshalJSON() ([]byte, error) {
-	return []byte("\"" + e.String() + "\""), nil
+	if e.isFlag() {
+		// marshal as mask
+		result := flag{
+			Value: int32(e),
+		}
+		for _, value := range AccountTypeAll {
+			if (value & e) == value {
+				result.Flags = append(result.Flags, flagValue{
+					Value: int32(value),
+					Name:  value.ShortString(),
+				})
+			}
+		}
+		return json.Marshal(&result)
+	} else {
+		// marshal as enum
+		result := enum{
+			Value:  int32(e),
+			String: e.ShortString(),
+		}
+		return json.Marshal(&result)
+	}
 }
 
-func (e *AccountType) UnmarshalJSON(d []byte) error {
-	var raw string
-	err := json.Unmarshal(d, &raw)
-	if err != nil {
+func (e *AccountType) UnmarshalJSON(data []byte) error {
+	var t value
+	if err := json.Unmarshal(data, &t); err != nil {
 		return err
 	}
-
-	value, ok := accountTypeRevMap[raw]
-	if !ok {
-		return fmt.Errorf("unexpected json value: %s", raw)
-	}
-
-	*e = AccountType(value)
+	*e = AccountType(t.Value)
 	return nil
 }
 
@@ -735,6 +1278,15 @@ func (e BlockReasons) ValidEnum(v int32) bool {
 	_, ok := blockReasonsMap[v]
 	return ok
 }
+func (e BlockReasons) isFlag() bool {
+	for i := len(BlockReasonsAll) - 1; i >= 0; i-- {
+		expected := BlockReasons(2) << uint64(len(BlockReasonsAll)-1) >> uint64(len(BlockReasonsAll)-i)
+		if expected != BlockReasonsAll[i] {
+			return false
+		}
+	}
+	return true
+}
 
 // String returns the name of `e`
 func (e BlockReasons) String() string {
@@ -748,22 +1300,36 @@ func (e BlockReasons) ShortString() string {
 }
 
 func (e BlockReasons) MarshalJSON() ([]byte, error) {
-	return []byte("\"" + e.String() + "\""), nil
+	if e.isFlag() {
+		// marshal as mask
+		result := flag{
+			Value: int32(e),
+		}
+		for _, value := range BlockReasonsAll {
+			if (value & e) == value {
+				result.Flags = append(result.Flags, flagValue{
+					Value: int32(value),
+					Name:  value.ShortString(),
+				})
+			}
+		}
+		return json.Marshal(&result)
+	} else {
+		// marshal as enum
+		result := enum{
+			Value:  int32(e),
+			String: e.ShortString(),
+		}
+		return json.Marshal(&result)
+	}
 }
 
-func (e *BlockReasons) UnmarshalJSON(d []byte) error {
-	var raw string
-	err := json.Unmarshal(d, &raw)
-	if err != nil {
+func (e *BlockReasons) UnmarshalJSON(data []byte) error {
+	var t value
+	if err := json.Unmarshal(data, &t); err != nil {
 		return err
 	}
-
-	value, ok := blockReasonsRevMap[raw]
-	if !ok {
-		return fmt.Errorf("unexpected json value: %s", raw)
-	}
-
-	*e = BlockReasons(value)
+	*e = BlockReasons(t.Value)
 	return nil
 }
 
@@ -823,7 +1389,7 @@ func NewAccountEntryExt(v LedgerVersion, value interface{}) (result AccountEntry
 //
 //        // Referral marketing
 //        AccountID* referrer;     // parent account
-//        int64 shareForReferrer; // share of fee to pay parent
+//
 //    	int32 policies;
 //
 //        // reserved for future use
@@ -836,16 +1402,15 @@ func NewAccountEntryExt(v LedgerVersion, value interface{}) (result AccountEntry
 //    };
 //
 type AccountEntry struct {
-	AccountId        AccountId       `json:"accountID,omitempty"`
-	Thresholds       Thresholds      `json:"thresholds,omitempty"`
-	Signers          []Signer        `json:"signers,omitempty"`
-	Limits           *Limits         `json:"limits,omitempty"`
-	BlockReasons     Uint32          `json:"blockReasons,omitempty"`
-	AccountType      AccountType     `json:"accountType,omitempty"`
-	Referrer         *AccountId      `json:"referrer,omitempty"`
-	ShareForReferrer Int64           `json:"shareForReferrer,omitempty"`
-	Policies         Int32           `json:"policies,omitempty"`
-	Ext              AccountEntryExt `json:"ext,omitempty"`
+	AccountId    AccountId       `json:"accountID,omitempty"`
+	Thresholds   Thresholds      `json:"thresholds,omitempty"`
+	Signers      []Signer        `json:"signers,omitempty"`
+	Limits       *Limits         `json:"limits,omitempty"`
+	BlockReasons Uint32          `json:"blockReasons,omitempty"`
+	AccountType  AccountType     `json:"accountType,omitempty"`
+	Referrer     *AccountId      `json:"referrer,omitempty"`
+	Policies     Int32           `json:"policies,omitempty"`
+	Ext          AccountEntryExt `json:"ext,omitempty"`
 }
 
 // AssetPairPolicy is an XDR Enum defines as:
@@ -895,6 +1460,15 @@ func (e AssetPairPolicy) ValidEnum(v int32) bool {
 	_, ok := assetPairPolicyMap[v]
 	return ok
 }
+func (e AssetPairPolicy) isFlag() bool {
+	for i := len(AssetPairPolicyAll) - 1; i >= 0; i-- {
+		expected := AssetPairPolicy(2) << uint64(len(AssetPairPolicyAll)-1) >> uint64(len(AssetPairPolicyAll)-i)
+		if expected != AssetPairPolicyAll[i] {
+			return false
+		}
+	}
+	return true
+}
 
 // String returns the name of `e`
 func (e AssetPairPolicy) String() string {
@@ -908,22 +1482,36 @@ func (e AssetPairPolicy) ShortString() string {
 }
 
 func (e AssetPairPolicy) MarshalJSON() ([]byte, error) {
-	return []byte("\"" + e.String() + "\""), nil
+	if e.isFlag() {
+		// marshal as mask
+		result := flag{
+			Value: int32(e),
+		}
+		for _, value := range AssetPairPolicyAll {
+			if (value & e) == value {
+				result.Flags = append(result.Flags, flagValue{
+					Value: int32(value),
+					Name:  value.ShortString(),
+				})
+			}
+		}
+		return json.Marshal(&result)
+	} else {
+		// marshal as enum
+		result := enum{
+			Value:  int32(e),
+			String: e.ShortString(),
+		}
+		return json.Marshal(&result)
+	}
 }
 
-func (e *AssetPairPolicy) UnmarshalJSON(d []byte) error {
-	var raw string
-	err := json.Unmarshal(d, &raw)
-	if err != nil {
+func (e *AssetPairPolicy) UnmarshalJSON(data []byte) error {
+	var t value
+	if err := json.Unmarshal(data, &t); err != nil {
 		return err
 	}
-
-	value, ok := assetPairPolicyRevMap[raw]
-	if !ok {
-		return fmt.Errorf("unexpected json value: %s", raw)
-	}
-
-	*e = AssetPairPolicy(value)
+	*e = AssetPairPolicy(t.Value)
 	return nil
 }
 
@@ -1005,29 +1593,47 @@ type AssetPairEntry struct {
 //
 //   enum AssetPolicy
 //    {
-//    	TRANSFERABLE = 1
+//    	TRANSFERABLE = 1,
+//    	BASE_ASSET = 2,
+//    	STATS_QUOTE_ASSET = 4,
+//    	WITHDRAWABLE = 8
 //    };
 //
 type AssetPolicy int32
 
 const (
-	AssetPolicyTransferable AssetPolicy = 1
+	AssetPolicyTransferable    AssetPolicy = 1
+	AssetPolicyBaseAsset       AssetPolicy = 2
+	AssetPolicyStatsQuoteAsset AssetPolicy = 4
+	AssetPolicyWithdrawable    AssetPolicy = 8
 )
 
 var AssetPolicyAll = []AssetPolicy{
 	AssetPolicyTransferable,
+	AssetPolicyBaseAsset,
+	AssetPolicyStatsQuoteAsset,
+	AssetPolicyWithdrawable,
 }
 
 var assetPolicyMap = map[int32]string{
 	1: "AssetPolicyTransferable",
+	2: "AssetPolicyBaseAsset",
+	4: "AssetPolicyStatsQuoteAsset",
+	8: "AssetPolicyWithdrawable",
 }
 
 var assetPolicyShortMap = map[int32]string{
 	1: "transferable",
+	2: "base_asset",
+	4: "stats_quote_asset",
+	8: "withdrawable",
 }
 
 var assetPolicyRevMap = map[string]int32{
-	"AssetPolicyTransferable": 1,
+	"AssetPolicyTransferable":    1,
+	"AssetPolicyBaseAsset":       2,
+	"AssetPolicyStatsQuoteAsset": 4,
+	"AssetPolicyWithdrawable":    8,
 }
 
 // ValidEnum validates a proposed value for this enum.  Implements
@@ -1035,6 +1641,15 @@ var assetPolicyRevMap = map[string]int32{
 func (e AssetPolicy) ValidEnum(v int32) bool {
 	_, ok := assetPolicyMap[v]
 	return ok
+}
+func (e AssetPolicy) isFlag() bool {
+	for i := len(AssetPolicyAll) - 1; i >= 0; i-- {
+		expected := AssetPolicy(2) << uint64(len(AssetPolicyAll)-1) >> uint64(len(AssetPolicyAll)-i)
+		if expected != AssetPolicyAll[i] {
+			return false
+		}
+	}
+	return true
 }
 
 // String returns the name of `e`
@@ -1049,22 +1664,36 @@ func (e AssetPolicy) ShortString() string {
 }
 
 func (e AssetPolicy) MarshalJSON() ([]byte, error) {
-	return []byte("\"" + e.String() + "\""), nil
+	if e.isFlag() {
+		// marshal as mask
+		result := flag{
+			Value: int32(e),
+		}
+		for _, value := range AssetPolicyAll {
+			if (value & e) == value {
+				result.Flags = append(result.Flags, flagValue{
+					Value: int32(value),
+					Name:  value.ShortString(),
+				})
+			}
+		}
+		return json.Marshal(&result)
+	} else {
+		// marshal as enum
+		result := enum{
+			Value:  int32(e),
+			String: e.ShortString(),
+		}
+		return json.Marshal(&result)
+	}
 }
 
-func (e *AssetPolicy) UnmarshalJSON(d []byte) error {
-	var raw string
-	err := json.Unmarshal(d, &raw)
-	if err != nil {
+func (e *AssetPolicy) UnmarshalJSON(data []byte) error {
+	var t value
+	if err := json.Unmarshal(data, &t); err != nil {
 		return err
 	}
-
-	value, ok := assetPolicyRevMap[raw]
-	if !ok {
-		return fmt.Errorf("unexpected json value: %s", raw)
-	}
-
-	*e = AssetPolicy(value)
+	*e = AssetPolicy(t.Value)
 	return nil
 }
 
@@ -1120,6 +1749,7 @@ func NewAssetEntryExt(v LedgerVersion, value interface{}) (result AssetEntryExt,
 //    	uint64 availableForIssueance;
 //    	uint64 issued;
 //        uint32 policies;
+//        longstring logoID;
 //
 //        // reserved for future use
 //        union switch (LedgerVersion v)
@@ -1141,6 +1771,7 @@ type AssetEntry struct {
 	AvailableForIssueance Uint64        `json:"availableForIssueance,omitempty"`
 	Issued                Uint64        `json:"issued,omitempty"`
 	Policies              Uint32        `json:"policies,omitempty"`
+	LogoId                Longstring    `json:"logoID,omitempty"`
 	Ext                   AssetEntryExt `json:"ext,omitempty"`
 }
 
@@ -1210,57 +1841,209 @@ type BalanceEntry struct {
 	Ext       BalanceEntryExt `json:"ext,omitempty"`
 }
 
+// ExternalSystemType is an XDR Enum defines as:
+//
+//   enum ExternalSystemType
+//    {
+//    	BITCOIN = 1,
+//    	ETHEREUM = 2
+//    };
+//
+type ExternalSystemType int32
+
+const (
+	ExternalSystemTypeBitcoin  ExternalSystemType = 1
+	ExternalSystemTypeEthereum ExternalSystemType = 2
+)
+
+var ExternalSystemTypeAll = []ExternalSystemType{
+	ExternalSystemTypeBitcoin,
+	ExternalSystemTypeEthereum,
+}
+
+var externalSystemTypeMap = map[int32]string{
+	1: "ExternalSystemTypeBitcoin",
+	2: "ExternalSystemTypeEthereum",
+}
+
+var externalSystemTypeShortMap = map[int32]string{
+	1: "bitcoin",
+	2: "ethereum",
+}
+
+var externalSystemTypeRevMap = map[string]int32{
+	"ExternalSystemTypeBitcoin":  1,
+	"ExternalSystemTypeEthereum": 2,
+}
+
+// ValidEnum validates a proposed value for this enum.  Implements
+// the Enum interface for ExternalSystemType
+func (e ExternalSystemType) ValidEnum(v int32) bool {
+	_, ok := externalSystemTypeMap[v]
+	return ok
+}
+func (e ExternalSystemType) isFlag() bool {
+	for i := len(ExternalSystemTypeAll) - 1; i >= 0; i-- {
+		expected := ExternalSystemType(2) << uint64(len(ExternalSystemTypeAll)-1) >> uint64(len(ExternalSystemTypeAll)-i)
+		if expected != ExternalSystemTypeAll[i] {
+			return false
+		}
+	}
+	return true
+}
+
+// String returns the name of `e`
+func (e ExternalSystemType) String() string {
+	name, _ := externalSystemTypeMap[int32(e)]
+	return name
+}
+
+func (e ExternalSystemType) ShortString() string {
+	name, _ := externalSystemTypeShortMap[int32(e)]
+	return name
+}
+
+func (e ExternalSystemType) MarshalJSON() ([]byte, error) {
+	if e.isFlag() {
+		// marshal as mask
+		result := flag{
+			Value: int32(e),
+		}
+		for _, value := range ExternalSystemTypeAll {
+			if (value & e) == value {
+				result.Flags = append(result.Flags, flagValue{
+					Value: int32(value),
+					Name:  value.ShortString(),
+				})
+			}
+		}
+		return json.Marshal(&result)
+	} else {
+		// marshal as enum
+		result := enum{
+			Value:  int32(e),
+			String: e.ShortString(),
+		}
+		return json.Marshal(&result)
+	}
+}
+
+func (e *ExternalSystemType) UnmarshalJSON(data []byte) error {
+	var t value
+	if err := json.Unmarshal(data, &t); err != nil {
+		return err
+	}
+	*e = ExternalSystemType(t.Value)
+	return nil
+}
+
+// ExternalSystemAccountIdExt is an XDR NestedUnion defines as:
+//
+//   union switch (LedgerVersion v)
+//        {
+//        case EMPTY_VERSION:
+//            void;
+//        }
+//
+type ExternalSystemAccountIdExt struct {
+	V LedgerVersion `json:"v,omitempty"`
+}
+
+// SwitchFieldName returns the field name in which this union's
+// discriminant is stored
+func (u ExternalSystemAccountIdExt) SwitchFieldName() string {
+	return "V"
+}
+
+// ArmForSwitch returns which field name should be used for storing
+// the value for an instance of ExternalSystemAccountIdExt
+func (u ExternalSystemAccountIdExt) ArmForSwitch(sw int32) (string, bool) {
+	switch LedgerVersion(sw) {
+	case LedgerVersionEmptyVersion:
+		return "", true
+	}
+	return "-", false
+}
+
+// NewExternalSystemAccountIdExt creates a new  ExternalSystemAccountIdExt.
+func NewExternalSystemAccountIdExt(v LedgerVersion, value interface{}) (result ExternalSystemAccountIdExt, err error) {
+	result.V = v
+	switch LedgerVersion(v) {
+	case LedgerVersionEmptyVersion:
+		// void
+	}
+	return
+}
+
+// ExternalSystemAccountId is an XDR Struct defines as:
+//
+//   struct ExternalSystemAccountID
+//    {
+//        AccountID accountID;
+//        ExternalSystemType externalSystemType;
+//    	longstring data;
+//
+//    	 // reserved for future use
+//        union switch (LedgerVersion v)
+//        {
+//        case EMPTY_VERSION:
+//            void;
+//        }
+//        ext;
+//    };
+//
+type ExternalSystemAccountId struct {
+	AccountId          AccountId                  `json:"accountID,omitempty"`
+	ExternalSystemType ExternalSystemType         `json:"externalSystemType,omitempty"`
+	Data               Longstring                 `json:"data,omitempty"`
+	Ext                ExternalSystemAccountIdExt `json:"ext,omitempty"`
+}
+
 // FeeType is an XDR Enum defines as:
 //
 //   enum FeeType
 //    {
 //        PAYMENT_FEE = 0,
-//        REFERRAL_FEE = 1,
-//    	OFFER_FEE = 2,
-//        FORFEIT_FEE = 3,
-//        EMISSION_FEE = 4
+//    	OFFER_FEE = 1,
+//        WITHDRAWAL_FEE = 2,
+//        EMISSION_FEE = 3
 //    };
 //
 type FeeType int32
 
 const (
-	FeeTypePaymentFee  FeeType = 0
-	FeeTypeReferralFee FeeType = 1
-	FeeTypeOfferFee    FeeType = 2
-	FeeTypeForfeitFee  FeeType = 3
-	FeeTypeEmissionFee FeeType = 4
+	FeeTypePaymentFee    FeeType = 0
+	FeeTypeOfferFee      FeeType = 1
+	FeeTypeWithdrawalFee FeeType = 2
+	FeeTypeEmissionFee   FeeType = 3
 )
 
 var FeeTypeAll = []FeeType{
 	FeeTypePaymentFee,
-	FeeTypeReferralFee,
 	FeeTypeOfferFee,
-	FeeTypeForfeitFee,
+	FeeTypeWithdrawalFee,
 	FeeTypeEmissionFee,
 }
 
 var feeTypeMap = map[int32]string{
 	0: "FeeTypePaymentFee",
-	1: "FeeTypeReferralFee",
-	2: "FeeTypeOfferFee",
-	3: "FeeTypeForfeitFee",
-	4: "FeeTypeEmissionFee",
+	1: "FeeTypeOfferFee",
+	2: "FeeTypeWithdrawalFee",
+	3: "FeeTypeEmissionFee",
 }
 
 var feeTypeShortMap = map[int32]string{
 	0: "payment_fee",
-	1: "referral_fee",
-	2: "offer_fee",
-	3: "forfeit_fee",
-	4: "emission_fee",
+	1: "offer_fee",
+	2: "withdrawal_fee",
+	3: "emission_fee",
 }
 
 var feeTypeRevMap = map[string]int32{
-	"FeeTypePaymentFee":  0,
-	"FeeTypeReferralFee": 1,
-	"FeeTypeOfferFee":    2,
-	"FeeTypeForfeitFee":  3,
-	"FeeTypeEmissionFee": 4,
+	"FeeTypePaymentFee":    0,
+	"FeeTypeOfferFee":      1,
+	"FeeTypeWithdrawalFee": 2,
+	"FeeTypeEmissionFee":   3,
 }
 
 // ValidEnum validates a proposed value for this enum.  Implements
@@ -1268,6 +2051,15 @@ var feeTypeRevMap = map[string]int32{
 func (e FeeType) ValidEnum(v int32) bool {
 	_, ok := feeTypeMap[v]
 	return ok
+}
+func (e FeeType) isFlag() bool {
+	for i := len(FeeTypeAll) - 1; i >= 0; i-- {
+		expected := FeeType(2) << uint64(len(FeeTypeAll)-1) >> uint64(len(FeeTypeAll)-i)
+		if expected != FeeTypeAll[i] {
+			return false
+		}
+	}
+	return true
 }
 
 // String returns the name of `e`
@@ -1282,22 +2074,36 @@ func (e FeeType) ShortString() string {
 }
 
 func (e FeeType) MarshalJSON() ([]byte, error) {
-	return []byte("\"" + e.String() + "\""), nil
+	if e.isFlag() {
+		// marshal as mask
+		result := flag{
+			Value: int32(e),
+		}
+		for _, value := range FeeTypeAll {
+			if (value & e) == value {
+				result.Flags = append(result.Flags, flagValue{
+					Value: int32(value),
+					Name:  value.ShortString(),
+				})
+			}
+		}
+		return json.Marshal(&result)
+	} else {
+		// marshal as enum
+		result := enum{
+			Value:  int32(e),
+			String: e.ShortString(),
+		}
+		return json.Marshal(&result)
+	}
 }
 
-func (e *FeeType) UnmarshalJSON(d []byte) error {
-	var raw string
-	err := json.Unmarshal(d, &raw)
-	if err != nil {
+func (e *FeeType) UnmarshalJSON(data []byte) error {
+	var t value
+	if err := json.Unmarshal(data, &t); err != nil {
 		return err
 	}
-
-	value, ok := feeTypeRevMap[raw]
-	if !ok {
-		return fmt.Errorf("unexpected json value: %s", raw)
-	}
-
-	*e = FeeType(value)
+	*e = FeeType(t.Value)
 	return nil
 }
 
@@ -1342,6 +2148,15 @@ func (e EmissionFeeType) ValidEnum(v int32) bool {
 	_, ok := emissionFeeTypeMap[v]
 	return ok
 }
+func (e EmissionFeeType) isFlag() bool {
+	for i := len(EmissionFeeTypeAll) - 1; i >= 0; i-- {
+		expected := EmissionFeeType(2) << uint64(len(EmissionFeeTypeAll)-1) >> uint64(len(EmissionFeeTypeAll)-i)
+		if expected != EmissionFeeTypeAll[i] {
+			return false
+		}
+	}
+	return true
+}
 
 // String returns the name of `e`
 func (e EmissionFeeType) String() string {
@@ -1355,22 +2170,36 @@ func (e EmissionFeeType) ShortString() string {
 }
 
 func (e EmissionFeeType) MarshalJSON() ([]byte, error) {
-	return []byte("\"" + e.String() + "\""), nil
+	if e.isFlag() {
+		// marshal as mask
+		result := flag{
+			Value: int32(e),
+		}
+		for _, value := range EmissionFeeTypeAll {
+			if (value & e) == value {
+				result.Flags = append(result.Flags, flagValue{
+					Value: int32(value),
+					Name:  value.ShortString(),
+				})
+			}
+		}
+		return json.Marshal(&result)
+	} else {
+		// marshal as enum
+		result := enum{
+			Value:  int32(e),
+			String: e.ShortString(),
+		}
+		return json.Marshal(&result)
+	}
 }
 
-func (e *EmissionFeeType) UnmarshalJSON(d []byte) error {
-	var raw string
-	err := json.Unmarshal(d, &raw)
-	if err != nil {
+func (e *EmissionFeeType) UnmarshalJSON(data []byte) error {
+	var t value
+	if err := json.Unmarshal(data, &t); err != nil {
 		return err
 	}
-
-	value, ok := emissionFeeTypeRevMap[raw]
-	if !ok {
-		return fmt.Errorf("unexpected json value: %s", raw)
-	}
-
-	*e = EmissionFeeType(value)
+	*e = EmissionFeeType(t.Value)
 	return nil
 }
 
@@ -1495,6 +2324,15 @@ func (e InvoiceState) ValidEnum(v int32) bool {
 	_, ok := invoiceStateMap[v]
 	return ok
 }
+func (e InvoiceState) isFlag() bool {
+	for i := len(InvoiceStateAll) - 1; i >= 0; i-- {
+		expected := InvoiceState(2) << uint64(len(InvoiceStateAll)-1) >> uint64(len(InvoiceStateAll)-i)
+		if expected != InvoiceStateAll[i] {
+			return false
+		}
+	}
+	return true
+}
 
 // String returns the name of `e`
 func (e InvoiceState) String() string {
@@ -1508,22 +2346,36 @@ func (e InvoiceState) ShortString() string {
 }
 
 func (e InvoiceState) MarshalJSON() ([]byte, error) {
-	return []byte("\"" + e.String() + "\""), nil
+	if e.isFlag() {
+		// marshal as mask
+		result := flag{
+			Value: int32(e),
+		}
+		for _, value := range InvoiceStateAll {
+			if (value & e) == value {
+				result.Flags = append(result.Flags, flagValue{
+					Value: int32(value),
+					Name:  value.ShortString(),
+				})
+			}
+		}
+		return json.Marshal(&result)
+	} else {
+		// marshal as enum
+		result := enum{
+			Value:  int32(e),
+			String: e.ShortString(),
+		}
+		return json.Marshal(&result)
+	}
 }
 
-func (e *InvoiceState) UnmarshalJSON(d []byte) error {
-	var raw string
-	err := json.Unmarshal(d, &raw)
-	if err != nil {
+func (e *InvoiceState) UnmarshalJSON(data []byte) error {
+	var t value
+	if err := json.Unmarshal(data, &t); err != nil {
 		return err
 	}
-
-	value, ok := invoiceStateRevMap[raw]
-	if !ok {
-		return fmt.Errorf("unexpected json value: %s", raw)
-	}
-
-	*e = InvoiceState(value)
+	*e = InvoiceState(t.Value)
 	return nil
 }
 
@@ -1734,6 +2586,15 @@ func (e RequestType) ValidEnum(v int32) bool {
 	_, ok := requestTypeMap[v]
 	return ok
 }
+func (e RequestType) isFlag() bool {
+	for i := len(RequestTypeAll) - 1; i >= 0; i-- {
+		expected := RequestType(2) << uint64(len(RequestTypeAll)-1) >> uint64(len(RequestTypeAll)-i)
+		if expected != RequestTypeAll[i] {
+			return false
+		}
+	}
+	return true
+}
 
 // String returns the name of `e`
 func (e RequestType) String() string {
@@ -1747,22 +2608,36 @@ func (e RequestType) ShortString() string {
 }
 
 func (e RequestType) MarshalJSON() ([]byte, error) {
-	return []byte("\"" + e.String() + "\""), nil
+	if e.isFlag() {
+		// marshal as mask
+		result := flag{
+			Value: int32(e),
+		}
+		for _, value := range RequestTypeAll {
+			if (value & e) == value {
+				result.Flags = append(result.Flags, flagValue{
+					Value: int32(value),
+					Name:  value.ShortString(),
+				})
+			}
+		}
+		return json.Marshal(&result)
+	} else {
+		// marshal as enum
+		result := enum{
+			Value:  int32(e),
+			String: e.ShortString(),
+		}
+		return json.Marshal(&result)
+	}
 }
 
-func (e *RequestType) UnmarshalJSON(d []byte) error {
-	var raw string
-	err := json.Unmarshal(d, &raw)
-	if err != nil {
+func (e *RequestType) UnmarshalJSON(data []byte) error {
+	var t value
+	if err := json.Unmarshal(data, &t); err != nil {
 		return err
 	}
-
-	value, ok := requestTypeRevMap[raw]
-	if !ok {
-		return fmt.Errorf("unexpected json value: %s", raw)
-	}
-
-	*e = RequestType(value)
+	*e = RequestType(t.Value)
 	return nil
 }
 
@@ -1907,7 +2782,8 @@ type ReferenceEntry struct {
 //        ASSET_CREATE = 0,
 //    	ASSET_UPDATE = 1,
 //    	PRE_ISSUANCE_CREATE = 2,
-//    	ISSUANCE_CREATE = 3
+//    	ISSUANCE_CREATE = 3,
+//    	WITHDRAW = 4
 //
 //    };
 //
@@ -1918,6 +2794,7 @@ const (
 	ReviewableRequestTypeAssetUpdate       ReviewableRequestType = 1
 	ReviewableRequestTypePreIssuanceCreate ReviewableRequestType = 2
 	ReviewableRequestTypeIssuanceCreate    ReviewableRequestType = 3
+	ReviewableRequestTypeWithdraw          ReviewableRequestType = 4
 )
 
 var ReviewableRequestTypeAll = []ReviewableRequestType{
@@ -1925,6 +2802,7 @@ var ReviewableRequestTypeAll = []ReviewableRequestType{
 	ReviewableRequestTypeAssetUpdate,
 	ReviewableRequestTypePreIssuanceCreate,
 	ReviewableRequestTypeIssuanceCreate,
+	ReviewableRequestTypeWithdraw,
 }
 
 var reviewableRequestTypeMap = map[int32]string{
@@ -1932,6 +2810,7 @@ var reviewableRequestTypeMap = map[int32]string{
 	1: "ReviewableRequestTypeAssetUpdate",
 	2: "ReviewableRequestTypePreIssuanceCreate",
 	3: "ReviewableRequestTypeIssuanceCreate",
+	4: "ReviewableRequestTypeWithdraw",
 }
 
 var reviewableRequestTypeShortMap = map[int32]string{
@@ -1939,6 +2818,7 @@ var reviewableRequestTypeShortMap = map[int32]string{
 	1: "asset_update",
 	2: "pre_issuance_create",
 	3: "issuance_create",
+	4: "withdraw",
 }
 
 var reviewableRequestTypeRevMap = map[string]int32{
@@ -1946,6 +2826,7 @@ var reviewableRequestTypeRevMap = map[string]int32{
 	"ReviewableRequestTypeAssetUpdate":       1,
 	"ReviewableRequestTypePreIssuanceCreate": 2,
 	"ReviewableRequestTypeIssuanceCreate":    3,
+	"ReviewableRequestTypeWithdraw":          4,
 }
 
 // ValidEnum validates a proposed value for this enum.  Implements
@@ -1953,6 +2834,15 @@ var reviewableRequestTypeRevMap = map[string]int32{
 func (e ReviewableRequestType) ValidEnum(v int32) bool {
 	_, ok := reviewableRequestTypeMap[v]
 	return ok
+}
+func (e ReviewableRequestType) isFlag() bool {
+	for i := len(ReviewableRequestTypeAll) - 1; i >= 0; i-- {
+		expected := ReviewableRequestType(2) << uint64(len(ReviewableRequestTypeAll)-1) >> uint64(len(ReviewableRequestTypeAll)-i)
+		if expected != ReviewableRequestTypeAll[i] {
+			return false
+		}
+	}
+	return true
 }
 
 // String returns the name of `e`
@@ -1967,22 +2857,36 @@ func (e ReviewableRequestType) ShortString() string {
 }
 
 func (e ReviewableRequestType) MarshalJSON() ([]byte, error) {
-	return []byte("\"" + e.String() + "\""), nil
+	if e.isFlag() {
+		// marshal as mask
+		result := flag{
+			Value: int32(e),
+		}
+		for _, value := range ReviewableRequestTypeAll {
+			if (value & e) == value {
+				result.Flags = append(result.Flags, flagValue{
+					Value: int32(value),
+					Name:  value.ShortString(),
+				})
+			}
+		}
+		return json.Marshal(&result)
+	} else {
+		// marshal as enum
+		result := enum{
+			Value:  int32(e),
+			String: e.ShortString(),
+		}
+		return json.Marshal(&result)
+	}
 }
 
-func (e *ReviewableRequestType) UnmarshalJSON(d []byte) error {
-	var raw string
-	err := json.Unmarshal(d, &raw)
-	if err != nil {
+func (e *ReviewableRequestType) UnmarshalJSON(data []byte) error {
+	var t value
+	if err := json.Unmarshal(data, &t); err != nil {
 		return err
 	}
-
-	value, ok := reviewableRequestTypeRevMap[raw]
-	if !ok {
-		return fmt.Errorf("unexpected json value: %s", raw)
-	}
-
-	*e = ReviewableRequestType(value)
+	*e = ReviewableRequestType(t.Value)
 	return nil
 }
 
@@ -1997,6 +2901,8 @@ func (e *ReviewableRequestType) UnmarshalJSON(d []byte) error {
 //    			PreIssuanceRequest preIssuanceRequest;
 //    		case ISSUANCE_CREATE:
 //    			IssuanceRequest issuanceRequest;
+//    		case WITHDRAW:
+//    			WithdrawalRequest withdrawalRequest;
 //    	}
 //
 type ReviewableRequestEntryBody struct {
@@ -2005,6 +2911,7 @@ type ReviewableRequestEntryBody struct {
 	AssetUpdateRequest   *AssetUpdateRequest   `json:"assetUpdateRequest,omitempty"`
 	PreIssuanceRequest   *PreIssuanceRequest   `json:"preIssuanceRequest,omitempty"`
 	IssuanceRequest      *IssuanceRequest      `json:"issuanceRequest,omitempty"`
+	WithdrawalRequest    *WithdrawalRequest    `json:"withdrawalRequest,omitempty"`
 }
 
 // SwitchFieldName returns the field name in which this union's
@@ -2025,6 +2932,8 @@ func (u ReviewableRequestEntryBody) ArmForSwitch(sw int32) (string, bool) {
 		return "PreIssuanceRequest", true
 	case ReviewableRequestTypeIssuanceCreate:
 		return "IssuanceRequest", true
+	case ReviewableRequestTypeWithdraw:
+		return "WithdrawalRequest", true
 	}
 	return "-", false
 }
@@ -2061,6 +2970,13 @@ func NewReviewableRequestEntryBody(aType ReviewableRequestType, value interface{
 			return
 		}
 		result.IssuanceRequest = &tv
+	case ReviewableRequestTypeWithdraw:
+		tv, ok := value.(WithdrawalRequest)
+		if !ok {
+			err = fmt.Errorf("invalid value, must be WithdrawalRequest")
+			return
+		}
+		result.WithdrawalRequest = &tv
 	}
 	return
 }
@@ -2165,6 +3081,31 @@ func (u ReviewableRequestEntryBody) GetIssuanceRequest() (result IssuanceRequest
 	return
 }
 
+// MustWithdrawalRequest retrieves the WithdrawalRequest value from the union,
+// panicing if the value is not set.
+func (u ReviewableRequestEntryBody) MustWithdrawalRequest() WithdrawalRequest {
+	val, ok := u.GetWithdrawalRequest()
+
+	if !ok {
+		panic("arm WithdrawalRequest is not set")
+	}
+
+	return val
+}
+
+// GetWithdrawalRequest retrieves the WithdrawalRequest value from the union,
+// returning ok if the union's switch indicated the value is valid.
+func (u ReviewableRequestEntryBody) GetWithdrawalRequest() (result WithdrawalRequest, ok bool) {
+	armName, _ := u.ArmForSwitch(int32(u.Type))
+
+	if armName == "WithdrawalRequest" {
+		result = *u.WithdrawalRequest
+		ok = true
+	}
+
+	return
+}
+
 // ReviewableRequestEntryExt is an XDR NestedUnion defines as:
 //
 //   union switch (LedgerVersion v)
@@ -2222,6 +3163,8 @@ func NewReviewableRequestEntryExt(v LedgerVersion, value interface{}) (result Re
 //    			PreIssuanceRequest preIssuanceRequest;
 //    		case ISSUANCE_CREATE:
 //    			IssuanceRequest issuanceRequest;
+//    		case WITHDRAW:
+//    			WithdrawalRequest withdrawalRequest;
 //    	} body;
 //
 //    	// reserved for future use
@@ -2367,6 +3310,15 @@ func (e ThresholdIndexes) ValidEnum(v int32) bool {
 	_, ok := thresholdIndexesMap[v]
 	return ok
 }
+func (e ThresholdIndexes) isFlag() bool {
+	for i := len(ThresholdIndexesAll) - 1; i >= 0; i-- {
+		expected := ThresholdIndexes(2) << uint64(len(ThresholdIndexesAll)-1) >> uint64(len(ThresholdIndexesAll)-i)
+		if expected != ThresholdIndexesAll[i] {
+			return false
+		}
+	}
+	return true
+}
 
 // String returns the name of `e`
 func (e ThresholdIndexes) String() string {
@@ -2380,22 +3332,36 @@ func (e ThresholdIndexes) ShortString() string {
 }
 
 func (e ThresholdIndexes) MarshalJSON() ([]byte, error) {
-	return []byte("\"" + e.String() + "\""), nil
+	if e.isFlag() {
+		// marshal as mask
+		result := flag{
+			Value: int32(e),
+		}
+		for _, value := range ThresholdIndexesAll {
+			if (value & e) == value {
+				result.Flags = append(result.Flags, flagValue{
+					Value: int32(value),
+					Name:  value.ShortString(),
+				})
+			}
+		}
+		return json.Marshal(&result)
+	} else {
+		// marshal as enum
+		result := enum{
+			Value:  int32(e),
+			String: e.ShortString(),
+		}
+		return json.Marshal(&result)
+	}
 }
 
-func (e *ThresholdIndexes) UnmarshalJSON(d []byte) error {
-	var raw string
-	err := json.Unmarshal(d, &raw)
-	if err != nil {
+func (e *ThresholdIndexes) UnmarshalJSON(data []byte) error {
+	var t value
+	if err := json.Unmarshal(data, &t); err != nil {
 		return err
 	}
-
-	value, ok := thresholdIndexesRevMap[raw]
-	if !ok {
-		return fmt.Errorf("unexpected json value: %s", raw)
-	}
-
-	*e = ThresholdIndexes(value)
+	*e = ThresholdIndexes(t.Value)
 	return nil
 }
 
@@ -2416,26 +3382,28 @@ func (e *ThresholdIndexes) UnmarshalJSON(d []byte) error {
 //    	ASSET_PAIR = 12,
 //    	OFFER_ENTRY = 13,
 //        INVOICE = 14,
-//    	REVIEWABLE_REQUEST = 15
+//    	REVIEWABLE_REQUEST = 15,
+//    	EXTERNAL_SYSTEM_ACCOUNT_ID = 16
 //    };
 //
 type LedgerEntryType int32
 
 const (
-	LedgerEntryTypeAccount           LedgerEntryType = 0
-	LedgerEntryTypeFee               LedgerEntryType = 2
-	LedgerEntryTypeBalance           LedgerEntryType = 4
-	LedgerEntryTypePaymentRequest    LedgerEntryType = 5
-	LedgerEntryTypeAsset             LedgerEntryType = 6
-	LedgerEntryTypeReferenceEntry    LedgerEntryType = 7
-	LedgerEntryTypeAccountTypeLimits LedgerEntryType = 8
-	LedgerEntryTypeStatistics        LedgerEntryType = 9
-	LedgerEntryTypeTrust             LedgerEntryType = 10
-	LedgerEntryTypeAccountLimits     LedgerEntryType = 11
-	LedgerEntryTypeAssetPair         LedgerEntryType = 12
-	LedgerEntryTypeOfferEntry        LedgerEntryType = 13
-	LedgerEntryTypeInvoice           LedgerEntryType = 14
-	LedgerEntryTypeReviewableRequest LedgerEntryType = 15
+	LedgerEntryTypeAccount                 LedgerEntryType = 0
+	LedgerEntryTypeFee                     LedgerEntryType = 2
+	LedgerEntryTypeBalance                 LedgerEntryType = 4
+	LedgerEntryTypePaymentRequest          LedgerEntryType = 5
+	LedgerEntryTypeAsset                   LedgerEntryType = 6
+	LedgerEntryTypeReferenceEntry          LedgerEntryType = 7
+	LedgerEntryTypeAccountTypeLimits       LedgerEntryType = 8
+	LedgerEntryTypeStatistics              LedgerEntryType = 9
+	LedgerEntryTypeTrust                   LedgerEntryType = 10
+	LedgerEntryTypeAccountLimits           LedgerEntryType = 11
+	LedgerEntryTypeAssetPair               LedgerEntryType = 12
+	LedgerEntryTypeOfferEntry              LedgerEntryType = 13
+	LedgerEntryTypeInvoice                 LedgerEntryType = 14
+	LedgerEntryTypeReviewableRequest       LedgerEntryType = 15
+	LedgerEntryTypeExternalSystemAccountId LedgerEntryType = 16
 )
 
 var LedgerEntryTypeAll = []LedgerEntryType{
@@ -2453,6 +3421,7 @@ var LedgerEntryTypeAll = []LedgerEntryType{
 	LedgerEntryTypeOfferEntry,
 	LedgerEntryTypeInvoice,
 	LedgerEntryTypeReviewableRequest,
+	LedgerEntryTypeExternalSystemAccountId,
 }
 
 var ledgerEntryTypeMap = map[int32]string{
@@ -2470,6 +3439,7 @@ var ledgerEntryTypeMap = map[int32]string{
 	13: "LedgerEntryTypeOfferEntry",
 	14: "LedgerEntryTypeInvoice",
 	15: "LedgerEntryTypeReviewableRequest",
+	16: "LedgerEntryTypeExternalSystemAccountId",
 }
 
 var ledgerEntryTypeShortMap = map[int32]string{
@@ -2487,23 +3457,25 @@ var ledgerEntryTypeShortMap = map[int32]string{
 	13: "offer_entry",
 	14: "invoice",
 	15: "reviewable_request",
+	16: "external_system_account_id",
 }
 
 var ledgerEntryTypeRevMap = map[string]int32{
-	"LedgerEntryTypeAccount":           0,
-	"LedgerEntryTypeFee":               2,
-	"LedgerEntryTypeBalance":           4,
-	"LedgerEntryTypePaymentRequest":    5,
-	"LedgerEntryTypeAsset":             6,
-	"LedgerEntryTypeReferenceEntry":    7,
-	"LedgerEntryTypeAccountTypeLimits": 8,
-	"LedgerEntryTypeStatistics":        9,
-	"LedgerEntryTypeTrust":             10,
-	"LedgerEntryTypeAccountLimits":     11,
-	"LedgerEntryTypeAssetPair":         12,
-	"LedgerEntryTypeOfferEntry":        13,
-	"LedgerEntryTypeInvoice":           14,
-	"LedgerEntryTypeReviewableRequest": 15,
+	"LedgerEntryTypeAccount":                 0,
+	"LedgerEntryTypeFee":                     2,
+	"LedgerEntryTypeBalance":                 4,
+	"LedgerEntryTypePaymentRequest":          5,
+	"LedgerEntryTypeAsset":                   6,
+	"LedgerEntryTypeReferenceEntry":          7,
+	"LedgerEntryTypeAccountTypeLimits":       8,
+	"LedgerEntryTypeStatistics":              9,
+	"LedgerEntryTypeTrust":                   10,
+	"LedgerEntryTypeAccountLimits":           11,
+	"LedgerEntryTypeAssetPair":               12,
+	"LedgerEntryTypeOfferEntry":              13,
+	"LedgerEntryTypeInvoice":                 14,
+	"LedgerEntryTypeReviewableRequest":       15,
+	"LedgerEntryTypeExternalSystemAccountId": 16,
 }
 
 // ValidEnum validates a proposed value for this enum.  Implements
@@ -2511,6 +3483,15 @@ var ledgerEntryTypeRevMap = map[string]int32{
 func (e LedgerEntryType) ValidEnum(v int32) bool {
 	_, ok := ledgerEntryTypeMap[v]
 	return ok
+}
+func (e LedgerEntryType) isFlag() bool {
+	for i := len(LedgerEntryTypeAll) - 1; i >= 0; i-- {
+		expected := LedgerEntryType(2) << uint64(len(LedgerEntryTypeAll)-1) >> uint64(len(LedgerEntryTypeAll)-i)
+		if expected != LedgerEntryTypeAll[i] {
+			return false
+		}
+	}
+	return true
 }
 
 // String returns the name of `e`
@@ -2525,22 +3506,36 @@ func (e LedgerEntryType) ShortString() string {
 }
 
 func (e LedgerEntryType) MarshalJSON() ([]byte, error) {
-	return []byte("\"" + e.String() + "\""), nil
+	if e.isFlag() {
+		// marshal as mask
+		result := flag{
+			Value: int32(e),
+		}
+		for _, value := range LedgerEntryTypeAll {
+			if (value & e) == value {
+				result.Flags = append(result.Flags, flagValue{
+					Value: int32(value),
+					Name:  value.ShortString(),
+				})
+			}
+		}
+		return json.Marshal(&result)
+	} else {
+		// marshal as enum
+		result := enum{
+			Value:  int32(e),
+			String: e.ShortString(),
+		}
+		return json.Marshal(&result)
+	}
 }
 
-func (e *LedgerEntryType) UnmarshalJSON(d []byte) error {
-	var raw string
-	err := json.Unmarshal(d, &raw)
-	if err != nil {
+func (e *LedgerEntryType) UnmarshalJSON(data []byte) error {
+	var t value
+	if err := json.Unmarshal(data, &t); err != nil {
 		return err
 	}
-
-	value, ok := ledgerEntryTypeRevMap[raw]
-	if !ok {
-		return fmt.Errorf("unexpected json value: %s", raw)
-	}
-
-	*e = LedgerEntryType(value)
+	*e = LedgerEntryType(t.Value)
 	return nil
 }
 
@@ -2576,24 +3571,27 @@ func (e *LedgerEntryType) UnmarshalJSON(d []byte) error {
 //            InvoiceEntry invoice;
 //    	case REVIEWABLE_REQUEST:
 //    		ReviewableRequestEntry reviewableRequest;
+//    	case EXTERNAL_SYSTEM_ACCOUNT_ID:
+//    		ExternalSystemAccountID externalSystemAccountID;
 //        }
 //
 type LedgerEntryData struct {
-	Type              LedgerEntryType         `json:"type,omitempty"`
-	Account           *AccountEntry           `json:"account,omitempty"`
-	FeeState          *FeeEntry               `json:"feeState,omitempty"`
-	Balance           *BalanceEntry           `json:"balance,omitempty"`
-	PaymentRequest    *PaymentRequestEntry    `json:"paymentRequest,omitempty"`
-	Asset             *AssetEntry             `json:"asset,omitempty"`
-	Reference         *ReferenceEntry         `json:"reference,omitempty"`
-	AccountTypeLimits *AccountTypeLimitsEntry `json:"accountTypeLimits,omitempty"`
-	Stats             *StatisticsEntry        `json:"stats,omitempty"`
-	Trust             *TrustEntry             `json:"trust,omitempty"`
-	AccountLimits     *AccountLimitsEntry     `json:"accountLimits,omitempty"`
-	AssetPair         *AssetPairEntry         `json:"assetPair,omitempty"`
-	Offer             *OfferEntry             `json:"offer,omitempty"`
-	Invoice           *InvoiceEntry           `json:"invoice,omitempty"`
-	ReviewableRequest *ReviewableRequestEntry `json:"reviewableRequest,omitempty"`
+	Type                    LedgerEntryType          `json:"type,omitempty"`
+	Account                 *AccountEntry            `json:"account,omitempty"`
+	FeeState                *FeeEntry                `json:"feeState,omitempty"`
+	Balance                 *BalanceEntry            `json:"balance,omitempty"`
+	PaymentRequest          *PaymentRequestEntry     `json:"paymentRequest,omitempty"`
+	Asset                   *AssetEntry              `json:"asset,omitempty"`
+	Reference               *ReferenceEntry          `json:"reference,omitempty"`
+	AccountTypeLimits       *AccountTypeLimitsEntry  `json:"accountTypeLimits,omitempty"`
+	Stats                   *StatisticsEntry         `json:"stats,omitempty"`
+	Trust                   *TrustEntry              `json:"trust,omitempty"`
+	AccountLimits           *AccountLimitsEntry      `json:"accountLimits,omitempty"`
+	AssetPair               *AssetPairEntry          `json:"assetPair,omitempty"`
+	Offer                   *OfferEntry              `json:"offer,omitempty"`
+	Invoice                 *InvoiceEntry            `json:"invoice,omitempty"`
+	ReviewableRequest       *ReviewableRequestEntry  `json:"reviewableRequest,omitempty"`
+	ExternalSystemAccountId *ExternalSystemAccountId `json:"externalSystemAccountID,omitempty"`
 }
 
 // SwitchFieldName returns the field name in which this union's
@@ -2634,6 +3632,8 @@ func (u LedgerEntryData) ArmForSwitch(sw int32) (string, bool) {
 		return "Invoice", true
 	case LedgerEntryTypeReviewableRequest:
 		return "ReviewableRequest", true
+	case LedgerEntryTypeExternalSystemAccountId:
+		return "ExternalSystemAccountId", true
 	}
 	return "-", false
 }
@@ -2740,6 +3740,13 @@ func NewLedgerEntryData(aType LedgerEntryType, value interface{}) (result Ledger
 			return
 		}
 		result.ReviewableRequest = &tv
+	case LedgerEntryTypeExternalSystemAccountId:
+		tv, ok := value.(ExternalSystemAccountId)
+		if !ok {
+			err = fmt.Errorf("invalid value, must be ExternalSystemAccountId")
+			return
+		}
+		result.ExternalSystemAccountId = &tv
 	}
 	return
 }
@@ -3094,6 +4101,31 @@ func (u LedgerEntryData) GetReviewableRequest() (result ReviewableRequestEntry, 
 	return
 }
 
+// MustExternalSystemAccountId retrieves the ExternalSystemAccountId value from the union,
+// panicing if the value is not set.
+func (u LedgerEntryData) MustExternalSystemAccountId() ExternalSystemAccountId {
+	val, ok := u.GetExternalSystemAccountId()
+
+	if !ok {
+		panic("arm ExternalSystemAccountId is not set")
+	}
+
+	return val
+}
+
+// GetExternalSystemAccountId retrieves the ExternalSystemAccountId value from the union,
+// returning ok if the union's switch indicated the value is valid.
+func (u LedgerEntryData) GetExternalSystemAccountId() (result ExternalSystemAccountId, ok bool) {
+	armName, _ := u.ArmForSwitch(int32(u.Type))
+
+	if armName == "ExternalSystemAccountId" {
+		result = *u.ExternalSystemAccountId
+		ok = true
+	}
+
+	return
+}
+
 // LedgerEntryExt is an XDR NestedUnion defines as:
 //
 //   union switch (LedgerVersion v)
@@ -3168,6 +4200,8 @@ func NewLedgerEntryExt(v LedgerVersion, value interface{}) (result LedgerEntryEx
 //            InvoiceEntry invoice;
 //    	case REVIEWABLE_REQUEST:
 //    		ReviewableRequestEntry reviewableRequest;
+//    	case EXTERNAL_SYSTEM_ACCOUNT_ID:
+//    		ExternalSystemAccountID externalSystemAccountID;
 //        }
 //        data;
 //
@@ -3233,6 +4267,15 @@ func (e EnvelopeType) ValidEnum(v int32) bool {
 	_, ok := envelopeTypeMap[v]
 	return ok
 }
+func (e EnvelopeType) isFlag() bool {
+	for i := len(EnvelopeTypeAll) - 1; i >= 0; i-- {
+		expected := EnvelopeType(2) << uint64(len(EnvelopeTypeAll)-1) >> uint64(len(EnvelopeTypeAll)-i)
+		if expected != EnvelopeTypeAll[i] {
+			return false
+		}
+	}
+	return true
+}
 
 // String returns the name of `e`
 func (e EnvelopeType) String() string {
@@ -3246,22 +4289,131 @@ func (e EnvelopeType) ShortString() string {
 }
 
 func (e EnvelopeType) MarshalJSON() ([]byte, error) {
-	return []byte("\"" + e.String() + "\""), nil
+	if e.isFlag() {
+		// marshal as mask
+		result := flag{
+			Value: int32(e),
+		}
+		for _, value := range EnvelopeTypeAll {
+			if (value & e) == value {
+				result.Flags = append(result.Flags, flagValue{
+					Value: int32(value),
+					Name:  value.ShortString(),
+				})
+			}
+		}
+		return json.Marshal(&result)
+	} else {
+		// marshal as enum
+		result := enum{
+			Value:  int32(e),
+			String: e.ShortString(),
+		}
+		return json.Marshal(&result)
+	}
 }
 
-func (e *EnvelopeType) UnmarshalJSON(d []byte) error {
-	var raw string
-	err := json.Unmarshal(d, &raw)
-	if err != nil {
+func (e *EnvelopeType) UnmarshalJSON(data []byte) error {
+	var t value
+	if err := json.Unmarshal(data, &t); err != nil {
 		return err
 	}
+	*e = EnvelopeType(t.Value)
+	return nil
+}
 
-	value, ok := envelopeTypeRevMap[raw]
-	if !ok {
-		return fmt.Errorf("unexpected json value: %s", raw)
+// ExternalSystemIdGeneratorType is an XDR Enum defines as:
+//
+//   enum ExternalSystemIDGeneratorType {
+//    	BITCOIN_BASIC = 1,
+//    	ETHEREUM_BASIC = 2
+//    };
+//
+type ExternalSystemIdGeneratorType int32
+
+const (
+	ExternalSystemIdGeneratorTypeBitcoinBasic  ExternalSystemIdGeneratorType = 1
+	ExternalSystemIdGeneratorTypeEthereumBasic ExternalSystemIdGeneratorType = 2
+)
+
+var ExternalSystemIdGeneratorTypeAll = []ExternalSystemIdGeneratorType{
+	ExternalSystemIdGeneratorTypeBitcoinBasic,
+	ExternalSystemIdGeneratorTypeEthereumBasic,
+}
+
+var externalSystemIdGeneratorTypeMap = map[int32]string{
+	1: "ExternalSystemIdGeneratorTypeBitcoinBasic",
+	2: "ExternalSystemIdGeneratorTypeEthereumBasic",
+}
+
+var externalSystemIdGeneratorTypeShortMap = map[int32]string{
+	1: "bitcoin_basic",
+	2: "ethereum_basic",
+}
+
+var externalSystemIdGeneratorTypeRevMap = map[string]int32{
+	"ExternalSystemIdGeneratorTypeBitcoinBasic":  1,
+	"ExternalSystemIdGeneratorTypeEthereumBasic": 2,
+}
+
+// ValidEnum validates a proposed value for this enum.  Implements
+// the Enum interface for ExternalSystemIdGeneratorType
+func (e ExternalSystemIdGeneratorType) ValidEnum(v int32) bool {
+	_, ok := externalSystemIdGeneratorTypeMap[v]
+	return ok
+}
+func (e ExternalSystemIdGeneratorType) isFlag() bool {
+	for i := len(ExternalSystemIdGeneratorTypeAll) - 1; i >= 0; i-- {
+		expected := ExternalSystemIdGeneratorType(2) << uint64(len(ExternalSystemIdGeneratorTypeAll)-1) >> uint64(len(ExternalSystemIdGeneratorTypeAll)-i)
+		if expected != ExternalSystemIdGeneratorTypeAll[i] {
+			return false
+		}
 	}
+	return true
+}
 
-	*e = EnvelopeType(value)
+// String returns the name of `e`
+func (e ExternalSystemIdGeneratorType) String() string {
+	name, _ := externalSystemIdGeneratorTypeMap[int32(e)]
+	return name
+}
+
+func (e ExternalSystemIdGeneratorType) ShortString() string {
+	name, _ := externalSystemIdGeneratorTypeShortMap[int32(e)]
+	return name
+}
+
+func (e ExternalSystemIdGeneratorType) MarshalJSON() ([]byte, error) {
+	if e.isFlag() {
+		// marshal as mask
+		result := flag{
+			Value: int32(e),
+		}
+		for _, value := range ExternalSystemIdGeneratorTypeAll {
+			if (value & e) == value {
+				result.Flags = append(result.Flags, flagValue{
+					Value: int32(value),
+					Name:  value.ShortString(),
+				})
+			}
+		}
+		return json.Marshal(&result)
+	} else {
+		// marshal as enum
+		result := enum{
+			Value:  int32(e),
+			String: e.ShortString(),
+		}
+		return json.Marshal(&result)
+	}
+}
+
+func (e *ExternalSystemIdGeneratorType) UnmarshalJSON(data []byte) error {
+	var t value
+	if err := json.Unmarshal(data, &t); err != nil {
+		return err
+	}
+	*e = ExternalSystemIdGeneratorType(t.Value)
 	return nil
 }
 
@@ -3339,6 +4491,18 @@ type StellarValue struct {
 	Ext       StellarValueExt `json:"ext,omitempty"`
 }
 
+// IdGenerator is an XDR Struct defines as:
+//
+//   struct IdGenerator {
+//    	LedgerEntryType entryType; // type of the entry, for which ids will be generated
+//    	uint64 idPool; // last used entry specific ID, used for generating entry of specified type
+//    };
+//
+type IdGenerator struct {
+	EntryType LedgerEntryType `json:"entryType,omitempty"`
+	IdPool    Uint64          `json:"idPool,omitempty"`
+}
+
 // LedgerHeaderExt is an XDR NestedUnion defines as:
 //
 //   union switch (LedgerVersion v)
@@ -3389,14 +4553,14 @@ func NewLedgerHeaderExt(v LedgerVersion, value interface{}) (result LedgerHeader
 //
 //        uint32 ledgerSeq; // sequence number of this ledger
 //
-//        uint64 idPool; // last used global ID, used for generating objects
+//        IdGenerator idGenerators<>; // generators of ids
 //
 //        uint32 baseFee;     // base fee per operation in stroops
 //        uint32 baseReserve; // account base reserve in stroops
 //
 //        uint32 maxTxSetSize; // maximum size a transaction set can be
 //
-//        PublicKey issuanceKeys<>;
+//        ExternalSystemIDGeneratorType externalSystemIDGenerators<>;
 //        int64 txExpirationPeriod;
 //
 //        Hash skipList[4]; // hashes of ledgers in the past. allows you to jump back
@@ -3415,20 +4579,20 @@ func NewLedgerHeaderExt(v LedgerVersion, value interface{}) (result LedgerHeader
 //    };
 //
 type LedgerHeader struct {
-	LedgerVersion      Uint32          `json:"ledgerVersion,omitempty"`
-	PreviousLedgerHash Hash            `json:"previousLedgerHash,omitempty"`
-	ScpValue           StellarValue    `json:"scpValue,omitempty"`
-	TxSetResultHash    Hash            `json:"txSetResultHash,omitempty"`
-	BucketListHash     Hash            `json:"bucketListHash,omitempty"`
-	LedgerSeq          Uint32          `json:"ledgerSeq,omitempty"`
-	IdPool             Uint64          `json:"idPool,omitempty"`
-	BaseFee            Uint32          `json:"baseFee,omitempty"`
-	BaseReserve        Uint32          `json:"baseReserve,omitempty"`
-	MaxTxSetSize       Uint32          `json:"maxTxSetSize,omitempty"`
-	IssuanceKeys       []PublicKey     `json:"issuanceKeys,omitempty"`
-	TxExpirationPeriod Int64           `json:"txExpirationPeriod,omitempty"`
-	SkipList           [4]Hash         `json:"skipList,omitempty"`
-	Ext                LedgerHeaderExt `json:"ext,omitempty"`
+	LedgerVersion              Uint32                          `json:"ledgerVersion,omitempty"`
+	PreviousLedgerHash         Hash                            `json:"previousLedgerHash,omitempty"`
+	ScpValue                   StellarValue                    `json:"scpValue,omitempty"`
+	TxSetResultHash            Hash                            `json:"txSetResultHash,omitempty"`
+	BucketListHash             Hash                            `json:"bucketListHash,omitempty"`
+	LedgerSeq                  Uint32                          `json:"ledgerSeq,omitempty"`
+	IdGenerators               []IdGenerator                   `json:"idGenerators,omitempty"`
+	BaseFee                    Uint32                          `json:"baseFee,omitempty"`
+	BaseReserve                Uint32                          `json:"baseReserve,omitempty"`
+	MaxTxSetSize               Uint32                          `json:"maxTxSetSize,omitempty"`
+	ExternalSystemIdGenerators []ExternalSystemIdGeneratorType `json:"externalSystemIDGenerators,omitempty"`
+	TxExpirationPeriod         Int64                           `json:"txExpirationPeriod,omitempty"`
+	SkipList                   [4]Hash                         `json:"skipList,omitempty"`
+	Ext                        LedgerHeaderExt                 `json:"ext,omitempty"`
 }
 
 // LedgerUpgradeType is an XDR Enum defines as:
@@ -3437,45 +4601,45 @@ type LedgerHeader struct {
 //    {
 //        VERSION = 1,
 //        MAX_TX_SET_SIZE = 2,
-//        ISSUANCE_KEYS = 3,
-//        TX_EXPIRATION_PERIOD = 4
+//        TX_EXPIRATION_PERIOD = 3,
+//    	EXTERNAL_SYSTEM_ID_GENERATOR = 4
 //    };
 //
 type LedgerUpgradeType int32
 
 const (
-	LedgerUpgradeTypeVersion            LedgerUpgradeType = 1
-	LedgerUpgradeTypeMaxTxSetSize       LedgerUpgradeType = 2
-	LedgerUpgradeTypeIssuanceKeys       LedgerUpgradeType = 3
-	LedgerUpgradeTypeTxExpirationPeriod LedgerUpgradeType = 4
+	LedgerUpgradeTypeVersion                   LedgerUpgradeType = 1
+	LedgerUpgradeTypeMaxTxSetSize              LedgerUpgradeType = 2
+	LedgerUpgradeTypeTxExpirationPeriod        LedgerUpgradeType = 3
+	LedgerUpgradeTypeExternalSystemIdGenerator LedgerUpgradeType = 4
 )
 
 var LedgerUpgradeTypeAll = []LedgerUpgradeType{
 	LedgerUpgradeTypeVersion,
 	LedgerUpgradeTypeMaxTxSetSize,
-	LedgerUpgradeTypeIssuanceKeys,
 	LedgerUpgradeTypeTxExpirationPeriod,
+	LedgerUpgradeTypeExternalSystemIdGenerator,
 }
 
 var ledgerUpgradeTypeMap = map[int32]string{
 	1: "LedgerUpgradeTypeVersion",
 	2: "LedgerUpgradeTypeMaxTxSetSize",
-	3: "LedgerUpgradeTypeIssuanceKeys",
-	4: "LedgerUpgradeTypeTxExpirationPeriod",
+	3: "LedgerUpgradeTypeTxExpirationPeriod",
+	4: "LedgerUpgradeTypeExternalSystemIdGenerator",
 }
 
 var ledgerUpgradeTypeShortMap = map[int32]string{
 	1: "version",
 	2: "max_tx_set_size",
-	3: "issuance_keys",
-	4: "tx_expiration_period",
+	3: "tx_expiration_period",
+	4: "external_system_id_generator",
 }
 
 var ledgerUpgradeTypeRevMap = map[string]int32{
-	"LedgerUpgradeTypeVersion":            1,
-	"LedgerUpgradeTypeMaxTxSetSize":       2,
-	"LedgerUpgradeTypeIssuanceKeys":       3,
-	"LedgerUpgradeTypeTxExpirationPeriod": 4,
+	"LedgerUpgradeTypeVersion":                   1,
+	"LedgerUpgradeTypeMaxTxSetSize":              2,
+	"LedgerUpgradeTypeTxExpirationPeriod":        3,
+	"LedgerUpgradeTypeExternalSystemIdGenerator": 4,
 }
 
 // ValidEnum validates a proposed value for this enum.  Implements
@@ -3483,6 +4647,15 @@ var ledgerUpgradeTypeRevMap = map[string]int32{
 func (e LedgerUpgradeType) ValidEnum(v int32) bool {
 	_, ok := ledgerUpgradeTypeMap[v]
 	return ok
+}
+func (e LedgerUpgradeType) isFlag() bool {
+	for i := len(LedgerUpgradeTypeAll) - 1; i >= 0; i-- {
+		expected := LedgerUpgradeType(2) << uint64(len(LedgerUpgradeTypeAll)-1) >> uint64(len(LedgerUpgradeTypeAll)-i)
+		if expected != LedgerUpgradeTypeAll[i] {
+			return false
+		}
+	}
+	return true
 }
 
 // String returns the name of `e`
@@ -3497,22 +4670,36 @@ func (e LedgerUpgradeType) ShortString() string {
 }
 
 func (e LedgerUpgradeType) MarshalJSON() ([]byte, error) {
-	return []byte("\"" + e.String() + "\""), nil
+	if e.isFlag() {
+		// marshal as mask
+		result := flag{
+			Value: int32(e),
+		}
+		for _, value := range LedgerUpgradeTypeAll {
+			if (value & e) == value {
+				result.Flags = append(result.Flags, flagValue{
+					Value: int32(value),
+					Name:  value.ShortString(),
+				})
+			}
+		}
+		return json.Marshal(&result)
+	} else {
+		// marshal as enum
+		result := enum{
+			Value:  int32(e),
+			String: e.ShortString(),
+		}
+		return json.Marshal(&result)
+	}
 }
 
-func (e *LedgerUpgradeType) UnmarshalJSON(d []byte) error {
-	var raw string
-	err := json.Unmarshal(d, &raw)
-	if err != nil {
+func (e *LedgerUpgradeType) UnmarshalJSON(data []byte) error {
+	var t value
+	if err := json.Unmarshal(data, &t); err != nil {
 		return err
 	}
-
-	value, ok := ledgerUpgradeTypeRevMap[raw]
-	if !ok {
-		return fmt.Errorf("unexpected json value: %s", raw)
-	}
-
-	*e = LedgerUpgradeType(value)
+	*e = LedgerUpgradeType(t.Value)
 	return nil
 }
 
@@ -3524,18 +4711,18 @@ func (e *LedgerUpgradeType) UnmarshalJSON(d []byte) error {
 //        uint32 newLedgerVersion; // update ledgerVersion
 //    case MAX_TX_SET_SIZE:
 //        uint32 newMaxTxSetSize; // update maxTxSetSize
-//    case ISSUANCE_KEYS:
-//        PublicKey newIssuanceKeys<>;
+//    case EXTERNAL_SYSTEM_ID_GENERATOR:
+//        ExternalSystemIDGeneratorType newExternalSystemIDGenerators<>;
 //    case TX_EXPIRATION_PERIOD:
 //        int64 newTxExpirationPeriod;
 //    };
 //
 type LedgerUpgrade struct {
-	Type                  LedgerUpgradeType `json:"type,omitempty"`
-	NewLedgerVersion      *Uint32           `json:"newLedgerVersion,omitempty"`
-	NewMaxTxSetSize       *Uint32           `json:"newMaxTxSetSize,omitempty"`
-	NewIssuanceKeys       *[]PublicKey      `json:"newIssuanceKeys,omitempty"`
-	NewTxExpirationPeriod *Int64            `json:"newTxExpirationPeriod,omitempty"`
+	Type                          LedgerUpgradeType                `json:"type,omitempty"`
+	NewLedgerVersion              *Uint32                          `json:"newLedgerVersion,omitempty"`
+	NewMaxTxSetSize               *Uint32                          `json:"newMaxTxSetSize,omitempty"`
+	NewExternalSystemIdGenerators *[]ExternalSystemIdGeneratorType `json:"newExternalSystemIDGenerators,omitempty"`
+	NewTxExpirationPeriod         *Int64                           `json:"newTxExpirationPeriod,omitempty"`
 }
 
 // SwitchFieldName returns the field name in which this union's
@@ -3552,8 +4739,8 @@ func (u LedgerUpgrade) ArmForSwitch(sw int32) (string, bool) {
 		return "NewLedgerVersion", true
 	case LedgerUpgradeTypeMaxTxSetSize:
 		return "NewMaxTxSetSize", true
-	case LedgerUpgradeTypeIssuanceKeys:
-		return "NewIssuanceKeys", true
+	case LedgerUpgradeTypeExternalSystemIdGenerator:
+		return "NewExternalSystemIdGenerators", true
 	case LedgerUpgradeTypeTxExpirationPeriod:
 		return "NewTxExpirationPeriod", true
 	}
@@ -3578,13 +4765,13 @@ func NewLedgerUpgrade(aType LedgerUpgradeType, value interface{}) (result Ledger
 			return
 		}
 		result.NewMaxTxSetSize = &tv
-	case LedgerUpgradeTypeIssuanceKeys:
-		tv, ok := value.([]PublicKey)
+	case LedgerUpgradeTypeExternalSystemIdGenerator:
+		tv, ok := value.([]ExternalSystemIdGeneratorType)
 		if !ok {
-			err = fmt.Errorf("invalid value, must be []PublicKey")
+			err = fmt.Errorf("invalid value, must be []ExternalSystemIdGeneratorType")
 			return
 		}
-		result.NewIssuanceKeys = &tv
+		result.NewExternalSystemIdGenerators = &tv
 	case LedgerUpgradeTypeTxExpirationPeriod:
 		tv, ok := value.(Int64)
 		if !ok {
@@ -3646,25 +4833,25 @@ func (u LedgerUpgrade) GetNewMaxTxSetSize() (result Uint32, ok bool) {
 	return
 }
 
-// MustNewIssuanceKeys retrieves the NewIssuanceKeys value from the union,
+// MustNewExternalSystemIdGenerators retrieves the NewExternalSystemIdGenerators value from the union,
 // panicing if the value is not set.
-func (u LedgerUpgrade) MustNewIssuanceKeys() []PublicKey {
-	val, ok := u.GetNewIssuanceKeys()
+func (u LedgerUpgrade) MustNewExternalSystemIdGenerators() []ExternalSystemIdGeneratorType {
+	val, ok := u.GetNewExternalSystemIdGenerators()
 
 	if !ok {
-		panic("arm NewIssuanceKeys is not set")
+		panic("arm NewExternalSystemIdGenerators is not set")
 	}
 
 	return val
 }
 
-// GetNewIssuanceKeys retrieves the NewIssuanceKeys value from the union,
+// GetNewExternalSystemIdGenerators retrieves the NewExternalSystemIdGenerators value from the union,
 // returning ok if the union's switch indicated the value is valid.
-func (u LedgerUpgrade) GetNewIssuanceKeys() (result []PublicKey, ok bool) {
+func (u LedgerUpgrade) GetNewExternalSystemIdGenerators() (result []ExternalSystemIdGeneratorType, ok bool) {
 	armName, _ := u.ArmForSwitch(int32(u.Type))
 
-	if armName == "NewIssuanceKeys" {
-		result = *u.NewIssuanceKeys
+	if armName == "NewExternalSystemIdGenerators" {
+		result = *u.NewExternalSystemIdGenerators
 		ok = true
 	}
 
@@ -4438,6 +5625,63 @@ type LedgerKeyReviewableRequest struct {
 	Ext       LedgerKeyReviewableRequestExt `json:"ext,omitempty"`
 }
 
+// LedgerKeyExternalSystemAccountIdExt is an XDR NestedUnion defines as:
+//
+//   union switch (LedgerVersion v)
+//    		{
+//    		case EMPTY_VERSION:
+//    			void;
+//    		}
+//
+type LedgerKeyExternalSystemAccountIdExt struct {
+	V LedgerVersion `json:"v,omitempty"`
+}
+
+// SwitchFieldName returns the field name in which this union's
+// discriminant is stored
+func (u LedgerKeyExternalSystemAccountIdExt) SwitchFieldName() string {
+	return "V"
+}
+
+// ArmForSwitch returns which field name should be used for storing
+// the value for an instance of LedgerKeyExternalSystemAccountIdExt
+func (u LedgerKeyExternalSystemAccountIdExt) ArmForSwitch(sw int32) (string, bool) {
+	switch LedgerVersion(sw) {
+	case LedgerVersionEmptyVersion:
+		return "", true
+	}
+	return "-", false
+}
+
+// NewLedgerKeyExternalSystemAccountIdExt creates a new  LedgerKeyExternalSystemAccountIdExt.
+func NewLedgerKeyExternalSystemAccountIdExt(v LedgerVersion, value interface{}) (result LedgerKeyExternalSystemAccountIdExt, err error) {
+	result.V = v
+	switch LedgerVersion(v) {
+	case LedgerVersionEmptyVersion:
+		// void
+	}
+	return
+}
+
+// LedgerKeyExternalSystemAccountId is an XDR NestedStruct defines as:
+//
+//   struct {
+//    		AccountID accountID;
+//    		ExternalSystemType externalSystemType;
+//    		union switch (LedgerVersion v)
+//    		{
+//    		case EMPTY_VERSION:
+//    			void;
+//    		}
+//    		ext;
+//    	}
+//
+type LedgerKeyExternalSystemAccountId struct {
+	AccountId          AccountId                           `json:"accountID,omitempty"`
+	ExternalSystemType ExternalSystemType                  `json:"externalSystemType,omitempty"`
+	Ext                LedgerKeyExternalSystemAccountIdExt `json:"ext,omitempty"`
+}
+
 // LedgerKey is an XDR Union defines as:
 //
 //   union LedgerKey switch (LedgerEntryType type)
@@ -4587,24 +5831,36 @@ type LedgerKeyReviewableRequest struct {
 //    		}
 //    		ext;
 //        } reviewableRequest;
+//    case EXTERNAL_SYSTEM_ACCOUNT_ID:
+//    	struct {
+//    		AccountID accountID;
+//    		ExternalSystemType externalSystemType;
+//    		union switch (LedgerVersion v)
+//    		{
+//    		case EMPTY_VERSION:
+//    			void;
+//    		}
+//    		ext;
+//    	} externalSystemAccountID;
 //    };
 //
 type LedgerKey struct {
-	Type              LedgerEntryType             `json:"type,omitempty"`
-	Account           *LedgerKeyAccount           `json:"account,omitempty"`
-	FeeState          *LedgerKeyFeeState          `json:"feeState,omitempty"`
-	Balance           *LedgerKeyBalance           `json:"balance,omitempty"`
-	PaymentRequest    *LedgerKeyPaymentRequest    `json:"paymentRequest,omitempty"`
-	Asset             *LedgerKeyAsset             `json:"asset,omitempty"`
-	Reference         *LedgerKeyReference         `json:"reference,omitempty"`
-	AccountTypeLimits *LedgerKeyAccountTypeLimits `json:"accountTypeLimits,omitempty"`
-	Stats             *LedgerKeyStats             `json:"stats,omitempty"`
-	Trust             *LedgerKeyTrust             `json:"trust,omitempty"`
-	AccountLimits     *LedgerKeyAccountLimits     `json:"accountLimits,omitempty"`
-	AssetPair         *LedgerKeyAssetPair         `json:"assetPair,omitempty"`
-	Offer             *LedgerKeyOffer             `json:"offer,omitempty"`
-	Invoice           *LedgerKeyInvoice           `json:"invoice,omitempty"`
-	ReviewableRequest *LedgerKeyReviewableRequest `json:"reviewableRequest,omitempty"`
+	Type                    LedgerEntryType                   `json:"type,omitempty"`
+	Account                 *LedgerKeyAccount                 `json:"account,omitempty"`
+	FeeState                *LedgerKeyFeeState                `json:"feeState,omitempty"`
+	Balance                 *LedgerKeyBalance                 `json:"balance,omitempty"`
+	PaymentRequest          *LedgerKeyPaymentRequest          `json:"paymentRequest,omitempty"`
+	Asset                   *LedgerKeyAsset                   `json:"asset,omitempty"`
+	Reference               *LedgerKeyReference               `json:"reference,omitempty"`
+	AccountTypeLimits       *LedgerKeyAccountTypeLimits       `json:"accountTypeLimits,omitempty"`
+	Stats                   *LedgerKeyStats                   `json:"stats,omitempty"`
+	Trust                   *LedgerKeyTrust                   `json:"trust,omitempty"`
+	AccountLimits           *LedgerKeyAccountLimits           `json:"accountLimits,omitempty"`
+	AssetPair               *LedgerKeyAssetPair               `json:"assetPair,omitempty"`
+	Offer                   *LedgerKeyOffer                   `json:"offer,omitempty"`
+	Invoice                 *LedgerKeyInvoice                 `json:"invoice,omitempty"`
+	ReviewableRequest       *LedgerKeyReviewableRequest       `json:"reviewableRequest,omitempty"`
+	ExternalSystemAccountId *LedgerKeyExternalSystemAccountId `json:"externalSystemAccountID,omitempty"`
 }
 
 // SwitchFieldName returns the field name in which this union's
@@ -4645,6 +5901,8 @@ func (u LedgerKey) ArmForSwitch(sw int32) (string, bool) {
 		return "Invoice", true
 	case LedgerEntryTypeReviewableRequest:
 		return "ReviewableRequest", true
+	case LedgerEntryTypeExternalSystemAccountId:
+		return "ExternalSystemAccountId", true
 	}
 	return "-", false
 }
@@ -4751,6 +6009,13 @@ func NewLedgerKey(aType LedgerEntryType, value interface{}) (result LedgerKey, e
 			return
 		}
 		result.ReviewableRequest = &tv
+	case LedgerEntryTypeExternalSystemAccountId:
+		tv, ok := value.(LedgerKeyExternalSystemAccountId)
+		if !ok {
+			err = fmt.Errorf("invalid value, must be LedgerKeyExternalSystemAccountId")
+			return
+		}
+		result.ExternalSystemAccountId = &tv
 	}
 	return
 }
@@ -5105,6 +6370,31 @@ func (u LedgerKey) GetReviewableRequest() (result LedgerKeyReviewableRequest, ok
 	return
 }
 
+// MustExternalSystemAccountId retrieves the ExternalSystemAccountId value from the union,
+// panicing if the value is not set.
+func (u LedgerKey) MustExternalSystemAccountId() LedgerKeyExternalSystemAccountId {
+	val, ok := u.GetExternalSystemAccountId()
+
+	if !ok {
+		panic("arm ExternalSystemAccountId is not set")
+	}
+
+	return val
+}
+
+// GetExternalSystemAccountId retrieves the ExternalSystemAccountId value from the union,
+// returning ok if the union's switch indicated the value is valid.
+func (u LedgerKey) GetExternalSystemAccountId() (result LedgerKeyExternalSystemAccountId, ok bool) {
+	armName, _ := u.ArmForSwitch(int32(u.Type))
+
+	if armName == "ExternalSystemAccountId" {
+		result = *u.ExternalSystemAccountId
+		ok = true
+	}
+
+	return
+}
+
 // BucketEntryType is an XDR Enum defines as:
 //
 //   enum BucketEntryType
@@ -5146,6 +6436,15 @@ func (e BucketEntryType) ValidEnum(v int32) bool {
 	_, ok := bucketEntryTypeMap[v]
 	return ok
 }
+func (e BucketEntryType) isFlag() bool {
+	for i := len(BucketEntryTypeAll) - 1; i >= 0; i-- {
+		expected := BucketEntryType(2) << uint64(len(BucketEntryTypeAll)-1) >> uint64(len(BucketEntryTypeAll)-i)
+		if expected != BucketEntryTypeAll[i] {
+			return false
+		}
+	}
+	return true
+}
 
 // String returns the name of `e`
 func (e BucketEntryType) String() string {
@@ -5159,22 +6458,36 @@ func (e BucketEntryType) ShortString() string {
 }
 
 func (e BucketEntryType) MarshalJSON() ([]byte, error) {
-	return []byte("\"" + e.String() + "\""), nil
+	if e.isFlag() {
+		// marshal as mask
+		result := flag{
+			Value: int32(e),
+		}
+		for _, value := range BucketEntryTypeAll {
+			if (value & e) == value {
+				result.Flags = append(result.Flags, flagValue{
+					Value: int32(value),
+					Name:  value.ShortString(),
+				})
+			}
+		}
+		return json.Marshal(&result)
+	} else {
+		// marshal as enum
+		result := enum{
+			Value:  int32(e),
+			String: e.ShortString(),
+		}
+		return json.Marshal(&result)
+	}
 }
 
-func (e *BucketEntryType) UnmarshalJSON(d []byte) error {
-	var raw string
-	err := json.Unmarshal(d, &raw)
-	if err != nil {
+func (e *BucketEntryType) UnmarshalJSON(data []byte) error {
+	var t value
+	if err := json.Unmarshal(data, &t); err != nil {
 		return err
 	}
-
-	value, ok := bucketEntryTypeRevMap[raw]
-	if !ok {
-		return fmt.Errorf("unexpected json value: %s", raw)
-	}
-
-	*e = BucketEntryType(value)
+	*e = BucketEntryType(t.Value)
 	return nil
 }
 
@@ -5650,6 +6963,15 @@ func (e LedgerEntryChangeType) ValidEnum(v int32) bool {
 	_, ok := ledgerEntryChangeTypeMap[v]
 	return ok
 }
+func (e LedgerEntryChangeType) isFlag() bool {
+	for i := len(LedgerEntryChangeTypeAll) - 1; i >= 0; i-- {
+		expected := LedgerEntryChangeType(2) << uint64(len(LedgerEntryChangeTypeAll)-1) >> uint64(len(LedgerEntryChangeTypeAll)-i)
+		if expected != LedgerEntryChangeTypeAll[i] {
+			return false
+		}
+	}
+	return true
+}
 
 // String returns the name of `e`
 func (e LedgerEntryChangeType) String() string {
@@ -5663,22 +6985,36 @@ func (e LedgerEntryChangeType) ShortString() string {
 }
 
 func (e LedgerEntryChangeType) MarshalJSON() ([]byte, error) {
-	return []byte("\"" + e.String() + "\""), nil
+	if e.isFlag() {
+		// marshal as mask
+		result := flag{
+			Value: int32(e),
+		}
+		for _, value := range LedgerEntryChangeTypeAll {
+			if (value & e) == value {
+				result.Flags = append(result.Flags, flagValue{
+					Value: int32(value),
+					Name:  value.ShortString(),
+				})
+			}
+		}
+		return json.Marshal(&result)
+	} else {
+		// marshal as enum
+		result := enum{
+			Value:  int32(e),
+			String: e.ShortString(),
+		}
+		return json.Marshal(&result)
+	}
 }
 
-func (e *LedgerEntryChangeType) UnmarshalJSON(d []byte) error {
-	var raw string
-	err := json.Unmarshal(d, &raw)
-	if err != nil {
+func (e *LedgerEntryChangeType) UnmarshalJSON(data []byte) error {
+	var t value
+	if err := json.Unmarshal(data, &t); err != nil {
 		return err
 	}
-
-	value, ok := ledgerEntryChangeTypeRevMap[raw]
-	if !ok {
-		return fmt.Errorf("unexpected json value: %s", raw)
-	}
-
-	*e = LedgerEntryChangeType(value)
+	*e = LedgerEntryChangeType(t.Value)
 	return nil
 }
 
@@ -6086,6 +7422,15 @@ func (e CreateAccountResultCode) ValidEnum(v int32) bool {
 	_, ok := createAccountResultCodeMap[v]
 	return ok
 }
+func (e CreateAccountResultCode) isFlag() bool {
+	for i := len(CreateAccountResultCodeAll) - 1; i >= 0; i-- {
+		expected := CreateAccountResultCode(2) << uint64(len(CreateAccountResultCodeAll)-1) >> uint64(len(CreateAccountResultCodeAll)-i)
+		if expected != CreateAccountResultCodeAll[i] {
+			return false
+		}
+	}
+	return true
+}
 
 // String returns the name of `e`
 func (e CreateAccountResultCode) String() string {
@@ -6099,22 +7444,36 @@ func (e CreateAccountResultCode) ShortString() string {
 }
 
 func (e CreateAccountResultCode) MarshalJSON() ([]byte, error) {
-	return []byte("\"" + e.String() + "\""), nil
+	if e.isFlag() {
+		// marshal as mask
+		result := flag{
+			Value: int32(e),
+		}
+		for _, value := range CreateAccountResultCodeAll {
+			if (value & e) == value {
+				result.Flags = append(result.Flags, flagValue{
+					Value: int32(value),
+					Name:  value.ShortString(),
+				})
+			}
+		}
+		return json.Marshal(&result)
+	} else {
+		// marshal as enum
+		result := enum{
+			Value:  int32(e),
+			String: e.ShortString(),
+		}
+		return json.Marshal(&result)
+	}
 }
 
-func (e *CreateAccountResultCode) UnmarshalJSON(d []byte) error {
-	var raw string
-	err := json.Unmarshal(d, &raw)
-	if err != nil {
+func (e *CreateAccountResultCode) UnmarshalJSON(data []byte) error {
+	var t value
+	if err := json.Unmarshal(data, &t); err != nil {
 		return err
 	}
-
-	value, ok := createAccountResultCodeRevMap[raw]
-	if !ok {
-		return fmt.Errorf("unexpected json value: %s", raw)
-	}
-
-	*e = CreateAccountResultCode(value)
+	*e = CreateAccountResultCode(t.Value)
 	return nil
 }
 
@@ -6160,7 +7519,7 @@ func NewCreateAccountSuccessExt(v LedgerVersion, value interface{}) (result Crea
 //
 //   struct CreateAccountSuccess
 //    {
-//    	int64 referrerFee;
+//    	ExternalSystemAccountID externalSystemIDs<>;
 //    	 // reserved for future use
 //        union switch (LedgerVersion v)
 //        {
@@ -6171,8 +7530,8 @@ func NewCreateAccountSuccessExt(v LedgerVersion, value interface{}) (result Crea
 //    };
 //
 type CreateAccountSuccess struct {
-	ReferrerFee Int64                   `json:"referrerFee,omitempty"`
-	Ext         CreateAccountSuccessExt `json:"ext,omitempty"`
+	ExternalSystemIDs []ExternalSystemAccountId `json:"externalSystemIDs,omitempty"`
+	Ext               CreateAccountSuccessExt   `json:"ext,omitempty"`
 }
 
 // CreateAccountResult is an XDR Union defines as:
@@ -6388,6 +7747,15 @@ func (e CreateIssuanceRequestResultCode) ValidEnum(v int32) bool {
 	_, ok := createIssuanceRequestResultCodeMap[v]
 	return ok
 }
+func (e CreateIssuanceRequestResultCode) isFlag() bool {
+	for i := len(CreateIssuanceRequestResultCodeAll) - 1; i >= 0; i-- {
+		expected := CreateIssuanceRequestResultCode(2) << uint64(len(CreateIssuanceRequestResultCodeAll)-1) >> uint64(len(CreateIssuanceRequestResultCodeAll)-i)
+		if expected != CreateIssuanceRequestResultCodeAll[i] {
+			return false
+		}
+	}
+	return true
+}
 
 // String returns the name of `e`
 func (e CreateIssuanceRequestResultCode) String() string {
@@ -6401,22 +7769,36 @@ func (e CreateIssuanceRequestResultCode) ShortString() string {
 }
 
 func (e CreateIssuanceRequestResultCode) MarshalJSON() ([]byte, error) {
-	return []byte("\"" + e.String() + "\""), nil
+	if e.isFlag() {
+		// marshal as mask
+		result := flag{
+			Value: int32(e),
+		}
+		for _, value := range CreateIssuanceRequestResultCodeAll {
+			if (value & e) == value {
+				result.Flags = append(result.Flags, flagValue{
+					Value: int32(value),
+					Name:  value.ShortString(),
+				})
+			}
+		}
+		return json.Marshal(&result)
+	} else {
+		// marshal as enum
+		result := enum{
+			Value:  int32(e),
+			String: e.ShortString(),
+		}
+		return json.Marshal(&result)
+	}
 }
 
-func (e *CreateIssuanceRequestResultCode) UnmarshalJSON(d []byte) error {
-	var raw string
-	err := json.Unmarshal(d, &raw)
-	if err != nil {
+func (e *CreateIssuanceRequestResultCode) UnmarshalJSON(data []byte) error {
+	var t value
+	if err := json.Unmarshal(data, &t); err != nil {
 		return err
 	}
-
-	value, ok := createIssuanceRequestResultCodeRevMap[raw]
-	if !ok {
-		return fmt.Errorf("unexpected json value: %s", raw)
-	}
-
-	*e = CreateIssuanceRequestResultCode(value)
+	*e = CreateIssuanceRequestResultCode(t.Value)
 	return nil
 }
 
@@ -6690,6 +8072,15 @@ func (e CreatePreIssuanceRequestResultCode) ValidEnum(v int32) bool {
 	_, ok := createPreIssuanceRequestResultCodeMap[v]
 	return ok
 }
+func (e CreatePreIssuanceRequestResultCode) isFlag() bool {
+	for i := len(CreatePreIssuanceRequestResultCodeAll) - 1; i >= 0; i-- {
+		expected := CreatePreIssuanceRequestResultCode(2) << uint64(len(CreatePreIssuanceRequestResultCodeAll)-1) >> uint64(len(CreatePreIssuanceRequestResultCodeAll)-i)
+		if expected != CreatePreIssuanceRequestResultCodeAll[i] {
+			return false
+		}
+	}
+	return true
+}
 
 // String returns the name of `e`
 func (e CreatePreIssuanceRequestResultCode) String() string {
@@ -6703,22 +8094,36 @@ func (e CreatePreIssuanceRequestResultCode) ShortString() string {
 }
 
 func (e CreatePreIssuanceRequestResultCode) MarshalJSON() ([]byte, error) {
-	return []byte("\"" + e.String() + "\""), nil
+	if e.isFlag() {
+		// marshal as mask
+		result := flag{
+			Value: int32(e),
+		}
+		for _, value := range CreatePreIssuanceRequestResultCodeAll {
+			if (value & e) == value {
+				result.Flags = append(result.Flags, flagValue{
+					Value: int32(value),
+					Name:  value.ShortString(),
+				})
+			}
+		}
+		return json.Marshal(&result)
+	} else {
+		// marshal as enum
+		result := enum{
+			Value:  int32(e),
+			String: e.ShortString(),
+		}
+		return json.Marshal(&result)
+	}
 }
 
-func (e *CreatePreIssuanceRequestResultCode) UnmarshalJSON(d []byte) error {
-	var raw string
-	err := json.Unmarshal(d, &raw)
-	if err != nil {
+func (e *CreatePreIssuanceRequestResultCode) UnmarshalJSON(data []byte) error {
+	var t value
+	if err := json.Unmarshal(data, &t); err != nil {
 		return err
 	}
-
-	value, ok := createPreIssuanceRequestResultCodeRevMap[raw]
-	if !ok {
-		return fmt.Errorf("unexpected json value: %s", raw)
-	}
-
-	*e = CreatePreIssuanceRequestResultCode(value)
+	*e = CreatePreIssuanceRequestResultCode(t.Value)
 	return nil
 }
 
@@ -6851,6 +8256,347 @@ func (u CreatePreIssuanceRequestResult) MustSuccess() CreatePreIssuanceRequestRe
 // GetSuccess retrieves the Success value from the union,
 // returning ok if the union's switch indicated the value is valid.
 func (u CreatePreIssuanceRequestResult) GetSuccess() (result CreatePreIssuanceRequestResultSuccess, ok bool) {
+	armName, _ := u.ArmForSwitch(int32(u.Code))
+
+	if armName == "Success" {
+		result = *u.Success
+		ok = true
+	}
+
+	return
+}
+
+// CreateWithdrawalRequestOpExt is an XDR NestedUnion defines as:
+//
+//   union switch (LedgerVersion v)
+//        {
+//        case EMPTY_VERSION:
+//            void;
+//        }
+//
+type CreateWithdrawalRequestOpExt struct {
+	V LedgerVersion `json:"v,omitempty"`
+}
+
+// SwitchFieldName returns the field name in which this union's
+// discriminant is stored
+func (u CreateWithdrawalRequestOpExt) SwitchFieldName() string {
+	return "V"
+}
+
+// ArmForSwitch returns which field name should be used for storing
+// the value for an instance of CreateWithdrawalRequestOpExt
+func (u CreateWithdrawalRequestOpExt) ArmForSwitch(sw int32) (string, bool) {
+	switch LedgerVersion(sw) {
+	case LedgerVersionEmptyVersion:
+		return "", true
+	}
+	return "-", false
+}
+
+// NewCreateWithdrawalRequestOpExt creates a new  CreateWithdrawalRequestOpExt.
+func NewCreateWithdrawalRequestOpExt(v LedgerVersion, value interface{}) (result CreateWithdrawalRequestOpExt, err error) {
+	result.V = v
+	switch LedgerVersion(v) {
+	case LedgerVersionEmptyVersion:
+		// void
+	}
+	return
+}
+
+// CreateWithdrawalRequestOp is an XDR Struct defines as:
+//
+//   struct CreateWithdrawalRequestOp
+//    {
+//        WithdrawalRequest request;
+//
+//    	union switch (LedgerVersion v)
+//        {
+//        case EMPTY_VERSION:
+//            void;
+//        }
+//        ext;
+//
+//    };
+//
+type CreateWithdrawalRequestOp struct {
+	Request WithdrawalRequest            `json:"request,omitempty"`
+	Ext     CreateWithdrawalRequestOpExt `json:"ext,omitempty"`
+}
+
+// CreateWithdrawalRequestResultCode is an XDR Enum defines as:
+//
+//   enum CreateWithdrawalRequestResultCode
+//    {
+//        // codes considered as "success" for the operation
+//        SUCCESS = 0,
+//
+//        // codes considered as "failure" for the operation
+//    	INVALID_AMOUNT = -1, // amount is 0
+//        INVALID_EXTERNAL_DETAILS = -2, // external details size exceeds max allowed
+//    	BALANCE_NOT_FOUND = -3, // balance not found
+//    	ASSET_IS_NOT_WITHDRAWABLE = -4, // asset is not withdrawable
+//    	CONVERSION_PRICE_IS_NOT_AVAILABLE = -5, // failed to find conversion price - conversion is not allowed
+//    	FEE_MISMATCHED = -6, // expected fee does not match calculated fee
+//    	CONVERSION_OVERFLOW = -7, // overflow during converting source asset to dest asset
+//    	CONVERTED_AMOUNT_MISMATCHED = -8, // expected converted amount passed by user, does not match calculated
+//    	BALANCE_LOCK_OVERFLOW = -9, // overflow while tried to lock amount
+//    	UNDERFUNDED = -10 // insufficient balance to perform operation
+//    };
+//
+type CreateWithdrawalRequestResultCode int32
+
+const (
+	CreateWithdrawalRequestResultCodeSuccess                       CreateWithdrawalRequestResultCode = 0
+	CreateWithdrawalRequestResultCodeInvalidAmount                 CreateWithdrawalRequestResultCode = -1
+	CreateWithdrawalRequestResultCodeInvalidExternalDetails        CreateWithdrawalRequestResultCode = -2
+	CreateWithdrawalRequestResultCodeBalanceNotFound               CreateWithdrawalRequestResultCode = -3
+	CreateWithdrawalRequestResultCodeAssetIsNotWithdrawable        CreateWithdrawalRequestResultCode = -4
+	CreateWithdrawalRequestResultCodeConversionPriceIsNotAvailable CreateWithdrawalRequestResultCode = -5
+	CreateWithdrawalRequestResultCodeFeeMismatched                 CreateWithdrawalRequestResultCode = -6
+	CreateWithdrawalRequestResultCodeConversionOverflow            CreateWithdrawalRequestResultCode = -7
+	CreateWithdrawalRequestResultCodeConvertedAmountMismatched     CreateWithdrawalRequestResultCode = -8
+	CreateWithdrawalRequestResultCodeBalanceLockOverflow           CreateWithdrawalRequestResultCode = -9
+	CreateWithdrawalRequestResultCodeUnderfunded                   CreateWithdrawalRequestResultCode = -10
+)
+
+var CreateWithdrawalRequestResultCodeAll = []CreateWithdrawalRequestResultCode{
+	CreateWithdrawalRequestResultCodeSuccess,
+	CreateWithdrawalRequestResultCodeInvalidAmount,
+	CreateWithdrawalRequestResultCodeInvalidExternalDetails,
+	CreateWithdrawalRequestResultCodeBalanceNotFound,
+	CreateWithdrawalRequestResultCodeAssetIsNotWithdrawable,
+	CreateWithdrawalRequestResultCodeConversionPriceIsNotAvailable,
+	CreateWithdrawalRequestResultCodeFeeMismatched,
+	CreateWithdrawalRequestResultCodeConversionOverflow,
+	CreateWithdrawalRequestResultCodeConvertedAmountMismatched,
+	CreateWithdrawalRequestResultCodeBalanceLockOverflow,
+	CreateWithdrawalRequestResultCodeUnderfunded,
+}
+
+var createWithdrawalRequestResultCodeMap = map[int32]string{
+	0:   "CreateWithdrawalRequestResultCodeSuccess",
+	-1:  "CreateWithdrawalRequestResultCodeInvalidAmount",
+	-2:  "CreateWithdrawalRequestResultCodeInvalidExternalDetails",
+	-3:  "CreateWithdrawalRequestResultCodeBalanceNotFound",
+	-4:  "CreateWithdrawalRequestResultCodeAssetIsNotWithdrawable",
+	-5:  "CreateWithdrawalRequestResultCodeConversionPriceIsNotAvailable",
+	-6:  "CreateWithdrawalRequestResultCodeFeeMismatched",
+	-7:  "CreateWithdrawalRequestResultCodeConversionOverflow",
+	-8:  "CreateWithdrawalRequestResultCodeConvertedAmountMismatched",
+	-9:  "CreateWithdrawalRequestResultCodeBalanceLockOverflow",
+	-10: "CreateWithdrawalRequestResultCodeUnderfunded",
+}
+
+var createWithdrawalRequestResultCodeShortMap = map[int32]string{
+	0:   "success",
+	-1:  "invalid_amount",
+	-2:  "invalid_external_details",
+	-3:  "balance_not_found",
+	-4:  "asset_is_not_withdrawable",
+	-5:  "conversion_price_is_not_available",
+	-6:  "fee_mismatched",
+	-7:  "conversion_overflow",
+	-8:  "converted_amount_mismatched",
+	-9:  "balance_lock_overflow",
+	-10: "underfunded",
+}
+
+var createWithdrawalRequestResultCodeRevMap = map[string]int32{
+	"CreateWithdrawalRequestResultCodeSuccess":                       0,
+	"CreateWithdrawalRequestResultCodeInvalidAmount":                 -1,
+	"CreateWithdrawalRequestResultCodeInvalidExternalDetails":        -2,
+	"CreateWithdrawalRequestResultCodeBalanceNotFound":               -3,
+	"CreateWithdrawalRequestResultCodeAssetIsNotWithdrawable":        -4,
+	"CreateWithdrawalRequestResultCodeConversionPriceIsNotAvailable": -5,
+	"CreateWithdrawalRequestResultCodeFeeMismatched":                 -6,
+	"CreateWithdrawalRequestResultCodeConversionOverflow":            -7,
+	"CreateWithdrawalRequestResultCodeConvertedAmountMismatched":     -8,
+	"CreateWithdrawalRequestResultCodeBalanceLockOverflow":           -9,
+	"CreateWithdrawalRequestResultCodeUnderfunded":                   -10,
+}
+
+// ValidEnum validates a proposed value for this enum.  Implements
+// the Enum interface for CreateWithdrawalRequestResultCode
+func (e CreateWithdrawalRequestResultCode) ValidEnum(v int32) bool {
+	_, ok := createWithdrawalRequestResultCodeMap[v]
+	return ok
+}
+func (e CreateWithdrawalRequestResultCode) isFlag() bool {
+	for i := len(CreateWithdrawalRequestResultCodeAll) - 1; i >= 0; i-- {
+		expected := CreateWithdrawalRequestResultCode(2) << uint64(len(CreateWithdrawalRequestResultCodeAll)-1) >> uint64(len(CreateWithdrawalRequestResultCodeAll)-i)
+		if expected != CreateWithdrawalRequestResultCodeAll[i] {
+			return false
+		}
+	}
+	return true
+}
+
+// String returns the name of `e`
+func (e CreateWithdrawalRequestResultCode) String() string {
+	name, _ := createWithdrawalRequestResultCodeMap[int32(e)]
+	return name
+}
+
+func (e CreateWithdrawalRequestResultCode) ShortString() string {
+	name, _ := createWithdrawalRequestResultCodeShortMap[int32(e)]
+	return name
+}
+
+func (e CreateWithdrawalRequestResultCode) MarshalJSON() ([]byte, error) {
+	if e.isFlag() {
+		// marshal as mask
+		result := flag{
+			Value: int32(e),
+		}
+		for _, value := range CreateWithdrawalRequestResultCodeAll {
+			if (value & e) == value {
+				result.Flags = append(result.Flags, flagValue{
+					Value: int32(value),
+					Name:  value.ShortString(),
+				})
+			}
+		}
+		return json.Marshal(&result)
+	} else {
+		// marshal as enum
+		result := enum{
+			Value:  int32(e),
+			String: e.ShortString(),
+		}
+		return json.Marshal(&result)
+	}
+}
+
+func (e *CreateWithdrawalRequestResultCode) UnmarshalJSON(data []byte) error {
+	var t value
+	if err := json.Unmarshal(data, &t); err != nil {
+		return err
+	}
+	*e = CreateWithdrawalRequestResultCode(t.Value)
+	return nil
+}
+
+// CreateWithdrawalSuccessExt is an XDR NestedUnion defines as:
+//
+//   union switch (LedgerVersion v)
+//        {
+//        case EMPTY_VERSION:
+//            void;
+//        }
+//
+type CreateWithdrawalSuccessExt struct {
+	V LedgerVersion `json:"v,omitempty"`
+}
+
+// SwitchFieldName returns the field name in which this union's
+// discriminant is stored
+func (u CreateWithdrawalSuccessExt) SwitchFieldName() string {
+	return "V"
+}
+
+// ArmForSwitch returns which field name should be used for storing
+// the value for an instance of CreateWithdrawalSuccessExt
+func (u CreateWithdrawalSuccessExt) ArmForSwitch(sw int32) (string, bool) {
+	switch LedgerVersion(sw) {
+	case LedgerVersionEmptyVersion:
+		return "", true
+	}
+	return "-", false
+}
+
+// NewCreateWithdrawalSuccessExt creates a new  CreateWithdrawalSuccessExt.
+func NewCreateWithdrawalSuccessExt(v LedgerVersion, value interface{}) (result CreateWithdrawalSuccessExt, err error) {
+	result.V = v
+	switch LedgerVersion(v) {
+	case LedgerVersionEmptyVersion:
+		// void
+	}
+	return
+}
+
+// CreateWithdrawalSuccess is an XDR Struct defines as:
+//
+//   struct CreateWithdrawalSuccess {
+//    	uint64 requestID;
+//
+//    	union switch (LedgerVersion v)
+//        {
+//        case EMPTY_VERSION:
+//            void;
+//        }
+//        ext;
+//    };
+//
+type CreateWithdrawalSuccess struct {
+	RequestId Uint64                     `json:"requestID,omitempty"`
+	Ext       CreateWithdrawalSuccessExt `json:"ext,omitempty"`
+}
+
+// CreateWithdrawalRequestResult is an XDR Union defines as:
+//
+//   union CreateWithdrawalRequestResult switch (CreateWithdrawalRequestResultCode code)
+//    {
+//        case SUCCESS:
+//            CreateWithdrawalSuccess success;
+//        default:
+//            void;
+//    };
+//
+type CreateWithdrawalRequestResult struct {
+	Code    CreateWithdrawalRequestResultCode `json:"code,omitempty"`
+	Success *CreateWithdrawalSuccess          `json:"success,omitempty"`
+}
+
+// SwitchFieldName returns the field name in which this union's
+// discriminant is stored
+func (u CreateWithdrawalRequestResult) SwitchFieldName() string {
+	return "Code"
+}
+
+// ArmForSwitch returns which field name should be used for storing
+// the value for an instance of CreateWithdrawalRequestResult
+func (u CreateWithdrawalRequestResult) ArmForSwitch(sw int32) (string, bool) {
+	switch CreateWithdrawalRequestResultCode(sw) {
+	case CreateWithdrawalRequestResultCodeSuccess:
+		return "Success", true
+	default:
+		return "", true
+	}
+}
+
+// NewCreateWithdrawalRequestResult creates a new  CreateWithdrawalRequestResult.
+func NewCreateWithdrawalRequestResult(code CreateWithdrawalRequestResultCode, value interface{}) (result CreateWithdrawalRequestResult, err error) {
+	result.Code = code
+	switch CreateWithdrawalRequestResultCode(code) {
+	case CreateWithdrawalRequestResultCodeSuccess:
+		tv, ok := value.(CreateWithdrawalSuccess)
+		if !ok {
+			err = fmt.Errorf("invalid value, must be CreateWithdrawalSuccess")
+			return
+		}
+		result.Success = &tv
+	default:
+		// void
+	}
+	return
+}
+
+// MustSuccess retrieves the Success value from the union,
+// panicing if the value is not set.
+func (u CreateWithdrawalRequestResult) MustSuccess() CreateWithdrawalSuccess {
+	val, ok := u.GetSuccess()
+
+	if !ok {
+		panic("arm Success is not set")
+	}
+
+	return val
+}
+
+// GetSuccess retrieves the Success value from the union,
+// returning ok if the union's switch indicated the value is valid.
+func (u CreateWithdrawalRequestResult) GetSuccess() (result CreateWithdrawalSuccess, ok bool) {
 	armName, _ := u.ArmForSwitch(int32(u.Code))
 
 	if armName == "Success" {
@@ -7036,6 +8782,15 @@ func (e DirectDebitResultCode) ValidEnum(v int32) bool {
 	_, ok := directDebitResultCodeMap[v]
 	return ok
 }
+func (e DirectDebitResultCode) isFlag() bool {
+	for i := len(DirectDebitResultCodeAll) - 1; i >= 0; i-- {
+		expected := DirectDebitResultCode(2) << uint64(len(DirectDebitResultCodeAll)-1) >> uint64(len(DirectDebitResultCodeAll)-i)
+		if expected != DirectDebitResultCodeAll[i] {
+			return false
+		}
+	}
+	return true
+}
 
 // String returns the name of `e`
 func (e DirectDebitResultCode) String() string {
@@ -7049,22 +8804,36 @@ func (e DirectDebitResultCode) ShortString() string {
 }
 
 func (e DirectDebitResultCode) MarshalJSON() ([]byte, error) {
-	return []byte("\"" + e.String() + "\""), nil
+	if e.isFlag() {
+		// marshal as mask
+		result := flag{
+			Value: int32(e),
+		}
+		for _, value := range DirectDebitResultCodeAll {
+			if (value & e) == value {
+				result.Flags = append(result.Flags, flagValue{
+					Value: int32(value),
+					Name:  value.ShortString(),
+				})
+			}
+		}
+		return json.Marshal(&result)
+	} else {
+		// marshal as enum
+		result := enum{
+			Value:  int32(e),
+			String: e.ShortString(),
+		}
+		return json.Marshal(&result)
+	}
 }
 
-func (e *DirectDebitResultCode) UnmarshalJSON(d []byte) error {
-	var raw string
-	err := json.Unmarshal(d, &raw)
-	if err != nil {
+func (e *DirectDebitResultCode) UnmarshalJSON(data []byte) error {
+	var t value
+	if err := json.Unmarshal(data, &t); err != nil {
 		return err
 	}
-
-	value, ok := directDebitResultCodeRevMap[raw]
-	if !ok {
-		return fmt.Errorf("unexpected json value: %s", raw)
-	}
-
-	*e = DirectDebitResultCode(value)
+	*e = DirectDebitResultCode(t.Value)
 	return nil
 }
 
@@ -7323,6 +9092,15 @@ func (e ManageAccountResultCode) ValidEnum(v int32) bool {
 	_, ok := manageAccountResultCodeMap[v]
 	return ok
 }
+func (e ManageAccountResultCode) isFlag() bool {
+	for i := len(ManageAccountResultCodeAll) - 1; i >= 0; i-- {
+		expected := ManageAccountResultCode(2) << uint64(len(ManageAccountResultCodeAll)-1) >> uint64(len(ManageAccountResultCodeAll)-i)
+		if expected != ManageAccountResultCodeAll[i] {
+			return false
+		}
+	}
+	return true
+}
 
 // String returns the name of `e`
 func (e ManageAccountResultCode) String() string {
@@ -7336,22 +9114,36 @@ func (e ManageAccountResultCode) ShortString() string {
 }
 
 func (e ManageAccountResultCode) MarshalJSON() ([]byte, error) {
-	return []byte("\"" + e.String() + "\""), nil
+	if e.isFlag() {
+		// marshal as mask
+		result := flag{
+			Value: int32(e),
+		}
+		for _, value := range ManageAccountResultCodeAll {
+			if (value & e) == value {
+				result.Flags = append(result.Flags, flagValue{
+					Value: int32(value),
+					Name:  value.ShortString(),
+				})
+			}
+		}
+		return json.Marshal(&result)
+	} else {
+		// marshal as enum
+		result := enum{
+			Value:  int32(e),
+			String: e.ShortString(),
+		}
+		return json.Marshal(&result)
+	}
 }
 
-func (e *ManageAccountResultCode) UnmarshalJSON(d []byte) error {
-	var raw string
-	err := json.Unmarshal(d, &raw)
-	if err != nil {
+func (e *ManageAccountResultCode) UnmarshalJSON(data []byte) error {
+	var t value
+	if err := json.Unmarshal(data, &t); err != nil {
 		return err
 	}
-
-	value, ok := manageAccountResultCodeRevMap[raw]
-	if !ok {
-		return fmt.Errorf("unexpected json value: %s", raw)
-	}
-
-	*e = ManageAccountResultCode(value)
+	*e = ManageAccountResultCode(t.Value)
 	return nil
 }
 
@@ -7532,6 +9324,15 @@ func (e ManageAssetPairAction) ValidEnum(v int32) bool {
 	_, ok := manageAssetPairActionMap[v]
 	return ok
 }
+func (e ManageAssetPairAction) isFlag() bool {
+	for i := len(ManageAssetPairActionAll) - 1; i >= 0; i-- {
+		expected := ManageAssetPairAction(2) << uint64(len(ManageAssetPairActionAll)-1) >> uint64(len(ManageAssetPairActionAll)-i)
+		if expected != ManageAssetPairActionAll[i] {
+			return false
+		}
+	}
+	return true
+}
 
 // String returns the name of `e`
 func (e ManageAssetPairAction) String() string {
@@ -7545,22 +9346,36 @@ func (e ManageAssetPairAction) ShortString() string {
 }
 
 func (e ManageAssetPairAction) MarshalJSON() ([]byte, error) {
-	return []byte("\"" + e.String() + "\""), nil
+	if e.isFlag() {
+		// marshal as mask
+		result := flag{
+			Value: int32(e),
+		}
+		for _, value := range ManageAssetPairActionAll {
+			if (value & e) == value {
+				result.Flags = append(result.Flags, flagValue{
+					Value: int32(value),
+					Name:  value.ShortString(),
+				})
+			}
+		}
+		return json.Marshal(&result)
+	} else {
+		// marshal as enum
+		result := enum{
+			Value:  int32(e),
+			String: e.ShortString(),
+		}
+		return json.Marshal(&result)
+	}
 }
 
-func (e *ManageAssetPairAction) UnmarshalJSON(d []byte) error {
-	var raw string
-	err := json.Unmarshal(d, &raw)
-	if err != nil {
+func (e *ManageAssetPairAction) UnmarshalJSON(data []byte) error {
+	var t value
+	if err := json.Unmarshal(data, &t); err != nil {
 		return err
 	}
-
-	value, ok := manageAssetPairActionRevMap[raw]
-	if !ok {
-		return fmt.Errorf("unexpected json value: %s", raw)
-	}
-
-	*e = ManageAssetPairAction(value)
+	*e = ManageAssetPairAction(t.Value)
 	return nil
 }
 
@@ -7717,6 +9532,15 @@ func (e ManageAssetPairResultCode) ValidEnum(v int32) bool {
 	_, ok := manageAssetPairResultCodeMap[v]
 	return ok
 }
+func (e ManageAssetPairResultCode) isFlag() bool {
+	for i := len(ManageAssetPairResultCodeAll) - 1; i >= 0; i-- {
+		expected := ManageAssetPairResultCode(2) << uint64(len(ManageAssetPairResultCodeAll)-1) >> uint64(len(ManageAssetPairResultCodeAll)-i)
+		if expected != ManageAssetPairResultCodeAll[i] {
+			return false
+		}
+	}
+	return true
+}
 
 // String returns the name of `e`
 func (e ManageAssetPairResultCode) String() string {
@@ -7730,22 +9554,36 @@ func (e ManageAssetPairResultCode) ShortString() string {
 }
 
 func (e ManageAssetPairResultCode) MarshalJSON() ([]byte, error) {
-	return []byte("\"" + e.String() + "\""), nil
+	if e.isFlag() {
+		// marshal as mask
+		result := flag{
+			Value: int32(e),
+		}
+		for _, value := range ManageAssetPairResultCodeAll {
+			if (value & e) == value {
+				result.Flags = append(result.Flags, flagValue{
+					Value: int32(value),
+					Name:  value.ShortString(),
+				})
+			}
+		}
+		return json.Marshal(&result)
+	} else {
+		// marshal as enum
+		result := enum{
+			Value:  int32(e),
+			String: e.ShortString(),
+		}
+		return json.Marshal(&result)
+	}
 }
 
-func (e *ManageAssetPairResultCode) UnmarshalJSON(d []byte) error {
-	var raw string
-	err := json.Unmarshal(d, &raw)
-	if err != nil {
+func (e *ManageAssetPairResultCode) UnmarshalJSON(data []byte) error {
+	var t value
+	if err := json.Unmarshal(data, &t); err != nil {
 		return err
 	}
-
-	value, ok := manageAssetPairResultCodeRevMap[raw]
-	if !ok {
-		return fmt.Errorf("unexpected json value: %s", raw)
-	}
-
-	*e = ManageAssetPairResultCode(value)
+	*e = ManageAssetPairResultCode(t.Value)
 	return nil
 }
 
@@ -7927,6 +9765,15 @@ func (e ManageAssetAction) ValidEnum(v int32) bool {
 	_, ok := manageAssetActionMap[v]
 	return ok
 }
+func (e ManageAssetAction) isFlag() bool {
+	for i := len(ManageAssetActionAll) - 1; i >= 0; i-- {
+		expected := ManageAssetAction(2) << uint64(len(ManageAssetActionAll)-1) >> uint64(len(ManageAssetActionAll)-i)
+		if expected != ManageAssetActionAll[i] {
+			return false
+		}
+	}
+	return true
+}
 
 // String returns the name of `e`
 func (e ManageAssetAction) String() string {
@@ -7940,22 +9787,36 @@ func (e ManageAssetAction) ShortString() string {
 }
 
 func (e ManageAssetAction) MarshalJSON() ([]byte, error) {
-	return []byte("\"" + e.String() + "\""), nil
+	if e.isFlag() {
+		// marshal as mask
+		result := flag{
+			Value: int32(e),
+		}
+		for _, value := range ManageAssetActionAll {
+			if (value & e) == value {
+				result.Flags = append(result.Flags, flagValue{
+					Value: int32(value),
+					Name:  value.ShortString(),
+				})
+			}
+		}
+		return json.Marshal(&result)
+	} else {
+		// marshal as enum
+		result := enum{
+			Value:  int32(e),
+			String: e.ShortString(),
+		}
+		return json.Marshal(&result)
+	}
 }
 
-func (e *ManageAssetAction) UnmarshalJSON(d []byte) error {
-	var raw string
-	err := json.Unmarshal(d, &raw)
-	if err != nil {
+func (e *ManageAssetAction) UnmarshalJSON(data []byte) error {
+	var t value
+	if err := json.Unmarshal(data, &t); err != nil {
 		return err
 	}
-
-	value, ok := manageAssetActionRevMap[raw]
-	if !ok {
-		return fmt.Errorf("unexpected json value: %s", raw)
-	}
-
-	*e = ManageAssetAction(value)
+	*e = ManageAssetAction(t.Value)
 	return nil
 }
 
@@ -8239,7 +10100,9 @@ type ManageAssetOp struct {
 //    	INVALID_CODE = -5,                // asset code is invalid (empty or contains space)
 //    	INVALID_NAME = -6,                // asset name is invalid (empty)
 //    	INVALID_POLICIES = -7,            // asset policies (has flag which does not belong to AssetPolicies enum)
-//    	ASSET_NOT_FOUND = -8
+//    	ASSET_NOT_FOUND = -8,             // asset does not exists
+//    	REQUEST_ALREADY_EXISTS = -9,      // request for creation of unique entry already exists
+//    	STATS_ASSET_ALREADY_EXISTS = -10
 //    };
 //
 type ManageAssetResultCode int32
@@ -8253,6 +10116,8 @@ const (
 	ManageAssetResultCodeInvalidName              ManageAssetResultCode = -6
 	ManageAssetResultCodeInvalidPolicies          ManageAssetResultCode = -7
 	ManageAssetResultCodeAssetNotFound            ManageAssetResultCode = -8
+	ManageAssetResultCodeRequestAlreadyExists     ManageAssetResultCode = -9
+	ManageAssetResultCodeStatsAssetAlreadyExists  ManageAssetResultCode = -10
 )
 
 var ManageAssetResultCodeAll = []ManageAssetResultCode{
@@ -8264,28 +10129,34 @@ var ManageAssetResultCodeAll = []ManageAssetResultCode{
 	ManageAssetResultCodeInvalidName,
 	ManageAssetResultCodeInvalidPolicies,
 	ManageAssetResultCodeAssetNotFound,
+	ManageAssetResultCodeRequestAlreadyExists,
+	ManageAssetResultCodeStatsAssetAlreadyExists,
 }
 
 var manageAssetResultCodeMap = map[int32]string{
-	0:  "ManageAssetResultCodeSuccess",
-	-1: "ManageAssetResultCodeRequestNotFound",
-	-3: "ManageAssetResultCodeAssetAlreadyExists",
-	-4: "ManageAssetResultCodeInvalidMaxIssuanceAmount",
-	-5: "ManageAssetResultCodeInvalidCode",
-	-6: "ManageAssetResultCodeInvalidName",
-	-7: "ManageAssetResultCodeInvalidPolicies",
-	-8: "ManageAssetResultCodeAssetNotFound",
+	0:   "ManageAssetResultCodeSuccess",
+	-1:  "ManageAssetResultCodeRequestNotFound",
+	-3:  "ManageAssetResultCodeAssetAlreadyExists",
+	-4:  "ManageAssetResultCodeInvalidMaxIssuanceAmount",
+	-5:  "ManageAssetResultCodeInvalidCode",
+	-6:  "ManageAssetResultCodeInvalidName",
+	-7:  "ManageAssetResultCodeInvalidPolicies",
+	-8:  "ManageAssetResultCodeAssetNotFound",
+	-9:  "ManageAssetResultCodeRequestAlreadyExists",
+	-10: "ManageAssetResultCodeStatsAssetAlreadyExists",
 }
 
 var manageAssetResultCodeShortMap = map[int32]string{
-	0:  "success",
-	-1: "request_not_found",
-	-3: "asset_already_exists",
-	-4: "invalid_max_issuance_amount",
-	-5: "invalid_code",
-	-6: "invalid_name",
-	-7: "invalid_policies",
-	-8: "asset_not_found",
+	0:   "success",
+	-1:  "request_not_found",
+	-3:  "asset_already_exists",
+	-4:  "invalid_max_issuance_amount",
+	-5:  "invalid_code",
+	-6:  "invalid_name",
+	-7:  "invalid_policies",
+	-8:  "asset_not_found",
+	-9:  "request_already_exists",
+	-10: "stats_asset_already_exists",
 }
 
 var manageAssetResultCodeRevMap = map[string]int32{
@@ -8297,6 +10168,8 @@ var manageAssetResultCodeRevMap = map[string]int32{
 	"ManageAssetResultCodeInvalidName":              -6,
 	"ManageAssetResultCodeInvalidPolicies":          -7,
 	"ManageAssetResultCodeAssetNotFound":            -8,
+	"ManageAssetResultCodeRequestAlreadyExists":     -9,
+	"ManageAssetResultCodeStatsAssetAlreadyExists":  -10,
 }
 
 // ValidEnum validates a proposed value for this enum.  Implements
@@ -8304,6 +10177,15 @@ var manageAssetResultCodeRevMap = map[string]int32{
 func (e ManageAssetResultCode) ValidEnum(v int32) bool {
 	_, ok := manageAssetResultCodeMap[v]
 	return ok
+}
+func (e ManageAssetResultCode) isFlag() bool {
+	for i := len(ManageAssetResultCodeAll) - 1; i >= 0; i-- {
+		expected := ManageAssetResultCode(2) << uint64(len(ManageAssetResultCodeAll)-1) >> uint64(len(ManageAssetResultCodeAll)-i)
+		if expected != ManageAssetResultCodeAll[i] {
+			return false
+		}
+	}
+	return true
 }
 
 // String returns the name of `e`
@@ -8318,22 +10200,36 @@ func (e ManageAssetResultCode) ShortString() string {
 }
 
 func (e ManageAssetResultCode) MarshalJSON() ([]byte, error) {
-	return []byte("\"" + e.String() + "\""), nil
+	if e.isFlag() {
+		// marshal as mask
+		result := flag{
+			Value: int32(e),
+		}
+		for _, value := range ManageAssetResultCodeAll {
+			if (value & e) == value {
+				result.Flags = append(result.Flags, flagValue{
+					Value: int32(value),
+					Name:  value.ShortString(),
+				})
+			}
+		}
+		return json.Marshal(&result)
+	} else {
+		// marshal as enum
+		result := enum{
+			Value:  int32(e),
+			String: e.ShortString(),
+		}
+		return json.Marshal(&result)
+	}
 }
 
-func (e *ManageAssetResultCode) UnmarshalJSON(d []byte) error {
-	var raw string
-	err := json.Unmarshal(d, &raw)
-	if err != nil {
+func (e *ManageAssetResultCode) UnmarshalJSON(data []byte) error {
+	var t value
+	if err := json.Unmarshal(data, &t); err != nil {
 		return err
 	}
-
-	value, ok := manageAssetResultCodeRevMap[raw]
-	if !ok {
-		return fmt.Errorf("unexpected json value: %s", raw)
-	}
-
-	*e = ManageAssetResultCode(value)
+	*e = ManageAssetResultCode(t.Value)
 	return nil
 }
 
@@ -8380,6 +10276,7 @@ func NewManageAssetSuccessExt(v LedgerVersion, value interface{}) (result Manage
 //   struct ManageAssetSuccess
 //    {
 //    	uint64 requestID;
+//    	bool fulfilled;
 //        // reserved for future use
 //        union switch (LedgerVersion v)
 //        {
@@ -8391,6 +10288,7 @@ func NewManageAssetSuccessExt(v LedgerVersion, value interface{}) (result Manage
 //
 type ManageAssetSuccess struct {
 	RequestId Uint64                `json:"requestID,omitempty"`
+	Fulfilled bool                  `json:"fulfilled,omitempty"`
 	Ext       ManageAssetSuccessExt `json:"ext,omitempty"`
 }
 
@@ -8509,6 +10407,15 @@ func (e ManageBalanceAction) ValidEnum(v int32) bool {
 	_, ok := manageBalanceActionMap[v]
 	return ok
 }
+func (e ManageBalanceAction) isFlag() bool {
+	for i := len(ManageBalanceActionAll) - 1; i >= 0; i-- {
+		expected := ManageBalanceAction(2) << uint64(len(ManageBalanceActionAll)-1) >> uint64(len(ManageBalanceActionAll)-i)
+		if expected != ManageBalanceActionAll[i] {
+			return false
+		}
+	}
+	return true
+}
 
 // String returns the name of `e`
 func (e ManageBalanceAction) String() string {
@@ -8522,22 +10429,36 @@ func (e ManageBalanceAction) ShortString() string {
 }
 
 func (e ManageBalanceAction) MarshalJSON() ([]byte, error) {
-	return []byte("\"" + e.String() + "\""), nil
+	if e.isFlag() {
+		// marshal as mask
+		result := flag{
+			Value: int32(e),
+		}
+		for _, value := range ManageBalanceActionAll {
+			if (value & e) == value {
+				result.Flags = append(result.Flags, flagValue{
+					Value: int32(value),
+					Name:  value.ShortString(),
+				})
+			}
+		}
+		return json.Marshal(&result)
+	} else {
+		// marshal as enum
+		result := enum{
+			Value:  int32(e),
+			String: e.ShortString(),
+		}
+		return json.Marshal(&result)
+	}
 }
 
-func (e *ManageBalanceAction) UnmarshalJSON(d []byte) error {
-	var raw string
-	err := json.Unmarshal(d, &raw)
-	if err != nil {
+func (e *ManageBalanceAction) UnmarshalJSON(data []byte) error {
+	var t value
+	if err := json.Unmarshal(data, &t); err != nil {
 		return err
 	}
-
-	value, ok := manageBalanceActionRevMap[raw]
-	if !ok {
-		return fmt.Errorf("unexpected json value: %s", raw)
-	}
-
-	*e = ManageBalanceAction(value)
+	*e = ManageBalanceAction(t.Value)
 	return nil
 }
 
@@ -8677,6 +10598,15 @@ func (e ManageBalanceResultCode) ValidEnum(v int32) bool {
 	_, ok := manageBalanceResultCodeMap[v]
 	return ok
 }
+func (e ManageBalanceResultCode) isFlag() bool {
+	for i := len(ManageBalanceResultCodeAll) - 1; i >= 0; i-- {
+		expected := ManageBalanceResultCode(2) << uint64(len(ManageBalanceResultCodeAll)-1) >> uint64(len(ManageBalanceResultCodeAll)-i)
+		if expected != ManageBalanceResultCodeAll[i] {
+			return false
+		}
+	}
+	return true
+}
 
 // String returns the name of `e`
 func (e ManageBalanceResultCode) String() string {
@@ -8690,22 +10620,36 @@ func (e ManageBalanceResultCode) ShortString() string {
 }
 
 func (e ManageBalanceResultCode) MarshalJSON() ([]byte, error) {
-	return []byte("\"" + e.String() + "\""), nil
+	if e.isFlag() {
+		// marshal as mask
+		result := flag{
+			Value: int32(e),
+		}
+		for _, value := range ManageBalanceResultCodeAll {
+			if (value & e) == value {
+				result.Flags = append(result.Flags, flagValue{
+					Value: int32(value),
+					Name:  value.ShortString(),
+				})
+			}
+		}
+		return json.Marshal(&result)
+	} else {
+		// marshal as enum
+		result := enum{
+			Value:  int32(e),
+			String: e.ShortString(),
+		}
+		return json.Marshal(&result)
+	}
 }
 
-func (e *ManageBalanceResultCode) UnmarshalJSON(d []byte) error {
-	var raw string
-	err := json.Unmarshal(d, &raw)
-	if err != nil {
+func (e *ManageBalanceResultCode) UnmarshalJSON(data []byte) error {
+	var t value
+	if err := json.Unmarshal(data, &t); err != nil {
 		return err
 	}
-
-	value, ok := manageBalanceResultCodeRevMap[raw]
-	if !ok {
-		return fmt.Errorf("unexpected json value: %s", raw)
-	}
-
-	*e = ManageBalanceResultCode(value)
+	*e = ManageBalanceResultCode(t.Value)
 	return nil
 }
 
@@ -8827,337 +10771,6 @@ func (u ManageBalanceResult) MustSuccess() ManageBalanceSuccess {
 // GetSuccess retrieves the Success value from the union,
 // returning ok if the union's switch indicated the value is valid.
 func (u ManageBalanceResult) GetSuccess() (result ManageBalanceSuccess, ok bool) {
-	armName, _ := u.ArmForSwitch(int32(u.Code))
-
-	if armName == "Success" {
-		result = *u.Success
-		ok = true
-	}
-
-	return
-}
-
-// ManageForfeitRequestOpExt is an XDR NestedUnion defines as:
-//
-//   union switch (LedgerVersion v)
-//        {
-//        case EMPTY_VERSION:
-//            void;
-//        }
-//
-type ManageForfeitRequestOpExt struct {
-	V LedgerVersion `json:"v,omitempty"`
-}
-
-// SwitchFieldName returns the field name in which this union's
-// discriminant is stored
-func (u ManageForfeitRequestOpExt) SwitchFieldName() string {
-	return "V"
-}
-
-// ArmForSwitch returns which field name should be used for storing
-// the value for an instance of ManageForfeitRequestOpExt
-func (u ManageForfeitRequestOpExt) ArmForSwitch(sw int32) (string, bool) {
-	switch LedgerVersion(sw) {
-	case LedgerVersionEmptyVersion:
-		return "", true
-	}
-	return "-", false
-}
-
-// NewManageForfeitRequestOpExt creates a new  ManageForfeitRequestOpExt.
-func NewManageForfeitRequestOpExt(v LedgerVersion, value interface{}) (result ManageForfeitRequestOpExt, err error) {
-	result.V = v
-	switch LedgerVersion(v) {
-	case LedgerVersionEmptyVersion:
-		// void
-	}
-	return
-}
-
-// ManageForfeitRequestOp is an XDR Struct defines as:
-//
-//   struct ManageForfeitRequestOp
-//    {
-//        BalanceID balance;
-//        int64 amount;
-//    	int64 totalFee;
-//        string details<>;
-//    	AccountID reviewer;
-//
-//    	union switch (LedgerVersion v)
-//        {
-//        case EMPTY_VERSION:
-//            void;
-//        }
-//        ext;
-//
-//    };
-//
-type ManageForfeitRequestOp struct {
-	Balance  BalanceId                 `json:"balance,omitempty"`
-	Amount   Int64                     `json:"amount,omitempty"`
-	TotalFee Int64                     `json:"totalFee,omitempty"`
-	Details  string                    `json:"details,omitempty"`
-	Reviewer AccountId                 `json:"reviewer,omitempty"`
-	Ext      ManageForfeitRequestOpExt `json:"ext,omitempty"`
-}
-
-// ManageForfeitRequestResultCode is an XDR Enum defines as:
-//
-//   enum ManageForfeitRequestResultCode
-//    {
-//        // codes considered as "success" for the operation
-//        SUCCESS = 0,
-//
-//        // codes considered as "failure" for the operation
-//    	UNDERFUNDED = -1,
-//        INVALID_AMOUNT = -2,
-//        LINE_FULL = -3,
-//        BALANCE_MISMATCH = -4,
-//        STATS_OVERFLOW = -5,
-//        LIMITS_EXCEEDED = -6,
-//        REVIEWER_NOT_FOUND = -7,
-//        INVALID_DETAILS = -8,
-//    	FEE_MISMATCH = -9 // fee is not equal to expected fee
-//    };
-//
-type ManageForfeitRequestResultCode int32
-
-const (
-	ManageForfeitRequestResultCodeSuccess          ManageForfeitRequestResultCode = 0
-	ManageForfeitRequestResultCodeUnderfunded      ManageForfeitRequestResultCode = -1
-	ManageForfeitRequestResultCodeInvalidAmount    ManageForfeitRequestResultCode = -2
-	ManageForfeitRequestResultCodeLineFull         ManageForfeitRequestResultCode = -3
-	ManageForfeitRequestResultCodeBalanceMismatch  ManageForfeitRequestResultCode = -4
-	ManageForfeitRequestResultCodeStatsOverflow    ManageForfeitRequestResultCode = -5
-	ManageForfeitRequestResultCodeLimitsExceeded   ManageForfeitRequestResultCode = -6
-	ManageForfeitRequestResultCodeReviewerNotFound ManageForfeitRequestResultCode = -7
-	ManageForfeitRequestResultCodeInvalidDetails   ManageForfeitRequestResultCode = -8
-	ManageForfeitRequestResultCodeFeeMismatch      ManageForfeitRequestResultCode = -9
-)
-
-var ManageForfeitRequestResultCodeAll = []ManageForfeitRequestResultCode{
-	ManageForfeitRequestResultCodeSuccess,
-	ManageForfeitRequestResultCodeUnderfunded,
-	ManageForfeitRequestResultCodeInvalidAmount,
-	ManageForfeitRequestResultCodeLineFull,
-	ManageForfeitRequestResultCodeBalanceMismatch,
-	ManageForfeitRequestResultCodeStatsOverflow,
-	ManageForfeitRequestResultCodeLimitsExceeded,
-	ManageForfeitRequestResultCodeReviewerNotFound,
-	ManageForfeitRequestResultCodeInvalidDetails,
-	ManageForfeitRequestResultCodeFeeMismatch,
-}
-
-var manageForfeitRequestResultCodeMap = map[int32]string{
-	0:  "ManageForfeitRequestResultCodeSuccess",
-	-1: "ManageForfeitRequestResultCodeUnderfunded",
-	-2: "ManageForfeitRequestResultCodeInvalidAmount",
-	-3: "ManageForfeitRequestResultCodeLineFull",
-	-4: "ManageForfeitRequestResultCodeBalanceMismatch",
-	-5: "ManageForfeitRequestResultCodeStatsOverflow",
-	-6: "ManageForfeitRequestResultCodeLimitsExceeded",
-	-7: "ManageForfeitRequestResultCodeReviewerNotFound",
-	-8: "ManageForfeitRequestResultCodeInvalidDetails",
-	-9: "ManageForfeitRequestResultCodeFeeMismatch",
-}
-
-var manageForfeitRequestResultCodeShortMap = map[int32]string{
-	0:  "success",
-	-1: "underfunded",
-	-2: "invalid_amount",
-	-3: "line_full",
-	-4: "balance_mismatch",
-	-5: "stats_overflow",
-	-6: "limits_exceeded",
-	-7: "reviewer_not_found",
-	-8: "invalid_details",
-	-9: "fee_mismatch",
-}
-
-var manageForfeitRequestResultCodeRevMap = map[string]int32{
-	"ManageForfeitRequestResultCodeSuccess":          0,
-	"ManageForfeitRequestResultCodeUnderfunded":      -1,
-	"ManageForfeitRequestResultCodeInvalidAmount":    -2,
-	"ManageForfeitRequestResultCodeLineFull":         -3,
-	"ManageForfeitRequestResultCodeBalanceMismatch":  -4,
-	"ManageForfeitRequestResultCodeStatsOverflow":    -5,
-	"ManageForfeitRequestResultCodeLimitsExceeded":   -6,
-	"ManageForfeitRequestResultCodeReviewerNotFound": -7,
-	"ManageForfeitRequestResultCodeInvalidDetails":   -8,
-	"ManageForfeitRequestResultCodeFeeMismatch":      -9,
-}
-
-// ValidEnum validates a proposed value for this enum.  Implements
-// the Enum interface for ManageForfeitRequestResultCode
-func (e ManageForfeitRequestResultCode) ValidEnum(v int32) bool {
-	_, ok := manageForfeitRequestResultCodeMap[v]
-	return ok
-}
-
-// String returns the name of `e`
-func (e ManageForfeitRequestResultCode) String() string {
-	name, _ := manageForfeitRequestResultCodeMap[int32(e)]
-	return name
-}
-
-func (e ManageForfeitRequestResultCode) ShortString() string {
-	name, _ := manageForfeitRequestResultCodeShortMap[int32(e)]
-	return name
-}
-
-func (e ManageForfeitRequestResultCode) MarshalJSON() ([]byte, error) {
-	return []byte("\"" + e.String() + "\""), nil
-}
-
-func (e *ManageForfeitRequestResultCode) UnmarshalJSON(d []byte) error {
-	var raw string
-	err := json.Unmarshal(d, &raw)
-	if err != nil {
-		return err
-	}
-
-	value, ok := manageForfeitRequestResultCodeRevMap[raw]
-	if !ok {
-		return fmt.Errorf("unexpected json value: %s", raw)
-	}
-
-	*e = ManageForfeitRequestResultCode(value)
-	return nil
-}
-
-// ManageForfeitRequestResultSuccessExt is an XDR NestedUnion defines as:
-//
-//   union switch (LedgerVersion v)
-//                {
-//                case EMPTY_VERSION:
-//                    void;
-//                }
-//
-type ManageForfeitRequestResultSuccessExt struct {
-	V LedgerVersion `json:"v,omitempty"`
-}
-
-// SwitchFieldName returns the field name in which this union's
-// discriminant is stored
-func (u ManageForfeitRequestResultSuccessExt) SwitchFieldName() string {
-	return "V"
-}
-
-// ArmForSwitch returns which field name should be used for storing
-// the value for an instance of ManageForfeitRequestResultSuccessExt
-func (u ManageForfeitRequestResultSuccessExt) ArmForSwitch(sw int32) (string, bool) {
-	switch LedgerVersion(sw) {
-	case LedgerVersionEmptyVersion:
-		return "", true
-	}
-	return "-", false
-}
-
-// NewManageForfeitRequestResultSuccessExt creates a new  ManageForfeitRequestResultSuccessExt.
-func NewManageForfeitRequestResultSuccessExt(v LedgerVersion, value interface{}) (result ManageForfeitRequestResultSuccessExt, err error) {
-	result.V = v
-	switch LedgerVersion(v) {
-	case LedgerVersionEmptyVersion:
-		// void
-	}
-	return
-}
-
-// ManageForfeitRequestResultSuccess is an XDR NestedStruct defines as:
-//
-//   struct
-//            {
-//                uint64 paymentID;
-//
-//                union switch (LedgerVersion v)
-//                {
-//                case EMPTY_VERSION:
-//                    void;
-//                }
-//                ext;
-//            }
-//
-type ManageForfeitRequestResultSuccess struct {
-	PaymentId Uint64                               `json:"paymentID,omitempty"`
-	Ext       ManageForfeitRequestResultSuccessExt `json:"ext,omitempty"`
-}
-
-// ManageForfeitRequestResult is an XDR Union defines as:
-//
-//   union ManageForfeitRequestResult switch (ManageForfeitRequestResultCode code)
-//    {
-//        case SUCCESS:
-//            struct
-//            {
-//                uint64 paymentID;
-//
-//                union switch (LedgerVersion v)
-//                {
-//                case EMPTY_VERSION:
-//                    void;
-//                }
-//                ext;
-//            } success;
-//        default:
-//            void;
-//    };
-//
-type ManageForfeitRequestResult struct {
-	Code    ManageForfeitRequestResultCode     `json:"code,omitempty"`
-	Success *ManageForfeitRequestResultSuccess `json:"success,omitempty"`
-}
-
-// SwitchFieldName returns the field name in which this union's
-// discriminant is stored
-func (u ManageForfeitRequestResult) SwitchFieldName() string {
-	return "Code"
-}
-
-// ArmForSwitch returns which field name should be used for storing
-// the value for an instance of ManageForfeitRequestResult
-func (u ManageForfeitRequestResult) ArmForSwitch(sw int32) (string, bool) {
-	switch ManageForfeitRequestResultCode(sw) {
-	case ManageForfeitRequestResultCodeSuccess:
-		return "Success", true
-	default:
-		return "", true
-	}
-}
-
-// NewManageForfeitRequestResult creates a new  ManageForfeitRequestResult.
-func NewManageForfeitRequestResult(code ManageForfeitRequestResultCode, value interface{}) (result ManageForfeitRequestResult, err error) {
-	result.Code = code
-	switch ManageForfeitRequestResultCode(code) {
-	case ManageForfeitRequestResultCodeSuccess:
-		tv, ok := value.(ManageForfeitRequestResultSuccess)
-		if !ok {
-			err = fmt.Errorf("invalid value, must be ManageForfeitRequestResultSuccess")
-			return
-		}
-		result.Success = &tv
-	default:
-		// void
-	}
-	return
-}
-
-// MustSuccess retrieves the Success value from the union,
-// panicing if the value is not set.
-func (u ManageForfeitRequestResult) MustSuccess() ManageForfeitRequestResultSuccess {
-	val, ok := u.GetSuccess()
-
-	if !ok {
-		panic("arm Success is not set")
-	}
-
-	return val
-}
-
-// GetSuccess retrieves the Success value from the union,
-// returning ok if the union's switch indicated the value is valid.
-func (u ManageForfeitRequestResult) GetSuccess() (result ManageForfeitRequestResultSuccess, ok bool) {
 	armName, _ := u.ArmForSwitch(int32(u.Code))
 
 	if armName == "Success" {
@@ -9309,6 +10922,15 @@ func (e ManageInvoiceResultCode) ValidEnum(v int32) bool {
 	_, ok := manageInvoiceResultCodeMap[v]
 	return ok
 }
+func (e ManageInvoiceResultCode) isFlag() bool {
+	for i := len(ManageInvoiceResultCodeAll) - 1; i >= 0; i-- {
+		expected := ManageInvoiceResultCode(2) << uint64(len(ManageInvoiceResultCodeAll)-1) >> uint64(len(ManageInvoiceResultCodeAll)-i)
+		if expected != ManageInvoiceResultCodeAll[i] {
+			return false
+		}
+	}
+	return true
+}
 
 // String returns the name of `e`
 func (e ManageInvoiceResultCode) String() string {
@@ -9322,22 +10944,36 @@ func (e ManageInvoiceResultCode) ShortString() string {
 }
 
 func (e ManageInvoiceResultCode) MarshalJSON() ([]byte, error) {
-	return []byte("\"" + e.String() + "\""), nil
+	if e.isFlag() {
+		// marshal as mask
+		result := flag{
+			Value: int32(e),
+		}
+		for _, value := range ManageInvoiceResultCodeAll {
+			if (value & e) == value {
+				result.Flags = append(result.Flags, flagValue{
+					Value: int32(value),
+					Name:  value.ShortString(),
+				})
+			}
+		}
+		return json.Marshal(&result)
+	} else {
+		// marshal as enum
+		result := enum{
+			Value:  int32(e),
+			String: e.ShortString(),
+		}
+		return json.Marshal(&result)
+	}
 }
 
-func (e *ManageInvoiceResultCode) UnmarshalJSON(d []byte) error {
-	var raw string
-	err := json.Unmarshal(d, &raw)
-	if err != nil {
+func (e *ManageInvoiceResultCode) UnmarshalJSON(data []byte) error {
+	var t value
+	if err := json.Unmarshal(data, &t); err != nil {
 		return err
 	}
-
-	value, ok := manageInvoiceResultCodeRevMap[raw]
-	if !ok {
-		return fmt.Errorf("unexpected json value: %s", raw)
-	}
-
-	*e = ManageInvoiceResultCode(value)
+	*e = ManageInvoiceResultCode(t.Value)
 	return nil
 }
 
@@ -9658,6 +11294,15 @@ func (e ManageOfferResultCode) ValidEnum(v int32) bool {
 	_, ok := manageOfferResultCodeMap[v]
 	return ok
 }
+func (e ManageOfferResultCode) isFlag() bool {
+	for i := len(ManageOfferResultCodeAll) - 1; i >= 0; i-- {
+		expected := ManageOfferResultCode(2) << uint64(len(ManageOfferResultCodeAll)-1) >> uint64(len(ManageOfferResultCodeAll)-i)
+		if expected != ManageOfferResultCodeAll[i] {
+			return false
+		}
+	}
+	return true
+}
 
 // String returns the name of `e`
 func (e ManageOfferResultCode) String() string {
@@ -9671,22 +11316,36 @@ func (e ManageOfferResultCode) ShortString() string {
 }
 
 func (e ManageOfferResultCode) MarshalJSON() ([]byte, error) {
-	return []byte("\"" + e.String() + "\""), nil
+	if e.isFlag() {
+		// marshal as mask
+		result := flag{
+			Value: int32(e),
+		}
+		for _, value := range ManageOfferResultCodeAll {
+			if (value & e) == value {
+				result.Flags = append(result.Flags, flagValue{
+					Value: int32(value),
+					Name:  value.ShortString(),
+				})
+			}
+		}
+		return json.Marshal(&result)
+	} else {
+		// marshal as enum
+		result := enum{
+			Value:  int32(e),
+			String: e.ShortString(),
+		}
+		return json.Marshal(&result)
+	}
 }
 
-func (e *ManageOfferResultCode) UnmarshalJSON(d []byte) error {
-	var raw string
-	err := json.Unmarshal(d, &raw)
-	if err != nil {
+func (e *ManageOfferResultCode) UnmarshalJSON(data []byte) error {
+	var t value
+	if err := json.Unmarshal(data, &t); err != nil {
 		return err
 	}
-
-	value, ok := manageOfferResultCodeRevMap[raw]
-	if !ok {
-		return fmt.Errorf("unexpected json value: %s", raw)
-	}
-
-	*e = ManageOfferResultCode(value)
+	*e = ManageOfferResultCode(t.Value)
 	return nil
 }
 
@@ -9737,6 +11396,15 @@ func (e ManageOfferEffect) ValidEnum(v int32) bool {
 	_, ok := manageOfferEffectMap[v]
 	return ok
 }
+func (e ManageOfferEffect) isFlag() bool {
+	for i := len(ManageOfferEffectAll) - 1; i >= 0; i-- {
+		expected := ManageOfferEffect(2) << uint64(len(ManageOfferEffectAll)-1) >> uint64(len(ManageOfferEffectAll)-i)
+		if expected != ManageOfferEffectAll[i] {
+			return false
+		}
+	}
+	return true
+}
 
 // String returns the name of `e`
 func (e ManageOfferEffect) String() string {
@@ -9750,22 +11418,36 @@ func (e ManageOfferEffect) ShortString() string {
 }
 
 func (e ManageOfferEffect) MarshalJSON() ([]byte, error) {
-	return []byte("\"" + e.String() + "\""), nil
+	if e.isFlag() {
+		// marshal as mask
+		result := flag{
+			Value: int32(e),
+		}
+		for _, value := range ManageOfferEffectAll {
+			if (value & e) == value {
+				result.Flags = append(result.Flags, flagValue{
+					Value: int32(value),
+					Name:  value.ShortString(),
+				})
+			}
+		}
+		return json.Marshal(&result)
+	} else {
+		// marshal as enum
+		result := enum{
+			Value:  int32(e),
+			String: e.ShortString(),
+		}
+		return json.Marshal(&result)
+	}
 }
 
-func (e *ManageOfferEffect) UnmarshalJSON(d []byte) error {
-	var raw string
-	err := json.Unmarshal(d, &raw)
-	if err != nil {
+func (e *ManageOfferEffect) UnmarshalJSON(data []byte) error {
+	var t value
+	if err := json.Unmarshal(data, &t); err != nil {
 		return err
 	}
-
-	value, ok := manageOfferEffectRevMap[raw]
-	if !ok {
-		return fmt.Errorf("unexpected json value: %s", raw)
-	}
-
-	*e = ManageOfferEffect(value)
+	*e = ManageOfferEffect(t.Value)
 	return nil
 }
 
@@ -10666,6 +12348,15 @@ func (e PaymentResultCode) ValidEnum(v int32) bool {
 	_, ok := paymentResultCodeMap[v]
 	return ok
 }
+func (e PaymentResultCode) isFlag() bool {
+	for i := len(PaymentResultCodeAll) - 1; i >= 0; i-- {
+		expected := PaymentResultCode(2) << uint64(len(PaymentResultCodeAll)-1) >> uint64(len(PaymentResultCodeAll)-i)
+		if expected != PaymentResultCodeAll[i] {
+			return false
+		}
+	}
+	return true
+}
 
 // String returns the name of `e`
 func (e PaymentResultCode) String() string {
@@ -10679,22 +12370,36 @@ func (e PaymentResultCode) ShortString() string {
 }
 
 func (e PaymentResultCode) MarshalJSON() ([]byte, error) {
-	return []byte("\"" + e.String() + "\""), nil
+	if e.isFlag() {
+		// marshal as mask
+		result := flag{
+			Value: int32(e),
+		}
+		for _, value := range PaymentResultCodeAll {
+			if (value & e) == value {
+				result.Flags = append(result.Flags, flagValue{
+					Value: int32(value),
+					Name:  value.ShortString(),
+				})
+			}
+		}
+		return json.Marshal(&result)
+	} else {
+		// marshal as enum
+		result := enum{
+			Value:  int32(e),
+			String: e.ShortString(),
+		}
+		return json.Marshal(&result)
+	}
 }
 
-func (e *PaymentResultCode) UnmarshalJSON(d []byte) error {
-	var raw string
-	err := json.Unmarshal(d, &raw)
-	if err != nil {
+func (e *PaymentResultCode) UnmarshalJSON(data []byte) error {
+	var t value
+	if err := json.Unmarshal(data, &t); err != nil {
 		return err
 	}
-
-	value, ok := paymentResultCodeRevMap[raw]
-	if !ok {
-		return fmt.Errorf("unexpected json value: %s", raw)
-	}
-
-	*e = PaymentResultCode(value)
+	*e = PaymentResultCode(t.Value)
 	return nil
 }
 
@@ -10950,6 +12655,15 @@ func (e RecoverResultCode) ValidEnum(v int32) bool {
 	_, ok := recoverResultCodeMap[v]
 	return ok
 }
+func (e RecoverResultCode) isFlag() bool {
+	for i := len(RecoverResultCodeAll) - 1; i >= 0; i-- {
+		expected := RecoverResultCode(2) << uint64(len(RecoverResultCodeAll)-1) >> uint64(len(RecoverResultCodeAll)-i)
+		if expected != RecoverResultCodeAll[i] {
+			return false
+		}
+	}
+	return true
+}
 
 // String returns the name of `e`
 func (e RecoverResultCode) String() string {
@@ -10963,22 +12677,36 @@ func (e RecoverResultCode) ShortString() string {
 }
 
 func (e RecoverResultCode) MarshalJSON() ([]byte, error) {
-	return []byte("\"" + e.String() + "\""), nil
+	if e.isFlag() {
+		// marshal as mask
+		result := flag{
+			Value: int32(e),
+		}
+		for _, value := range RecoverResultCodeAll {
+			if (value & e) == value {
+				result.Flags = append(result.Flags, flagValue{
+					Value: int32(value),
+					Name:  value.ShortString(),
+				})
+			}
+		}
+		return json.Marshal(&result)
+	} else {
+		// marshal as enum
+		result := enum{
+			Value:  int32(e),
+			String: e.ShortString(),
+		}
+		return json.Marshal(&result)
+	}
 }
 
-func (e *RecoverResultCode) UnmarshalJSON(d []byte) error {
-	var raw string
-	err := json.Unmarshal(d, &raw)
-	if err != nil {
+func (e *RecoverResultCode) UnmarshalJSON(data []byte) error {
+	var t value
+	if err := json.Unmarshal(data, &t); err != nil {
 		return err
 	}
-
-	value, ok := recoverResultCodeRevMap[raw]
-	if !ok {
-		return fmt.Errorf("unexpected json value: %s", raw)
-	}
-
-	*e = RecoverResultCode(value)
+	*e = RecoverResultCode(t.Value)
 	return nil
 }
 
@@ -11230,6 +12958,15 @@ func (e ReviewPaymentRequestResultCode) ValidEnum(v int32) bool {
 	_, ok := reviewPaymentRequestResultCodeMap[v]
 	return ok
 }
+func (e ReviewPaymentRequestResultCode) isFlag() bool {
+	for i := len(ReviewPaymentRequestResultCodeAll) - 1; i >= 0; i-- {
+		expected := ReviewPaymentRequestResultCode(2) << uint64(len(ReviewPaymentRequestResultCodeAll)-1) >> uint64(len(ReviewPaymentRequestResultCodeAll)-i)
+		if expected != ReviewPaymentRequestResultCodeAll[i] {
+			return false
+		}
+	}
+	return true
+}
 
 // String returns the name of `e`
 func (e ReviewPaymentRequestResultCode) String() string {
@@ -11243,22 +12980,36 @@ func (e ReviewPaymentRequestResultCode) ShortString() string {
 }
 
 func (e ReviewPaymentRequestResultCode) MarshalJSON() ([]byte, error) {
-	return []byte("\"" + e.String() + "\""), nil
+	if e.isFlag() {
+		// marshal as mask
+		result := flag{
+			Value: int32(e),
+		}
+		for _, value := range ReviewPaymentRequestResultCodeAll {
+			if (value & e) == value {
+				result.Flags = append(result.Flags, flagValue{
+					Value: int32(value),
+					Name:  value.ShortString(),
+				})
+			}
+		}
+		return json.Marshal(&result)
+	} else {
+		// marshal as enum
+		result := enum{
+			Value:  int32(e),
+			String: e.ShortString(),
+		}
+		return json.Marshal(&result)
+	}
 }
 
-func (e *ReviewPaymentRequestResultCode) UnmarshalJSON(d []byte) error {
-	var raw string
-	err := json.Unmarshal(d, &raw)
-	if err != nil {
+func (e *ReviewPaymentRequestResultCode) UnmarshalJSON(data []byte) error {
+	var t value
+	if err := json.Unmarshal(data, &t); err != nil {
 		return err
 	}
-
-	value, ok := reviewPaymentRequestResultCodeRevMap[raw]
-	if !ok {
-		return fmt.Errorf("unexpected json value: %s", raw)
-	}
-
-	*e = ReviewPaymentRequestResultCode(value)
+	*e = ReviewPaymentRequestResultCode(t.Value)
 	return nil
 }
 
@@ -11309,6 +13060,15 @@ func (e PaymentState) ValidEnum(v int32) bool {
 	_, ok := paymentStateMap[v]
 	return ok
 }
+func (e PaymentState) isFlag() bool {
+	for i := len(PaymentStateAll) - 1; i >= 0; i-- {
+		expected := PaymentState(2) << uint64(len(PaymentStateAll)-1) >> uint64(len(PaymentStateAll)-i)
+		if expected != PaymentStateAll[i] {
+			return false
+		}
+	}
+	return true
+}
 
 // String returns the name of `e`
 func (e PaymentState) String() string {
@@ -11322,22 +13082,36 @@ func (e PaymentState) ShortString() string {
 }
 
 func (e PaymentState) MarshalJSON() ([]byte, error) {
-	return []byte("\"" + e.String() + "\""), nil
+	if e.isFlag() {
+		// marshal as mask
+		result := flag{
+			Value: int32(e),
+		}
+		for _, value := range PaymentStateAll {
+			if (value & e) == value {
+				result.Flags = append(result.Flags, flagValue{
+					Value: int32(value),
+					Name:  value.ShortString(),
+				})
+			}
+		}
+		return json.Marshal(&result)
+	} else {
+		// marshal as enum
+		result := enum{
+			Value:  int32(e),
+			String: e.ShortString(),
+		}
+		return json.Marshal(&result)
+	}
 }
 
-func (e *PaymentState) UnmarshalJSON(d []byte) error {
-	var raw string
-	err := json.Unmarshal(d, &raw)
-	if err != nil {
+func (e *PaymentState) UnmarshalJSON(data []byte) error {
+	var t value
+	if err := json.Unmarshal(data, &t); err != nil {
 		return err
 	}
-
-	value, ok := paymentStateRevMap[raw]
-	if !ok {
-		return fmt.Errorf("unexpected json value: %s", raw)
-	}
-
-	*e = PaymentState(value)
+	*e = PaymentState(t.Value)
 	return nil
 }
 
@@ -11520,6 +13294,15 @@ func (e ReviewRequestOpAction) ValidEnum(v int32) bool {
 	_, ok := reviewRequestOpActionMap[v]
 	return ok
 }
+func (e ReviewRequestOpAction) isFlag() bool {
+	for i := len(ReviewRequestOpActionAll) - 1; i >= 0; i-- {
+		expected := ReviewRequestOpAction(2) << uint64(len(ReviewRequestOpActionAll)-1) >> uint64(len(ReviewRequestOpActionAll)-i)
+		if expected != ReviewRequestOpActionAll[i] {
+			return false
+		}
+	}
+	return true
+}
 
 // String returns the name of `e`
 func (e ReviewRequestOpAction) String() string {
@@ -11533,23 +13316,166 @@ func (e ReviewRequestOpAction) ShortString() string {
 }
 
 func (e ReviewRequestOpAction) MarshalJSON() ([]byte, error) {
-	return []byte("\"" + e.String() + "\""), nil
+	if e.isFlag() {
+		// marshal as mask
+		result := flag{
+			Value: int32(e),
+		}
+		for _, value := range ReviewRequestOpActionAll {
+			if (value & e) == value {
+				result.Flags = append(result.Flags, flagValue{
+					Value: int32(value),
+					Name:  value.ShortString(),
+				})
+			}
+		}
+		return json.Marshal(&result)
+	} else {
+		// marshal as enum
+		result := enum{
+			Value:  int32(e),
+			String: e.ShortString(),
+		}
+		return json.Marshal(&result)
+	}
 }
 
-func (e *ReviewRequestOpAction) UnmarshalJSON(d []byte) error {
-	var raw string
-	err := json.Unmarshal(d, &raw)
-	if err != nil {
+func (e *ReviewRequestOpAction) UnmarshalJSON(data []byte) error {
+	var t value
+	if err := json.Unmarshal(data, &t); err != nil {
 		return err
 	}
+	*e = ReviewRequestOpAction(t.Value)
+	return nil
+}
 
-	value, ok := reviewRequestOpActionRevMap[raw]
+// WithdrawalDetailsExt is an XDR NestedUnion defines as:
+//
+//   union switch (LedgerVersion v)
+//        {
+//        case EMPTY_VERSION:
+//            void;
+//        }
+//
+type WithdrawalDetailsExt struct {
+	V LedgerVersion `json:"v,omitempty"`
+}
+
+// SwitchFieldName returns the field name in which this union's
+// discriminant is stored
+func (u WithdrawalDetailsExt) SwitchFieldName() string {
+	return "V"
+}
+
+// ArmForSwitch returns which field name should be used for storing
+// the value for an instance of WithdrawalDetailsExt
+func (u WithdrawalDetailsExt) ArmForSwitch(sw int32) (string, bool) {
+	switch LedgerVersion(sw) {
+	case LedgerVersionEmptyVersion:
+		return "", true
+	}
+	return "-", false
+}
+
+// NewWithdrawalDetailsExt creates a new  WithdrawalDetailsExt.
+func NewWithdrawalDetailsExt(v LedgerVersion, value interface{}) (result WithdrawalDetailsExt, err error) {
+	result.V = v
+	switch LedgerVersion(v) {
+	case LedgerVersionEmptyVersion:
+		// void
+	}
+	return
+}
+
+// WithdrawalDetails is an XDR Struct defines as:
+//
+//   struct WithdrawalDetails {
+//    	string externalDetails<>;
+//    	// reserved for future use
+//        union switch (LedgerVersion v)
+//        {
+//        case EMPTY_VERSION:
+//            void;
+//        }
+//        ext;
+//    };
+//
+type WithdrawalDetails struct {
+	ExternalDetails string               `json:"externalDetails,omitempty"`
+	Ext             WithdrawalDetailsExt `json:"ext,omitempty"`
+}
+
+// ReviewRequestOpRequestDetails is an XDR NestedUnion defines as:
+//
+//   union switch(ReviewableRequestType requestType) {
+//    	case WITHDRAW:
+//    		WithdrawalDetails withdrawal;
+//    	default:
+//    		void;
+//    	}
+//
+type ReviewRequestOpRequestDetails struct {
+	RequestType ReviewableRequestType `json:"requestType,omitempty"`
+	Withdrawal  *WithdrawalDetails    `json:"withdrawal,omitempty"`
+}
+
+// SwitchFieldName returns the field name in which this union's
+// discriminant is stored
+func (u ReviewRequestOpRequestDetails) SwitchFieldName() string {
+	return "RequestType"
+}
+
+// ArmForSwitch returns which field name should be used for storing
+// the value for an instance of ReviewRequestOpRequestDetails
+func (u ReviewRequestOpRequestDetails) ArmForSwitch(sw int32) (string, bool) {
+	switch ReviewableRequestType(sw) {
+	case ReviewableRequestTypeWithdraw:
+		return "Withdrawal", true
+	default:
+		return "", true
+	}
+}
+
+// NewReviewRequestOpRequestDetails creates a new  ReviewRequestOpRequestDetails.
+func NewReviewRequestOpRequestDetails(requestType ReviewableRequestType, value interface{}) (result ReviewRequestOpRequestDetails, err error) {
+	result.RequestType = requestType
+	switch ReviewableRequestType(requestType) {
+	case ReviewableRequestTypeWithdraw:
+		tv, ok := value.(WithdrawalDetails)
+		if !ok {
+			err = fmt.Errorf("invalid value, must be WithdrawalDetails")
+			return
+		}
+		result.Withdrawal = &tv
+	default:
+		// void
+	}
+	return
+}
+
+// MustWithdrawal retrieves the Withdrawal value from the union,
+// panicing if the value is not set.
+func (u ReviewRequestOpRequestDetails) MustWithdrawal() WithdrawalDetails {
+	val, ok := u.GetWithdrawal()
+
 	if !ok {
-		return fmt.Errorf("unexpected json value: %s", raw)
+		panic("arm Withdrawal is not set")
 	}
 
-	*e = ReviewRequestOpAction(value)
-	return nil
+	return val
+}
+
+// GetWithdrawal retrieves the Withdrawal value from the union,
+// returning ok if the union's switch indicated the value is valid.
+func (u ReviewRequestOpRequestDetails) GetWithdrawal() (result WithdrawalDetails, ok bool) {
+	armName, _ := u.ArmForSwitch(int32(u.RequestType))
+
+	if armName == "Withdrawal" {
+		result = *u.Withdrawal
+		ok = true
+	}
+
+	return
 }
 
 // ReviewRequestOpExt is an XDR NestedUnion defines as:
@@ -11596,7 +13522,12 @@ func NewReviewRequestOpExt(v LedgerVersion, value interface{}) (result ReviewReq
 //    {
 //    	uint64 requestID;
 //    	Hash requestHash;
-//    	ReviewableRequestType requestType;
+//    	union switch(ReviewableRequestType requestType) {
+//    	case WITHDRAW:
+//    		WithdrawalDetails withdrawal;
+//    	default:
+//    		void;
+//    	} requestDetails;
 //    	ReviewRequestOpAction action;
 //    	string256 reason;
 //    	// reserved for future use
@@ -11609,12 +13540,12 @@ func NewReviewRequestOpExt(v LedgerVersion, value interface{}) (result ReviewReq
 //    };
 //
 type ReviewRequestOp struct {
-	RequestId   Uint64                `json:"requestID,omitempty"`
-	RequestHash Hash                  `json:"requestHash,omitempty"`
-	RequestType ReviewableRequestType `json:"requestType,omitempty"`
-	Action      ReviewRequestOpAction `json:"action,omitempty"`
-	Reason      String256             `json:"reason,omitempty"`
-	Ext         ReviewRequestOpExt    `json:"ext,omitempty"`
+	RequestId      Uint64                        `json:"requestID,omitempty"`
+	RequestHash    Hash                          `json:"requestHash,omitempty"`
+	RequestDetails ReviewRequestOpRequestDetails `json:"requestDetails,omitempty"`
+	Action         ReviewRequestOpAction         `json:"action,omitempty"`
+	Reason         String256                     `json:"reason,omitempty"`
+	Ext            ReviewRequestOpExt            `json:"ext,omitempty"`
 }
 
 // ReviewRequestResultCode is an XDR Enum defines as:
@@ -11726,6 +13657,15 @@ func (e ReviewRequestResultCode) ValidEnum(v int32) bool {
 	_, ok := reviewRequestResultCodeMap[v]
 	return ok
 }
+func (e ReviewRequestResultCode) isFlag() bool {
+	for i := len(ReviewRequestResultCodeAll) - 1; i >= 0; i-- {
+		expected := ReviewRequestResultCode(2) << uint64(len(ReviewRequestResultCodeAll)-1) >> uint64(len(ReviewRequestResultCodeAll)-i)
+		if expected != ReviewRequestResultCodeAll[i] {
+			return false
+		}
+	}
+	return true
+}
 
 // String returns the name of `e`
 func (e ReviewRequestResultCode) String() string {
@@ -11739,22 +13679,36 @@ func (e ReviewRequestResultCode) ShortString() string {
 }
 
 func (e ReviewRequestResultCode) MarshalJSON() ([]byte, error) {
-	return []byte("\"" + e.String() + "\""), nil
+	if e.isFlag() {
+		// marshal as mask
+		result := flag{
+			Value: int32(e),
+		}
+		for _, value := range ReviewRequestResultCodeAll {
+			if (value & e) == value {
+				result.Flags = append(result.Flags, flagValue{
+					Value: int32(value),
+					Name:  value.ShortString(),
+				})
+			}
+		}
+		return json.Marshal(&result)
+	} else {
+		// marshal as enum
+		result := enum{
+			Value:  int32(e),
+			String: e.ShortString(),
+		}
+		return json.Marshal(&result)
+	}
 }
 
-func (e *ReviewRequestResultCode) UnmarshalJSON(d []byte) error {
-	var raw string
-	err := json.Unmarshal(d, &raw)
-	if err != nil {
+func (e *ReviewRequestResultCode) UnmarshalJSON(data []byte) error {
+	var t value
+	if err := json.Unmarshal(data, &t); err != nil {
 		return err
 	}
-
-	value, ok := reviewRequestResultCodeRevMap[raw]
-	if !ok {
-		return fmt.Errorf("unexpected json value: %s", raw)
-	}
-
-	*e = ReviewRequestResultCode(value)
+	*e = ReviewRequestResultCode(t.Value)
 	return nil
 }
 
@@ -12045,6 +13999,15 @@ func (e SetFeesResultCode) ValidEnum(v int32) bool {
 	_, ok := setFeesResultCodeMap[v]
 	return ok
 }
+func (e SetFeesResultCode) isFlag() bool {
+	for i := len(SetFeesResultCodeAll) - 1; i >= 0; i-- {
+		expected := SetFeesResultCode(2) << uint64(len(SetFeesResultCodeAll)-1) >> uint64(len(SetFeesResultCodeAll)-i)
+		if expected != SetFeesResultCodeAll[i] {
+			return false
+		}
+	}
+	return true
+}
 
 // String returns the name of `e`
 func (e SetFeesResultCode) String() string {
@@ -12058,22 +14021,36 @@ func (e SetFeesResultCode) ShortString() string {
 }
 
 func (e SetFeesResultCode) MarshalJSON() ([]byte, error) {
-	return []byte("\"" + e.String() + "\""), nil
+	if e.isFlag() {
+		// marshal as mask
+		result := flag{
+			Value: int32(e),
+		}
+		for _, value := range SetFeesResultCodeAll {
+			if (value & e) == value {
+				result.Flags = append(result.Flags, flagValue{
+					Value: int32(value),
+					Name:  value.ShortString(),
+				})
+			}
+		}
+		return json.Marshal(&result)
+	} else {
+		// marshal as enum
+		result := enum{
+			Value:  int32(e),
+			String: e.ShortString(),
+		}
+		return json.Marshal(&result)
+	}
 }
 
-func (e *SetFeesResultCode) UnmarshalJSON(d []byte) error {
-	var raw string
-	err := json.Unmarshal(d, &raw)
-	if err != nil {
+func (e *SetFeesResultCode) UnmarshalJSON(data []byte) error {
+	var t value
+	if err := json.Unmarshal(data, &t); err != nil {
 		return err
 	}
-
-	value, ok := setFeesResultCodeRevMap[raw]
-	if !ok {
-		return fmt.Errorf("unexpected json value: %s", raw)
-	}
-
-	*e = SetFeesResultCode(value)
+	*e = SetFeesResultCode(t.Value)
 	return nil
 }
 
@@ -12318,6 +14295,15 @@ func (e SetLimitsResultCode) ValidEnum(v int32) bool {
 	_, ok := setLimitsResultCodeMap[v]
 	return ok
 }
+func (e SetLimitsResultCode) isFlag() bool {
+	for i := len(SetLimitsResultCodeAll) - 1; i >= 0; i-- {
+		expected := SetLimitsResultCode(2) << uint64(len(SetLimitsResultCodeAll)-1) >> uint64(len(SetLimitsResultCodeAll)-i)
+		if expected != SetLimitsResultCodeAll[i] {
+			return false
+		}
+	}
+	return true
+}
 
 // String returns the name of `e`
 func (e SetLimitsResultCode) String() string {
@@ -12331,22 +14317,36 @@ func (e SetLimitsResultCode) ShortString() string {
 }
 
 func (e SetLimitsResultCode) MarshalJSON() ([]byte, error) {
-	return []byte("\"" + e.String() + "\""), nil
+	if e.isFlag() {
+		// marshal as mask
+		result := flag{
+			Value: int32(e),
+		}
+		for _, value := range SetLimitsResultCodeAll {
+			if (value & e) == value {
+				result.Flags = append(result.Flags, flagValue{
+					Value: int32(value),
+					Name:  value.ShortString(),
+				})
+			}
+		}
+		return json.Marshal(&result)
+	} else {
+		// marshal as enum
+		result := enum{
+			Value:  int32(e),
+			String: e.ShortString(),
+		}
+		return json.Marshal(&result)
+	}
 }
 
-func (e *SetLimitsResultCode) UnmarshalJSON(d []byte) error {
-	var raw string
-	err := json.Unmarshal(d, &raw)
-	if err != nil {
+func (e *SetLimitsResultCode) UnmarshalJSON(data []byte) error {
+	var t value
+	if err := json.Unmarshal(data, &t); err != nil {
 		return err
 	}
-
-	value, ok := setLimitsResultCodeRevMap[raw]
-	if !ok {
-		return fmt.Errorf("unexpected json value: %s", raw)
-	}
-
-	*e = SetLimitsResultCode(value)
+	*e = SetLimitsResultCode(t.Value)
 	return nil
 }
 
@@ -12527,6 +14527,15 @@ func (e ManageTrustAction) ValidEnum(v int32) bool {
 	_, ok := manageTrustActionMap[v]
 	return ok
 }
+func (e ManageTrustAction) isFlag() bool {
+	for i := len(ManageTrustActionAll) - 1; i >= 0; i-- {
+		expected := ManageTrustAction(2) << uint64(len(ManageTrustActionAll)-1) >> uint64(len(ManageTrustActionAll)-i)
+		if expected != ManageTrustActionAll[i] {
+			return false
+		}
+	}
+	return true
+}
 
 // String returns the name of `e`
 func (e ManageTrustAction) String() string {
@@ -12540,22 +14549,36 @@ func (e ManageTrustAction) ShortString() string {
 }
 
 func (e ManageTrustAction) MarshalJSON() ([]byte, error) {
-	return []byte("\"" + e.String() + "\""), nil
+	if e.isFlag() {
+		// marshal as mask
+		result := flag{
+			Value: int32(e),
+		}
+		for _, value := range ManageTrustActionAll {
+			if (value & e) == value {
+				result.Flags = append(result.Flags, flagValue{
+					Value: int32(value),
+					Name:  value.ShortString(),
+				})
+			}
+		}
+		return json.Marshal(&result)
+	} else {
+		// marshal as enum
+		result := enum{
+			Value:  int32(e),
+			String: e.ShortString(),
+		}
+		return json.Marshal(&result)
+	}
 }
 
-func (e *ManageTrustAction) UnmarshalJSON(d []byte) error {
-	var raw string
-	err := json.Unmarshal(d, &raw)
-	if err != nil {
+func (e *ManageTrustAction) UnmarshalJSON(data []byte) error {
+	var t value
+	if err := json.Unmarshal(data, &t); err != nil {
 		return err
 	}
-
-	value, ok := manageTrustActionRevMap[raw]
-	if !ok {
-		return fmt.Errorf("unexpected json value: %s", raw)
-	}
-
-	*e = ManageTrustAction(value)
+	*e = ManageTrustAction(t.Value)
 	return nil
 }
 
@@ -12769,6 +14792,15 @@ func (e SetOptionsResultCode) ValidEnum(v int32) bool {
 	_, ok := setOptionsResultCodeMap[v]
 	return ok
 }
+func (e SetOptionsResultCode) isFlag() bool {
+	for i := len(SetOptionsResultCodeAll) - 1; i >= 0; i-- {
+		expected := SetOptionsResultCode(2) << uint64(len(SetOptionsResultCodeAll)-1) >> uint64(len(SetOptionsResultCodeAll)-i)
+		if expected != SetOptionsResultCodeAll[i] {
+			return false
+		}
+	}
+	return true
+}
 
 // String returns the name of `e`
 func (e SetOptionsResultCode) String() string {
@@ -12782,22 +14814,36 @@ func (e SetOptionsResultCode) ShortString() string {
 }
 
 func (e SetOptionsResultCode) MarshalJSON() ([]byte, error) {
-	return []byte("\"" + e.String() + "\""), nil
+	if e.isFlag() {
+		// marshal as mask
+		result := flag{
+			Value: int32(e),
+		}
+		for _, value := range SetOptionsResultCodeAll {
+			if (value & e) == value {
+				result.Flags = append(result.Flags, flagValue{
+					Value: int32(value),
+					Name:  value.ShortString(),
+				})
+			}
+		}
+		return json.Marshal(&result)
+	} else {
+		// marshal as enum
+		result := enum{
+			Value:  int32(e),
+			String: e.ShortString(),
+		}
+		return json.Marshal(&result)
+	}
 }
 
-func (e *SetOptionsResultCode) UnmarshalJSON(d []byte) error {
-	var raw string
-	err := json.Unmarshal(d, &raw)
-	if err != nil {
+func (e *SetOptionsResultCode) UnmarshalJSON(data []byte) error {
+	var t value
+	if err := json.Unmarshal(data, &t); err != nil {
 		return err
 	}
-
-	value, ok := setOptionsResultCodeRevMap[raw]
-	if !ok {
-		return fmt.Errorf("unexpected json value: %s", raw)
-	}
-
-	*e = SetOptionsResultCode(value)
+	*e = SetOptionsResultCode(t.Value)
 	return nil
 }
 
@@ -12996,6 +15042,15 @@ func (e ErrorCode) ValidEnum(v int32) bool {
 	_, ok := errorCodeMap[v]
 	return ok
 }
+func (e ErrorCode) isFlag() bool {
+	for i := len(ErrorCodeAll) - 1; i >= 0; i-- {
+		expected := ErrorCode(2) << uint64(len(ErrorCodeAll)-1) >> uint64(len(ErrorCodeAll)-i)
+		if expected != ErrorCodeAll[i] {
+			return false
+		}
+	}
+	return true
+}
 
 // String returns the name of `e`
 func (e ErrorCode) String() string {
@@ -13009,22 +15064,36 @@ func (e ErrorCode) ShortString() string {
 }
 
 func (e ErrorCode) MarshalJSON() ([]byte, error) {
-	return []byte("\"" + e.String() + "\""), nil
+	if e.isFlag() {
+		// marshal as mask
+		result := flag{
+			Value: int32(e),
+		}
+		for _, value := range ErrorCodeAll {
+			if (value & e) == value {
+				result.Flags = append(result.Flags, flagValue{
+					Value: int32(value),
+					Name:  value.ShortString(),
+				})
+			}
+		}
+		return json.Marshal(&result)
+	} else {
+		// marshal as enum
+		result := enum{
+			Value:  int32(e),
+			String: e.ShortString(),
+		}
+		return json.Marshal(&result)
+	}
 }
 
-func (e *ErrorCode) UnmarshalJSON(d []byte) error {
-	var raw string
-	err := json.Unmarshal(d, &raw)
-	if err != nil {
+func (e *ErrorCode) UnmarshalJSON(data []byte) error {
+	var t value
+	if err := json.Unmarshal(data, &t); err != nil {
 		return err
 	}
-
-	value, ok := errorCodeRevMap[raw]
-	if !ok {
-		return fmt.Errorf("unexpected json value: %s", raw)
-	}
-
-	*e = ErrorCode(value)
+	*e = ErrorCode(t.Value)
 	return nil
 }
 
@@ -13137,6 +15206,15 @@ func (e IpAddrType) ValidEnum(v int32) bool {
 	_, ok := ipAddrTypeMap[v]
 	return ok
 }
+func (e IpAddrType) isFlag() bool {
+	for i := len(IpAddrTypeAll) - 1; i >= 0; i-- {
+		expected := IpAddrType(2) << uint64(len(IpAddrTypeAll)-1) >> uint64(len(IpAddrTypeAll)-i)
+		if expected != IpAddrTypeAll[i] {
+			return false
+		}
+	}
+	return true
+}
 
 // String returns the name of `e`
 func (e IpAddrType) String() string {
@@ -13150,22 +15228,36 @@ func (e IpAddrType) ShortString() string {
 }
 
 func (e IpAddrType) MarshalJSON() ([]byte, error) {
-	return []byte("\"" + e.String() + "\""), nil
+	if e.isFlag() {
+		// marshal as mask
+		result := flag{
+			Value: int32(e),
+		}
+		for _, value := range IpAddrTypeAll {
+			if (value & e) == value {
+				result.Flags = append(result.Flags, flagValue{
+					Value: int32(value),
+					Name:  value.ShortString(),
+				})
+			}
+		}
+		return json.Marshal(&result)
+	} else {
+		// marshal as enum
+		result := enum{
+			Value:  int32(e),
+			String: e.ShortString(),
+		}
+		return json.Marshal(&result)
+	}
 }
 
-func (e *IpAddrType) UnmarshalJSON(d []byte) error {
-	var raw string
-	err := json.Unmarshal(d, &raw)
-	if err != nil {
+func (e *IpAddrType) UnmarshalJSON(data []byte) error {
+	var t value
+	if err := json.Unmarshal(data, &t); err != nil {
 		return err
 	}
-
-	value, ok := ipAddrTypeRevMap[raw]
-	if !ok {
-		return fmt.Errorf("unexpected json value: %s", raw)
-	}
-
-	*e = IpAddrType(value)
+	*e = IpAddrType(t.Value)
 	return nil
 }
 
@@ -13411,6 +15503,15 @@ func (e MessageType) ValidEnum(v int32) bool {
 	_, ok := messageTypeMap[v]
 	return ok
 }
+func (e MessageType) isFlag() bool {
+	for i := len(MessageTypeAll) - 1; i >= 0; i-- {
+		expected := MessageType(2) << uint64(len(MessageTypeAll)-1) >> uint64(len(MessageTypeAll)-i)
+		if expected != MessageTypeAll[i] {
+			return false
+		}
+	}
+	return true
+}
 
 // String returns the name of `e`
 func (e MessageType) String() string {
@@ -13424,22 +15525,36 @@ func (e MessageType) ShortString() string {
 }
 
 func (e MessageType) MarshalJSON() ([]byte, error) {
-	return []byte("\"" + e.String() + "\""), nil
+	if e.isFlag() {
+		// marshal as mask
+		result := flag{
+			Value: int32(e),
+		}
+		for _, value := range MessageTypeAll {
+			if (value & e) == value {
+				result.Flags = append(result.Flags, flagValue{
+					Value: int32(value),
+					Name:  value.ShortString(),
+				})
+			}
+		}
+		return json.Marshal(&result)
+	} else {
+		// marshal as enum
+		result := enum{
+			Value:  int32(e),
+			String: e.ShortString(),
+		}
+		return json.Marshal(&result)
+	}
 }
 
-func (e *MessageType) UnmarshalJSON(d []byte) error {
-	var raw string
-	err := json.Unmarshal(d, &raw)
-	if err != nil {
+func (e *MessageType) UnmarshalJSON(data []byte) error {
+	var t value
+	if err := json.Unmarshal(data, &t); err != nil {
 		return err
 	}
-
-	value, ok := messageTypeRevMap[raw]
-	if !ok {
-		return fmt.Errorf("unexpected json value: %s", raw)
-	}
-
-	*e = MessageType(value)
+	*e = MessageType(t.Value)
 	return nil
 }
 
@@ -14080,6 +16195,7 @@ func NewAssetCreationRequestExt(v LedgerVersion, value interface{}) (result Asse
 //    	string256 externalResourceLink;
 //    	uint64 maxIssuanceAmount;
 //        uint32 policies;
+//        longstring logoID;
 //
 //    	// reserved for future use
 //        union switch (LedgerVersion v)
@@ -14098,6 +16214,7 @@ type AssetCreationRequest struct {
 	ExternalResourceLink String256               `json:"externalResourceLink,omitempty"`
 	MaxIssuanceAmount    Uint64                  `json:"maxIssuanceAmount,omitempty"`
 	Policies             Uint32                  `json:"policies,omitempty"`
+	LogoId               Longstring              `json:"logoID,omitempty"`
 	Ext                  AssetCreationRequestExt `json:"ext,omitempty"`
 }
 
@@ -14146,6 +16263,7 @@ func NewAssetUpdateRequestExt(v LedgerVersion, value interface{}) (result AssetU
 //    	longstring description;
 //    	string256 externalResourceLink;
 //    	uint32 policies;
+//        longstring logoID;
 //
 //    	// reserved for future use
 //        union switch (LedgerVersion v)
@@ -14161,6 +16279,7 @@ type AssetUpdateRequest struct {
 	Description          Longstring            `json:"description,omitempty"`
 	ExternalResourceLink String256             `json:"externalResourceLink,omitempty"`
 	Policies             Uint32                `json:"policies,omitempty"`
+	LogoId               Longstring            `json:"logoID,omitempty"`
 	Ext                  AssetUpdateRequestExt `json:"ext,omitempty"`
 }
 
@@ -14288,453 +16407,286 @@ type IssuanceRequest struct {
 	Ext      IssuanceRequestExt `json:"ext,omitempty"`
 }
 
-// Value is an XDR Typedef defines as:
+// WithdrawalType is an XDR Enum defines as:
 //
-//   typedef opaque Value<>;
-//
-type Value []byte
-
-// ScpBallot is an XDR Struct defines as:
-//
-//   struct SCPBallot
-//    {
-//        uint32 counter; // n
-//        Value value;    // x
+//   enum WithdrawalType {
+//    	AUTO_CONVERSION = 0
 //    };
 //
-type ScpBallot struct {
-	Counter Uint32 `json:"counter,omitempty"`
-	Value   Value  `json:"value,omitempty"`
-}
-
-// ScpStatementType is an XDR Enum defines as:
-//
-//   enum SCPStatementType
-//    {
-//        PREPARE = 0,
-//        CONFIRM = 1,
-//        EXTERNALIZE = 2,
-//        NOMINATE = 3
-//    };
-//
-type ScpStatementType int32
+type WithdrawalType int32
 
 const (
-	ScpStatementTypePrepare     ScpStatementType = 0
-	ScpStatementTypeConfirm     ScpStatementType = 1
-	ScpStatementTypeExternalize ScpStatementType = 2
-	ScpStatementTypeNominate    ScpStatementType = 3
+	WithdrawalTypeAutoConversion WithdrawalType = 0
 )
 
-var ScpStatementTypeAll = []ScpStatementType{
-	ScpStatementTypePrepare,
-	ScpStatementTypeConfirm,
-	ScpStatementTypeExternalize,
-	ScpStatementTypeNominate,
+var WithdrawalTypeAll = []WithdrawalType{
+	WithdrawalTypeAutoConversion,
 }
 
-var scpStatementTypeMap = map[int32]string{
-	0: "ScpStatementTypePrepare",
-	1: "ScpStatementTypeConfirm",
-	2: "ScpStatementTypeExternalize",
-	3: "ScpStatementTypeNominate",
+var withdrawalTypeMap = map[int32]string{
+	0: "WithdrawalTypeAutoConversion",
 }
 
-var scpStatementTypeShortMap = map[int32]string{
-	0: "prepare",
-	1: "confirm",
-	2: "externalize",
-	3: "nominate",
+var withdrawalTypeShortMap = map[int32]string{
+	0: "auto_conversion",
 }
 
-var scpStatementTypeRevMap = map[string]int32{
-	"ScpStatementTypePrepare":     0,
-	"ScpStatementTypeConfirm":     1,
-	"ScpStatementTypeExternalize": 2,
-	"ScpStatementTypeNominate":    3,
+var withdrawalTypeRevMap = map[string]int32{
+	"WithdrawalTypeAutoConversion": 0,
 }
 
 // ValidEnum validates a proposed value for this enum.  Implements
-// the Enum interface for ScpStatementType
-func (e ScpStatementType) ValidEnum(v int32) bool {
-	_, ok := scpStatementTypeMap[v]
+// the Enum interface for WithdrawalType
+func (e WithdrawalType) ValidEnum(v int32) bool {
+	_, ok := withdrawalTypeMap[v]
 	return ok
+}
+func (e WithdrawalType) isFlag() bool {
+	for i := len(WithdrawalTypeAll) - 1; i >= 0; i-- {
+		expected := WithdrawalType(2) << uint64(len(WithdrawalTypeAll)-1) >> uint64(len(WithdrawalTypeAll)-i)
+		if expected != WithdrawalTypeAll[i] {
+			return false
+		}
+	}
+	return true
 }
 
 // String returns the name of `e`
-func (e ScpStatementType) String() string {
-	name, _ := scpStatementTypeMap[int32(e)]
+func (e WithdrawalType) String() string {
+	name, _ := withdrawalTypeMap[int32(e)]
 	return name
 }
 
-func (e ScpStatementType) ShortString() string {
-	name, _ := scpStatementTypeShortMap[int32(e)]
+func (e WithdrawalType) ShortString() string {
+	name, _ := withdrawalTypeShortMap[int32(e)]
 	return name
 }
 
-func (e ScpStatementType) MarshalJSON() ([]byte, error) {
-	return []byte("\"" + e.String() + "\""), nil
+func (e WithdrawalType) MarshalJSON() ([]byte, error) {
+	if e.isFlag() {
+		// marshal as mask
+		result := flag{
+			Value: int32(e),
+		}
+		for _, value := range WithdrawalTypeAll {
+			if (value & e) == value {
+				result.Flags = append(result.Flags, flagValue{
+					Value: int32(value),
+					Name:  value.ShortString(),
+				})
+			}
+		}
+		return json.Marshal(&result)
+	} else {
+		// marshal as enum
+		result := enum{
+			Value:  int32(e),
+			String: e.ShortString(),
+		}
+		return json.Marshal(&result)
+	}
 }
 
-func (e *ScpStatementType) UnmarshalJSON(d []byte) error {
-	var raw string
-	err := json.Unmarshal(d, &raw)
-	if err != nil {
+func (e *WithdrawalType) UnmarshalJSON(data []byte) error {
+	var t value
+	if err := json.Unmarshal(data, &t); err != nil {
 		return err
 	}
-
-	value, ok := scpStatementTypeRevMap[raw]
-	if !ok {
-		return fmt.Errorf("unexpected json value: %s", raw)
-	}
-
-	*e = ScpStatementType(value)
+	*e = WithdrawalType(t.Value)
 	return nil
 }
 
-// ScpNomination is an XDR Struct defines as:
+// AutoConversionWithdrawalDetailsExt is an XDR NestedUnion defines as:
 //
-//   struct SCPNomination
-//    {
-//        Hash quorumSetHash; // D
-//        Value votes<>;      // X
-//        Value accepted<>;   // Y
-//    };
-//
-type ScpNomination struct {
-	QuorumSetHash Hash    `json:"quorumSetHash,omitempty"`
-	Votes         []Value `json:"votes,omitempty"`
-	Accepted      []Value `json:"accepted,omitempty"`
-}
-
-// ScpStatementPrepare is an XDR NestedStruct defines as:
-//
-//   struct
-//            {
-//                Hash quorumSetHash;       // D
-//                SCPBallot ballot;         // b
-//                SCPBallot* prepared;      // p
-//                SCPBallot* preparedPrime; // p'
-//                uint32 nC;                // c.n
-//                uint32 nH;                // h.n
-//            }
-//
-type ScpStatementPrepare struct {
-	QuorumSetHash Hash       `json:"quorumSetHash,omitempty"`
-	Ballot        ScpBallot  `json:"ballot,omitempty"`
-	Prepared      *ScpBallot `json:"prepared,omitempty"`
-	PreparedPrime *ScpBallot `json:"preparedPrime,omitempty"`
-	NC            Uint32     `json:"nC,omitempty"`
-	NH            Uint32     `json:"nH,omitempty"`
-}
-
-// ScpStatementConfirm is an XDR NestedStruct defines as:
-//
-//   struct
-//            {
-//                SCPBallot ballot;   // b
-//                uint32 nPrepared;   // p.n
-//                uint32 nCommit;     // c.n
-//                uint32 nH;          // h.n
-//                Hash quorumSetHash; // D
-//            }
-//
-type ScpStatementConfirm struct {
-	Ballot        ScpBallot `json:"ballot,omitempty"`
-	NPrepared     Uint32    `json:"nPrepared,omitempty"`
-	NCommit       Uint32    `json:"nCommit,omitempty"`
-	NH            Uint32    `json:"nH,omitempty"`
-	QuorumSetHash Hash      `json:"quorumSetHash,omitempty"`
-}
-
-// ScpStatementExternalize is an XDR NestedStruct defines as:
-//
-//   struct
-//            {
-//                SCPBallot commit;         // c
-//                uint32 nH;                // h.n
-//                Hash commitQuorumSetHash; // D used before EXTERNALIZE
-//            }
-//
-type ScpStatementExternalize struct {
-	Commit              ScpBallot `json:"commit,omitempty"`
-	NH                  Uint32    `json:"nH,omitempty"`
-	CommitQuorumSetHash Hash      `json:"commitQuorumSetHash,omitempty"`
-}
-
-// ScpStatementPledges is an XDR NestedUnion defines as:
-//
-//   union switch (SCPStatementType type)
+//   union switch (LedgerVersion v)
 //        {
-//        case PREPARE:
-//            struct
-//            {
-//                Hash quorumSetHash;       // D
-//                SCPBallot ballot;         // b
-//                SCPBallot* prepared;      // p
-//                SCPBallot* preparedPrime; // p'
-//                uint32 nC;                // c.n
-//                uint32 nH;                // h.n
-//            } prepare;
-//        case CONFIRM:
-//            struct
-//            {
-//                SCPBallot ballot;   // b
-//                uint32 nPrepared;   // p.n
-//                uint32 nCommit;     // c.n
-//                uint32 nH;          // h.n
-//                Hash quorumSetHash; // D
-//            } confirm;
-//        case EXTERNALIZE:
-//            struct
-//            {
-//                SCPBallot commit;         // c
-//                uint32 nH;                // h.n
-//                Hash commitQuorumSetHash; // D used before EXTERNALIZE
-//            } externalize;
-//        case NOMINATE:
-//            SCPNomination nominate;
+//        case EMPTY_VERSION:
+//            void;
 //        }
 //
-type ScpStatementPledges struct {
-	Type        ScpStatementType         `json:"type,omitempty"`
-	Prepare     *ScpStatementPrepare     `json:"prepare,omitempty"`
-	Confirm     *ScpStatementConfirm     `json:"confirm,omitempty"`
-	Externalize *ScpStatementExternalize `json:"externalize,omitempty"`
-	Nominate    *ScpNomination           `json:"nominate,omitempty"`
+type AutoConversionWithdrawalDetailsExt struct {
+	V LedgerVersion `json:"v,omitempty"`
 }
 
 // SwitchFieldName returns the field name in which this union's
 // discriminant is stored
-func (u ScpStatementPledges) SwitchFieldName() string {
-	return "Type"
+func (u AutoConversionWithdrawalDetailsExt) SwitchFieldName() string {
+	return "V"
 }
 
 // ArmForSwitch returns which field name should be used for storing
-// the value for an instance of ScpStatementPledges
-func (u ScpStatementPledges) ArmForSwitch(sw int32) (string, bool) {
-	switch ScpStatementType(sw) {
-	case ScpStatementTypePrepare:
-		return "Prepare", true
-	case ScpStatementTypeConfirm:
-		return "Confirm", true
-	case ScpStatementTypeExternalize:
-		return "Externalize", true
-	case ScpStatementTypeNominate:
-		return "Nominate", true
+// the value for an instance of AutoConversionWithdrawalDetailsExt
+func (u AutoConversionWithdrawalDetailsExt) ArmForSwitch(sw int32) (string, bool) {
+	switch LedgerVersion(sw) {
+	case LedgerVersionEmptyVersion:
+		return "", true
 	}
 	return "-", false
 }
 
-// NewScpStatementPledges creates a new  ScpStatementPledges.
-func NewScpStatementPledges(aType ScpStatementType, value interface{}) (result ScpStatementPledges, err error) {
-	result.Type = aType
-	switch ScpStatementType(aType) {
-	case ScpStatementTypePrepare:
-		tv, ok := value.(ScpStatementPrepare)
-		if !ok {
-			err = fmt.Errorf("invalid value, must be ScpStatementPrepare")
-			return
-		}
-		result.Prepare = &tv
-	case ScpStatementTypeConfirm:
-		tv, ok := value.(ScpStatementConfirm)
-		if !ok {
-			err = fmt.Errorf("invalid value, must be ScpStatementConfirm")
-			return
-		}
-		result.Confirm = &tv
-	case ScpStatementTypeExternalize:
-		tv, ok := value.(ScpStatementExternalize)
-		if !ok {
-			err = fmt.Errorf("invalid value, must be ScpStatementExternalize")
-			return
-		}
-		result.Externalize = &tv
-	case ScpStatementTypeNominate:
-		tv, ok := value.(ScpNomination)
-		if !ok {
-			err = fmt.Errorf("invalid value, must be ScpNomination")
-			return
-		}
-		result.Nominate = &tv
+// NewAutoConversionWithdrawalDetailsExt creates a new  AutoConversionWithdrawalDetailsExt.
+func NewAutoConversionWithdrawalDetailsExt(v LedgerVersion, value interface{}) (result AutoConversionWithdrawalDetailsExt, err error) {
+	result.V = v
+	switch LedgerVersion(v) {
+	case LedgerVersionEmptyVersion:
+		// void
 	}
 	return
 }
 
-// MustPrepare retrieves the Prepare value from the union,
-// panicing if the value is not set.
-func (u ScpStatementPledges) MustPrepare() ScpStatementPrepare {
-	val, ok := u.GetPrepare()
-
-	if !ok {
-		panic("arm Prepare is not set")
-	}
-
-	return val
-}
-
-// GetPrepare retrieves the Prepare value from the union,
-// returning ok if the union's switch indicated the value is valid.
-func (u ScpStatementPledges) GetPrepare() (result ScpStatementPrepare, ok bool) {
-	armName, _ := u.ArmForSwitch(int32(u.Type))
-
-	if armName == "Prepare" {
-		result = *u.Prepare
-		ok = true
-	}
-
-	return
-}
-
-// MustConfirm retrieves the Confirm value from the union,
-// panicing if the value is not set.
-func (u ScpStatementPledges) MustConfirm() ScpStatementConfirm {
-	val, ok := u.GetConfirm()
-
-	if !ok {
-		panic("arm Confirm is not set")
-	}
-
-	return val
-}
-
-// GetConfirm retrieves the Confirm value from the union,
-// returning ok if the union's switch indicated the value is valid.
-func (u ScpStatementPledges) GetConfirm() (result ScpStatementConfirm, ok bool) {
-	armName, _ := u.ArmForSwitch(int32(u.Type))
-
-	if armName == "Confirm" {
-		result = *u.Confirm
-		ok = true
-	}
-
-	return
-}
-
-// MustExternalize retrieves the Externalize value from the union,
-// panicing if the value is not set.
-func (u ScpStatementPledges) MustExternalize() ScpStatementExternalize {
-	val, ok := u.GetExternalize()
-
-	if !ok {
-		panic("arm Externalize is not set")
-	}
-
-	return val
-}
-
-// GetExternalize retrieves the Externalize value from the union,
-// returning ok if the union's switch indicated the value is valid.
-func (u ScpStatementPledges) GetExternalize() (result ScpStatementExternalize, ok bool) {
-	armName, _ := u.ArmForSwitch(int32(u.Type))
-
-	if armName == "Externalize" {
-		result = *u.Externalize
-		ok = true
-	}
-
-	return
-}
-
-// MustNominate retrieves the Nominate value from the union,
-// panicing if the value is not set.
-func (u ScpStatementPledges) MustNominate() ScpNomination {
-	val, ok := u.GetNominate()
-
-	if !ok {
-		panic("arm Nominate is not set")
-	}
-
-	return val
-}
-
-// GetNominate retrieves the Nominate value from the union,
-// returning ok if the union's switch indicated the value is valid.
-func (u ScpStatementPledges) GetNominate() (result ScpNomination, ok bool) {
-	armName, _ := u.ArmForSwitch(int32(u.Type))
-
-	if armName == "Nominate" {
-		result = *u.Nominate
-		ok = true
-	}
-
-	return
-}
-
-// ScpStatement is an XDR Struct defines as:
+// AutoConversionWithdrawalDetails is an XDR Struct defines as:
 //
-//   struct SCPStatement
-//    {
-//        NodeID nodeID;    // v
-//        uint64 slotIndex; // i
+//   struct AutoConversionWithdrawalDetails {
+//    	AssetCode destAsset; // asset in which withdrawal will be converted
+//    	uint64 expectedAmount; // expected amount to be received in specified asset
 //
-//        union switch (SCPStatementType type)
+//    	union switch (LedgerVersion v)
 //        {
-//        case PREPARE:
-//            struct
-//            {
-//                Hash quorumSetHash;       // D
-//                SCPBallot ballot;         // b
-//                SCPBallot* prepared;      // p
-//                SCPBallot* preparedPrime; // p'
-//                uint32 nC;                // c.n
-//                uint32 nH;                // h.n
-//            } prepare;
-//        case CONFIRM:
-//            struct
-//            {
-//                SCPBallot ballot;   // b
-//                uint32 nPrepared;   // p.n
-//                uint32 nCommit;     // c.n
-//                uint32 nH;          // h.n
-//                Hash quorumSetHash; // D
-//            } confirm;
-//        case EXTERNALIZE:
-//            struct
-//            {
-//                SCPBallot commit;         // c
-//                uint32 nH;                // h.n
-//                Hash commitQuorumSetHash; // D used before EXTERNALIZE
-//            } externalize;
-//        case NOMINATE:
-//            SCPNomination nominate;
+//        case EMPTY_VERSION:
+//            void;
 //        }
-//        pledges;
+//        ext;
 //    };
 //
-type ScpStatement struct {
-	NodeId    NodeId              `json:"nodeID,omitempty"`
-	SlotIndex Uint64              `json:"slotIndex,omitempty"`
-	Pledges   ScpStatementPledges `json:"pledges,omitempty"`
+type AutoConversionWithdrawalDetails struct {
+	DestAsset      AssetCode                          `json:"destAsset,omitempty"`
+	ExpectedAmount Uint64                             `json:"expectedAmount,omitempty"`
+	Ext            AutoConversionWithdrawalDetailsExt `json:"ext,omitempty"`
 }
 
-// ScpEnvelope is an XDR Struct defines as:
+// WithdrawalRequestDetails is an XDR NestedUnion defines as:
 //
-//   struct SCPEnvelope
-//    {
-//        SCPStatement statement;
-//        Signature signature;
-//    };
+//   union switch (WithdrawalType withdrawalType) {
+//    	case AUTO_CONVERSION:
+//    		AutoConversionWithdrawalDetails autoConversion;
+//    	}
 //
-type ScpEnvelope struct {
-	Statement ScpStatement `json:"statement,omitempty"`
-	Signature Signature    `json:"signature,omitempty"`
+type WithdrawalRequestDetails struct {
+	WithdrawalType WithdrawalType                   `json:"withdrawalType,omitempty"`
+	AutoConversion *AutoConversionWithdrawalDetails `json:"autoConversion,omitempty"`
 }
 
-// ScpQuorumSet is an XDR Struct defines as:
+// SwitchFieldName returns the field name in which this union's
+// discriminant is stored
+func (u WithdrawalRequestDetails) SwitchFieldName() string {
+	return "WithdrawalType"
+}
+
+// ArmForSwitch returns which field name should be used for storing
+// the value for an instance of WithdrawalRequestDetails
+func (u WithdrawalRequestDetails) ArmForSwitch(sw int32) (string, bool) {
+	switch WithdrawalType(sw) {
+	case WithdrawalTypeAutoConversion:
+		return "AutoConversion", true
+	}
+	return "-", false
+}
+
+// NewWithdrawalRequestDetails creates a new  WithdrawalRequestDetails.
+func NewWithdrawalRequestDetails(withdrawalType WithdrawalType, value interface{}) (result WithdrawalRequestDetails, err error) {
+	result.WithdrawalType = withdrawalType
+	switch WithdrawalType(withdrawalType) {
+	case WithdrawalTypeAutoConversion:
+		tv, ok := value.(AutoConversionWithdrawalDetails)
+		if !ok {
+			err = fmt.Errorf("invalid value, must be AutoConversionWithdrawalDetails")
+			return
+		}
+		result.AutoConversion = &tv
+	}
+	return
+}
+
+// MustAutoConversion retrieves the AutoConversion value from the union,
+// panicing if the value is not set.
+func (u WithdrawalRequestDetails) MustAutoConversion() AutoConversionWithdrawalDetails {
+	val, ok := u.GetAutoConversion()
+
+	if !ok {
+		panic("arm AutoConversion is not set")
+	}
+
+	return val
+}
+
+// GetAutoConversion retrieves the AutoConversion value from the union,
+// returning ok if the union's switch indicated the value is valid.
+func (u WithdrawalRequestDetails) GetAutoConversion() (result AutoConversionWithdrawalDetails, ok bool) {
+	armName, _ := u.ArmForSwitch(int32(u.WithdrawalType))
+
+	if armName == "AutoConversion" {
+		result = *u.AutoConversion
+		ok = true
+	}
+
+	return
+}
+
+// WithdrawalRequestExt is an XDR NestedUnion defines as:
 //
-//   struct SCPQuorumSet
-//    {
-//        uint32 threshold;
-//        PublicKey validators<>;
-//        SCPQuorumSet innerSets<>;
+//   union switch (LedgerVersion v)
+//        {
+//        case EMPTY_VERSION:
+//            void;
+//        }
+//
+type WithdrawalRequestExt struct {
+	V LedgerVersion `json:"v,omitempty"`
+}
+
+// SwitchFieldName returns the field name in which this union's
+// discriminant is stored
+func (u WithdrawalRequestExt) SwitchFieldName() string {
+	return "V"
+}
+
+// ArmForSwitch returns which field name should be used for storing
+// the value for an instance of WithdrawalRequestExt
+func (u WithdrawalRequestExt) ArmForSwitch(sw int32) (string, bool) {
+	switch LedgerVersion(sw) {
+	case LedgerVersionEmptyVersion:
+		return "", true
+	}
+	return "-", false
+}
+
+// NewWithdrawalRequestExt creates a new  WithdrawalRequestExt.
+func NewWithdrawalRequestExt(v LedgerVersion, value interface{}) (result WithdrawalRequestExt, err error) {
+	result.V = v
+	switch LedgerVersion(v) {
+	case LedgerVersionEmptyVersion:
+		// void
+	}
+	return
+}
+
+// WithdrawalRequest is an XDR Struct defines as:
+//
+//   struct WithdrawalRequest {
+//    	BalanceID balance; // balance id from which withdrawal will be performed
+//        uint64 amount; // amount to be withdrawn
+//    	Fee fee; // expected fee to be paid
+//        string externalDetails<>; // details of the withdrawal (External system id, etc.)
+//    	union switch (WithdrawalType withdrawalType) {
+//    	case AUTO_CONVERSION:
+//    		AutoConversionWithdrawalDetails autoConversion;
+//    	} details;
+//
+//    	union switch (LedgerVersion v)
+//        {
+//        case EMPTY_VERSION:
+//            void;
+//        }
+//        ext;
 //    };
 //
-type ScpQuorumSet struct {
-	Threshold  Uint32         `json:"threshold,omitempty"`
-	Validators []PublicKey    `json:"validators,omitempty"`
-	InnerSets  []ScpQuorumSet `json:"innerSets,omitempty"`
+type WithdrawalRequest struct {
+	Balance         BalanceId                `json:"balance,omitempty"`
+	Amount          Uint64                   `json:"amount,omitempty"`
+	Fee             Fee                      `json:"fee,omitempty"`
+	ExternalDetails string                   `json:"externalDetails,omitempty"`
+	Details         WithdrawalRequestDetails `json:"details,omitempty"`
+	Ext             WithdrawalRequestExt     `json:"ext,omitempty"`
 }
 
 // OperationBody is an XDR NestedUnion defines as:
@@ -14753,8 +16705,8 @@ type ScpQuorumSet struct {
 //            SetFeesOp setFeesOp;
 //    	case MANAGE_ACCOUNT:
 //    		ManageAccountOp manageAccountOp;
-//    	case MANAGE_FORFEIT_REQUEST:
-//    		ManageForfeitRequestOp manageForfeitRequestOp;
+//    	case CREATE_WITHDRAWAL_REQUEST:
+//    		CreateWithdrawalRequestOp createWithdrawalRequestOp;
 //    	case RECOVER:
 //    		RecoverOp recoverOp;
 //    	case MANAGE_BALANCE:
@@ -14780,25 +16732,25 @@ type ScpQuorumSet struct {
 //        }
 //
 type OperationBody struct {
-	Type                     OperationType               `json:"type,omitempty"`
-	CreateAccountOp          *CreateAccountOp            `json:"createAccountOp,omitempty"`
-	PaymentOp                *PaymentOp                  `json:"paymentOp,omitempty"`
-	SetOptionsOp             *SetOptionsOp               `json:"setOptionsOp,omitempty"`
-	CreateIssuanceRequestOp  *CreateIssuanceRequestOp    `json:"createIssuanceRequestOp,omitempty"`
-	SetFeesOp                *SetFeesOp                  `json:"setFeesOp,omitempty"`
-	ManageAccountOp          *ManageAccountOp            `json:"manageAccountOp,omitempty"`
-	ManageForfeitRequestOp   *ManageForfeitRequestOp     `json:"manageForfeitRequestOp,omitempty"`
-	RecoverOp                *RecoverOp                  `json:"recoverOp,omitempty"`
-	ManageBalanceOp          *ManageBalanceOp            `json:"manageBalanceOp,omitempty"`
-	ReviewPaymentRequestOp   *ReviewPaymentRequestOp     `json:"reviewPaymentRequestOp,omitempty"`
-	ManageAssetOp            *ManageAssetOp              `json:"manageAssetOp,omitempty"`
-	CreatePreIssuanceRequest *CreatePreIssuanceRequestOp `json:"createPreIssuanceRequest,omitempty"`
-	SetLimitsOp              *SetLimitsOp                `json:"setLimitsOp,omitempty"`
-	DirectDebitOp            *DirectDebitOp              `json:"directDebitOp,omitempty"`
-	ManageAssetPairOp        *ManageAssetPairOp          `json:"manageAssetPairOp,omitempty"`
-	ManageOfferOp            *ManageOfferOp              `json:"manageOfferOp,omitempty"`
-	ManageInvoiceOp          *ManageInvoiceOp            `json:"manageInvoiceOp,omitempty"`
-	ReviewRequestOp          *ReviewRequestOp            `json:"reviewRequestOp,omitempty"`
+	Type                      OperationType               `json:"type,omitempty"`
+	CreateAccountOp           *CreateAccountOp            `json:"createAccountOp,omitempty"`
+	PaymentOp                 *PaymentOp                  `json:"paymentOp,omitempty"`
+	SetOptionsOp              *SetOptionsOp               `json:"setOptionsOp,omitempty"`
+	CreateIssuanceRequestOp   *CreateIssuanceRequestOp    `json:"createIssuanceRequestOp,omitempty"`
+	SetFeesOp                 *SetFeesOp                  `json:"setFeesOp,omitempty"`
+	ManageAccountOp           *ManageAccountOp            `json:"manageAccountOp,omitempty"`
+	CreateWithdrawalRequestOp *CreateWithdrawalRequestOp  `json:"createWithdrawalRequestOp,omitempty"`
+	RecoverOp                 *RecoverOp                  `json:"recoverOp,omitempty"`
+	ManageBalanceOp           *ManageBalanceOp            `json:"manageBalanceOp,omitempty"`
+	ReviewPaymentRequestOp    *ReviewPaymentRequestOp     `json:"reviewPaymentRequestOp,omitempty"`
+	ManageAssetOp             *ManageAssetOp              `json:"manageAssetOp,omitempty"`
+	CreatePreIssuanceRequest  *CreatePreIssuanceRequestOp `json:"createPreIssuanceRequest,omitempty"`
+	SetLimitsOp               *SetLimitsOp                `json:"setLimitsOp,omitempty"`
+	DirectDebitOp             *DirectDebitOp              `json:"directDebitOp,omitempty"`
+	ManageAssetPairOp         *ManageAssetPairOp          `json:"manageAssetPairOp,omitempty"`
+	ManageOfferOp             *ManageOfferOp              `json:"manageOfferOp,omitempty"`
+	ManageInvoiceOp           *ManageInvoiceOp            `json:"manageInvoiceOp,omitempty"`
+	ReviewRequestOp           *ReviewRequestOp            `json:"reviewRequestOp,omitempty"`
 }
 
 // SwitchFieldName returns the field name in which this union's
@@ -14823,8 +16775,8 @@ func (u OperationBody) ArmForSwitch(sw int32) (string, bool) {
 		return "SetFeesOp", true
 	case OperationTypeManageAccount:
 		return "ManageAccountOp", true
-	case OperationTypeManageForfeitRequest:
-		return "ManageForfeitRequestOp", true
+	case OperationTypeCreateWithdrawalRequest:
+		return "CreateWithdrawalRequestOp", true
 	case OperationTypeRecover:
 		return "RecoverOp", true
 	case OperationTypeManageBalance:
@@ -14897,13 +16849,13 @@ func NewOperationBody(aType OperationType, value interface{}) (result OperationB
 			return
 		}
 		result.ManageAccountOp = &tv
-	case OperationTypeManageForfeitRequest:
-		tv, ok := value.(ManageForfeitRequestOp)
+	case OperationTypeCreateWithdrawalRequest:
+		tv, ok := value.(CreateWithdrawalRequestOp)
 		if !ok {
-			err = fmt.Errorf("invalid value, must be ManageForfeitRequestOp")
+			err = fmt.Errorf("invalid value, must be CreateWithdrawalRequestOp")
 			return
 		}
-		result.ManageForfeitRequestOp = &tv
+		result.CreateWithdrawalRequestOp = &tv
 	case OperationTypeRecover:
 		tv, ok := value.(RecoverOp)
 		if !ok {
@@ -15135,25 +17087,25 @@ func (u OperationBody) GetManageAccountOp() (result ManageAccountOp, ok bool) {
 	return
 }
 
-// MustManageForfeitRequestOp retrieves the ManageForfeitRequestOp value from the union,
+// MustCreateWithdrawalRequestOp retrieves the CreateWithdrawalRequestOp value from the union,
 // panicing if the value is not set.
-func (u OperationBody) MustManageForfeitRequestOp() ManageForfeitRequestOp {
-	val, ok := u.GetManageForfeitRequestOp()
+func (u OperationBody) MustCreateWithdrawalRequestOp() CreateWithdrawalRequestOp {
+	val, ok := u.GetCreateWithdrawalRequestOp()
 
 	if !ok {
-		panic("arm ManageForfeitRequestOp is not set")
+		panic("arm CreateWithdrawalRequestOp is not set")
 	}
 
 	return val
 }
 
-// GetManageForfeitRequestOp retrieves the ManageForfeitRequestOp value from the union,
+// GetCreateWithdrawalRequestOp retrieves the CreateWithdrawalRequestOp value from the union,
 // returning ok if the union's switch indicated the value is valid.
-func (u OperationBody) GetManageForfeitRequestOp() (result ManageForfeitRequestOp, ok bool) {
+func (u OperationBody) GetCreateWithdrawalRequestOp() (result CreateWithdrawalRequestOp, ok bool) {
 	armName, _ := u.ArmForSwitch(int32(u.Type))
 
-	if armName == "ManageForfeitRequestOp" {
-		result = *u.ManageForfeitRequestOp
+	if armName == "CreateWithdrawalRequestOp" {
+		result = *u.CreateWithdrawalRequestOp
 		ok = true
 	}
 
@@ -15458,8 +17410,8 @@ func (u OperationBody) GetReviewRequestOp() (result ReviewRequestOp, ok bool) {
 //            SetFeesOp setFeesOp;
 //    	case MANAGE_ACCOUNT:
 //    		ManageAccountOp manageAccountOp;
-//    	case MANAGE_FORFEIT_REQUEST:
-//    		ManageForfeitRequestOp manageForfeitRequestOp;
+//    	case CREATE_WITHDRAWAL_REQUEST:
+//    		CreateWithdrawalRequestOp createWithdrawalRequestOp;
 //    	case RECOVER:
 //    		RecoverOp recoverOp;
 //    	case MANAGE_BALANCE:
@@ -15550,6 +17502,15 @@ func (e MemoType) ValidEnum(v int32) bool {
 	_, ok := memoTypeMap[v]
 	return ok
 }
+func (e MemoType) isFlag() bool {
+	for i := len(MemoTypeAll) - 1; i >= 0; i-- {
+		expected := MemoType(2) << uint64(len(MemoTypeAll)-1) >> uint64(len(MemoTypeAll)-i)
+		if expected != MemoTypeAll[i] {
+			return false
+		}
+	}
+	return true
+}
 
 // String returns the name of `e`
 func (e MemoType) String() string {
@@ -15563,22 +17524,36 @@ func (e MemoType) ShortString() string {
 }
 
 func (e MemoType) MarshalJSON() ([]byte, error) {
-	return []byte("\"" + e.String() + "\""), nil
+	if e.isFlag() {
+		// marshal as mask
+		result := flag{
+			Value: int32(e),
+		}
+		for _, value := range MemoTypeAll {
+			if (value & e) == value {
+				result.Flags = append(result.Flags, flagValue{
+					Value: int32(value),
+					Name:  value.ShortString(),
+				})
+			}
+		}
+		return json.Marshal(&result)
+	} else {
+		// marshal as enum
+		result := enum{
+			Value:  int32(e),
+			String: e.ShortString(),
+		}
+		return json.Marshal(&result)
+	}
 }
 
-func (e *MemoType) UnmarshalJSON(d []byte) error {
-	var raw string
-	err := json.Unmarshal(d, &raw)
-	if err != nil {
+func (e *MemoType) UnmarshalJSON(data []byte) error {
+	var t value
+	if err := json.Unmarshal(data, &t); err != nil {
 		return err
 	}
-
-	value, ok := memoTypeRevMap[raw]
-	if !ok {
-		return fmt.Errorf("unexpected json value: %s", raw)
-	}
-
-	*e = MemoType(value)
+	*e = MemoType(t.Value)
 	return nil
 }
 
@@ -15950,6 +17925,15 @@ func (e OperationResultCode) ValidEnum(v int32) bool {
 	_, ok := operationResultCodeMap[v]
 	return ok
 }
+func (e OperationResultCode) isFlag() bool {
+	for i := len(OperationResultCodeAll) - 1; i >= 0; i-- {
+		expected := OperationResultCode(2) << uint64(len(OperationResultCodeAll)-1) >> uint64(len(OperationResultCodeAll)-i)
+		if expected != OperationResultCodeAll[i] {
+			return false
+		}
+	}
+	return true
+}
 
 // String returns the name of `e`
 func (e OperationResultCode) String() string {
@@ -15963,22 +17947,36 @@ func (e OperationResultCode) ShortString() string {
 }
 
 func (e OperationResultCode) MarshalJSON() ([]byte, error) {
-	return []byte("\"" + e.String() + "\""), nil
+	if e.isFlag() {
+		// marshal as mask
+		result := flag{
+			Value: int32(e),
+		}
+		for _, value := range OperationResultCodeAll {
+			if (value & e) == value {
+				result.Flags = append(result.Flags, flagValue{
+					Value: int32(value),
+					Name:  value.ShortString(),
+				})
+			}
+		}
+		return json.Marshal(&result)
+	} else {
+		// marshal as enum
+		result := enum{
+			Value:  int32(e),
+			String: e.ShortString(),
+		}
+		return json.Marshal(&result)
+	}
 }
 
-func (e *OperationResultCode) UnmarshalJSON(d []byte) error {
-	var raw string
-	err := json.Unmarshal(d, &raw)
-	if err != nil {
+func (e *OperationResultCode) UnmarshalJSON(data []byte) error {
+	var t value
+	if err := json.Unmarshal(data, &t); err != nil {
 		return err
 	}
-
-	value, ok := operationResultCodeRevMap[raw]
-	if !ok {
-		return fmt.Errorf("unexpected json value: %s", raw)
-	}
-
-	*e = OperationResultCode(value)
+	*e = OperationResultCode(t.Value)
 	return nil
 }
 
@@ -15998,8 +17996,8 @@ func (e *OperationResultCode) UnmarshalJSON(d []byte) error {
 //            SetFeesResult setFeesResult;
 //    	case MANAGE_ACCOUNT:
 //    		ManageAccountResult manageAccountResult;
-//        case MANAGE_FORFEIT_REQUEST:
-//    		ManageForfeitRequestResult manageForfeitRequestResult;
+//        case CREATE_WITHDRAWAL_REQUEST:
+//    		CreateWithdrawalRequestResult createWithdrawalRequestResult;
 //        case RECOVER:
 //    		RecoverResult recoverResult;
 //        case MANAGE_BALANCE:
@@ -16032,7 +18030,7 @@ type OperationResultTr struct {
 	CreateIssuanceRequestResult    *CreateIssuanceRequestResult    `json:"createIssuanceRequestResult,omitempty"`
 	SetFeesResult                  *SetFeesResult                  `json:"setFeesResult,omitempty"`
 	ManageAccountResult            *ManageAccountResult            `json:"manageAccountResult,omitempty"`
-	ManageForfeitRequestResult     *ManageForfeitRequestResult     `json:"manageForfeitRequestResult,omitempty"`
+	CreateWithdrawalRequestResult  *CreateWithdrawalRequestResult  `json:"createWithdrawalRequestResult,omitempty"`
 	RecoverResult                  *RecoverResult                  `json:"recoverResult,omitempty"`
 	ManageBalanceResult            *ManageBalanceResult            `json:"manageBalanceResult,omitempty"`
 	ReviewPaymentRequestResult     *ReviewPaymentRequestResult     `json:"reviewPaymentRequestResult,omitempty"`
@@ -16068,8 +18066,8 @@ func (u OperationResultTr) ArmForSwitch(sw int32) (string, bool) {
 		return "SetFeesResult", true
 	case OperationTypeManageAccount:
 		return "ManageAccountResult", true
-	case OperationTypeManageForfeitRequest:
-		return "ManageForfeitRequestResult", true
+	case OperationTypeCreateWithdrawalRequest:
+		return "CreateWithdrawalRequestResult", true
 	case OperationTypeRecover:
 		return "RecoverResult", true
 	case OperationTypeManageBalance:
@@ -16142,13 +18140,13 @@ func NewOperationResultTr(aType OperationType, value interface{}) (result Operat
 			return
 		}
 		result.ManageAccountResult = &tv
-	case OperationTypeManageForfeitRequest:
-		tv, ok := value.(ManageForfeitRequestResult)
+	case OperationTypeCreateWithdrawalRequest:
+		tv, ok := value.(CreateWithdrawalRequestResult)
 		if !ok {
-			err = fmt.Errorf("invalid value, must be ManageForfeitRequestResult")
+			err = fmt.Errorf("invalid value, must be CreateWithdrawalRequestResult")
 			return
 		}
-		result.ManageForfeitRequestResult = &tv
+		result.CreateWithdrawalRequestResult = &tv
 	case OperationTypeRecover:
 		tv, ok := value.(RecoverResult)
 		if !ok {
@@ -16380,25 +18378,25 @@ func (u OperationResultTr) GetManageAccountResult() (result ManageAccountResult,
 	return
 }
 
-// MustManageForfeitRequestResult retrieves the ManageForfeitRequestResult value from the union,
+// MustCreateWithdrawalRequestResult retrieves the CreateWithdrawalRequestResult value from the union,
 // panicing if the value is not set.
-func (u OperationResultTr) MustManageForfeitRequestResult() ManageForfeitRequestResult {
-	val, ok := u.GetManageForfeitRequestResult()
+func (u OperationResultTr) MustCreateWithdrawalRequestResult() CreateWithdrawalRequestResult {
+	val, ok := u.GetCreateWithdrawalRequestResult()
 
 	if !ok {
-		panic("arm ManageForfeitRequestResult is not set")
+		panic("arm CreateWithdrawalRequestResult is not set")
 	}
 
 	return val
 }
 
-// GetManageForfeitRequestResult retrieves the ManageForfeitRequestResult value from the union,
+// GetCreateWithdrawalRequestResult retrieves the CreateWithdrawalRequestResult value from the union,
 // returning ok if the union's switch indicated the value is valid.
-func (u OperationResultTr) GetManageForfeitRequestResult() (result ManageForfeitRequestResult, ok bool) {
+func (u OperationResultTr) GetCreateWithdrawalRequestResult() (result CreateWithdrawalRequestResult, ok bool) {
 	armName, _ := u.ArmForSwitch(int32(u.Type))
 
-	if armName == "ManageForfeitRequestResult" {
-		result = *u.ManageForfeitRequestResult
+	if armName == "CreateWithdrawalRequestResult" {
+		result = *u.CreateWithdrawalRequestResult
 		ok = true
 	}
 
@@ -16699,8 +18697,8 @@ func (u OperationResultTr) GetReviewRequestResult() (result ReviewRequestResult,
 //            SetFeesResult setFeesResult;
 //    	case MANAGE_ACCOUNT:
 //    		ManageAccountResult manageAccountResult;
-//        case MANAGE_FORFEIT_REQUEST:
-//    		ManageForfeitRequestResult manageForfeitRequestResult;
+//        case CREATE_WITHDRAWAL_REQUEST:
+//    		CreateWithdrawalRequestResult createWithdrawalRequestResult;
 //        case RECOVER:
 //    		RecoverResult recoverResult;
 //        case MANAGE_BALANCE:
@@ -16891,6 +18889,15 @@ func (e TransactionResultCode) ValidEnum(v int32) bool {
 	_, ok := transactionResultCodeMap[v]
 	return ok
 }
+func (e TransactionResultCode) isFlag() bool {
+	for i := len(TransactionResultCodeAll) - 1; i >= 0; i-- {
+		expected := TransactionResultCode(2) << uint64(len(TransactionResultCodeAll)-1) >> uint64(len(TransactionResultCodeAll)-i)
+		if expected != TransactionResultCodeAll[i] {
+			return false
+		}
+	}
+	return true
+}
 
 // String returns the name of `e`
 func (e TransactionResultCode) String() string {
@@ -16904,22 +18911,36 @@ func (e TransactionResultCode) ShortString() string {
 }
 
 func (e TransactionResultCode) MarshalJSON() ([]byte, error) {
-	return []byte("\"" + e.String() + "\""), nil
+	if e.isFlag() {
+		// marshal as mask
+		result := flag{
+			Value: int32(e),
+		}
+		for _, value := range TransactionResultCodeAll {
+			if (value & e) == value {
+				result.Flags = append(result.Flags, flagValue{
+					Value: int32(value),
+					Name:  value.ShortString(),
+				})
+			}
+		}
+		return json.Marshal(&result)
+	} else {
+		// marshal as enum
+		result := enum{
+			Value:  int32(e),
+			String: e.ShortString(),
+		}
+		return json.Marshal(&result)
+	}
 }
 
-func (e *TransactionResultCode) UnmarshalJSON(d []byte) error {
-	var raw string
-	err := json.Unmarshal(d, &raw)
-	if err != nil {
+func (e *TransactionResultCode) UnmarshalJSON(data []byte) error {
+	var t value
+	if err := json.Unmarshal(data, &t); err != nil {
 		return err
 	}
-
-	value, ok := transactionResultCodeRevMap[raw]
-	if !ok {
-		return fmt.Errorf("unexpected json value: %s", raw)
-	}
-
-	*e = TransactionResultCode(value)
+	*e = TransactionResultCode(t.Value)
 	return nil
 }
 
@@ -17147,6 +19168,15 @@ func (e CryptoKeyType) ValidEnum(v int32) bool {
 	_, ok := cryptoKeyTypeMap[v]
 	return ok
 }
+func (e CryptoKeyType) isFlag() bool {
+	for i := len(CryptoKeyTypeAll) - 1; i >= 0; i-- {
+		expected := CryptoKeyType(2) << uint64(len(CryptoKeyTypeAll)-1) >> uint64(len(CryptoKeyTypeAll)-i)
+		if expected != CryptoKeyTypeAll[i] {
+			return false
+		}
+	}
+	return true
+}
 
 // String returns the name of `e`
 func (e CryptoKeyType) String() string {
@@ -17160,22 +19190,36 @@ func (e CryptoKeyType) ShortString() string {
 }
 
 func (e CryptoKeyType) MarshalJSON() ([]byte, error) {
-	return []byte("\"" + e.String() + "\""), nil
+	if e.isFlag() {
+		// marshal as mask
+		result := flag{
+			Value: int32(e),
+		}
+		for _, value := range CryptoKeyTypeAll {
+			if (value & e) == value {
+				result.Flags = append(result.Flags, flagValue{
+					Value: int32(value),
+					Name:  value.ShortString(),
+				})
+			}
+		}
+		return json.Marshal(&result)
+	} else {
+		// marshal as enum
+		result := enum{
+			Value:  int32(e),
+			String: e.ShortString(),
+		}
+		return json.Marshal(&result)
+	}
 }
 
-func (e *CryptoKeyType) UnmarshalJSON(d []byte) error {
-	var raw string
-	err := json.Unmarshal(d, &raw)
-	if err != nil {
+func (e *CryptoKeyType) UnmarshalJSON(data []byte) error {
+	var t value
+	if err := json.Unmarshal(data, &t); err != nil {
 		return err
 	}
-
-	value, ok := cryptoKeyTypeRevMap[raw]
-	if !ok {
-		return fmt.Errorf("unexpected json value: %s", raw)
-	}
-
-	*e = CryptoKeyType(value)
+	*e = CryptoKeyType(t.Value)
 	return nil
 }
 
@@ -17214,6 +19258,15 @@ func (e PublicKeyType) ValidEnum(v int32) bool {
 	_, ok := publicKeyTypeMap[v]
 	return ok
 }
+func (e PublicKeyType) isFlag() bool {
+	for i := len(PublicKeyTypeAll) - 1; i >= 0; i-- {
+		expected := PublicKeyType(2) << uint64(len(PublicKeyTypeAll)-1) >> uint64(len(PublicKeyTypeAll)-i)
+		if expected != PublicKeyTypeAll[i] {
+			return false
+		}
+	}
+	return true
+}
 
 // String returns the name of `e`
 func (e PublicKeyType) String() string {
@@ -17227,22 +19280,36 @@ func (e PublicKeyType) ShortString() string {
 }
 
 func (e PublicKeyType) MarshalJSON() ([]byte, error) {
-	return []byte("\"" + e.String() + "\""), nil
+	if e.isFlag() {
+		// marshal as mask
+		result := flag{
+			Value: int32(e),
+		}
+		for _, value := range PublicKeyTypeAll {
+			if (value & e) == value {
+				result.Flags = append(result.Flags, flagValue{
+					Value: int32(value),
+					Name:  value.ShortString(),
+				})
+			}
+		}
+		return json.Marshal(&result)
+	} else {
+		// marshal as enum
+		result := enum{
+			Value:  int32(e),
+			String: e.ShortString(),
+		}
+		return json.Marshal(&result)
+	}
 }
 
-func (e *PublicKeyType) UnmarshalJSON(d []byte) error {
-	var raw string
-	err := json.Unmarshal(d, &raw)
-	if err != nil {
+func (e *PublicKeyType) UnmarshalJSON(data []byte) error {
+	var t value
+	if err := json.Unmarshal(data, &t); err != nil {
 		return err
 	}
-
-	value, ok := publicKeyTypeRevMap[raw]
-	if !ok {
-		return fmt.Errorf("unexpected json value: %s", raw)
-	}
-
-	*e = PublicKeyType(value)
+	*e = PublicKeyType(t.Value)
 	return nil
 }
 
@@ -17373,6 +19440,15 @@ func (e LedgerVersion) ValidEnum(v int32) bool {
 	_, ok := ledgerVersionMap[v]
 	return ok
 }
+func (e LedgerVersion) isFlag() bool {
+	for i := len(LedgerVersionAll) - 1; i >= 0; i-- {
+		expected := LedgerVersion(2) << uint64(len(LedgerVersionAll)-1) >> uint64(len(LedgerVersionAll)-i)
+		if expected != LedgerVersionAll[i] {
+			return false
+		}
+	}
+	return true
+}
 
 // String returns the name of `e`
 func (e LedgerVersion) String() string {
@@ -17386,22 +19462,36 @@ func (e LedgerVersion) ShortString() string {
 }
 
 func (e LedgerVersion) MarshalJSON() ([]byte, error) {
-	return []byte("\"" + e.String() + "\""), nil
+	if e.isFlag() {
+		// marshal as mask
+		result := flag{
+			Value: int32(e),
+		}
+		for _, value := range LedgerVersionAll {
+			if (value & e) == value {
+				result.Flags = append(result.Flags, flagValue{
+					Value: int32(value),
+					Name:  value.ShortString(),
+				})
+			}
+		}
+		return json.Marshal(&result)
+	} else {
+		// marshal as enum
+		result := enum{
+			Value:  int32(e),
+			String: e.ShortString(),
+		}
+		return json.Marshal(&result)
+	}
 }
 
-func (e *LedgerVersion) UnmarshalJSON(d []byte) error {
-	var raw string
-	err := json.Unmarshal(d, &raw)
-	if err != nil {
+func (e *LedgerVersion) UnmarshalJSON(data []byte) error {
+	var t value
+	if err := json.Unmarshal(data, &t); err != nil {
 		return err
 	}
-
-	value, ok := ledgerVersionRevMap[raw]
-	if !ok {
-		return fmt.Errorf("unexpected json value: %s", raw)
-	}
-
-	*e = LedgerVersion(value)
+	*e = LedgerVersion(t.Value)
 	return nil
 }
 
@@ -17640,6 +19730,18 @@ type Salt Uint64
 //
 type DataValue []byte
 
+// Fee is an XDR Struct defines as:
+//
+//   struct Fee {
+//    	uint64 fixed;
+//    	uint64 percent;
+//    };
+//
+type Fee struct {
+	Fixed   Uint64 `json:"fixed,omitempty"`
+	Percent Uint64 `json:"percent,omitempty"`
+}
+
 // OperationType is an XDR Enum defines as:
 //
 //   enum OperationType
@@ -17650,7 +19752,7 @@ type DataValue []byte
 //        CREATE_ISSUANCE_REQUEST = 3,
 //        SET_FEES = 5,
 //    	MANAGE_ACCOUNT = 6,
-//        MANAGE_FORFEIT_REQUEST = 7,
+//        CREATE_WITHDRAWAL_REQUEST = 7,
 //        RECOVER = 8,
 //        MANAGE_BALANCE = 9,
 //        REVIEW_PAYMENT_REQUEST = 10,
@@ -17673,7 +19775,7 @@ const (
 	OperationTypeCreateIssuanceRequest    OperationType = 3
 	OperationTypeSetFees                  OperationType = 5
 	OperationTypeManageAccount            OperationType = 6
-	OperationTypeManageForfeitRequest     OperationType = 7
+	OperationTypeCreateWithdrawalRequest  OperationType = 7
 	OperationTypeRecover                  OperationType = 8
 	OperationTypeManageBalance            OperationType = 9
 	OperationTypeReviewPaymentRequest     OperationType = 10
@@ -17694,7 +19796,7 @@ var OperationTypeAll = []OperationType{
 	OperationTypeCreateIssuanceRequest,
 	OperationTypeSetFees,
 	OperationTypeManageAccount,
-	OperationTypeManageForfeitRequest,
+	OperationTypeCreateWithdrawalRequest,
 	OperationTypeRecover,
 	OperationTypeManageBalance,
 	OperationTypeReviewPaymentRequest,
@@ -17715,7 +19817,7 @@ var operationTypeMap = map[int32]string{
 	3:  "OperationTypeCreateIssuanceRequest",
 	5:  "OperationTypeSetFees",
 	6:  "OperationTypeManageAccount",
-	7:  "OperationTypeManageForfeitRequest",
+	7:  "OperationTypeCreateWithdrawalRequest",
 	8:  "OperationTypeRecover",
 	9:  "OperationTypeManageBalance",
 	10: "OperationTypeReviewPaymentRequest",
@@ -17736,7 +19838,7 @@ var operationTypeShortMap = map[int32]string{
 	3:  "create_issuance_request",
 	5:  "set_fees",
 	6:  "manage_account",
-	7:  "manage_forfeit_request",
+	7:  "create_withdrawal_request",
 	8:  "recover",
 	9:  "manage_balance",
 	10: "review_payment_request",
@@ -17757,7 +19859,7 @@ var operationTypeRevMap = map[string]int32{
 	"OperationTypeCreateIssuanceRequest":    3,
 	"OperationTypeSetFees":                  5,
 	"OperationTypeManageAccount":            6,
-	"OperationTypeManageForfeitRequest":     7,
+	"OperationTypeCreateWithdrawalRequest":  7,
 	"OperationTypeRecover":                  8,
 	"OperationTypeManageBalance":            9,
 	"OperationTypeReviewPaymentRequest":     10,
@@ -17777,6 +19879,15 @@ func (e OperationType) ValidEnum(v int32) bool {
 	_, ok := operationTypeMap[v]
 	return ok
 }
+func (e OperationType) isFlag() bool {
+	for i := len(OperationTypeAll) - 1; i >= 0; i-- {
+		expected := OperationType(2) << uint64(len(OperationTypeAll)-1) >> uint64(len(OperationTypeAll)-i)
+		if expected != OperationTypeAll[i] {
+			return false
+		}
+	}
+	return true
+}
 
 // String returns the name of `e`
 func (e OperationType) String() string {
@@ -17790,22 +19901,36 @@ func (e OperationType) ShortString() string {
 }
 
 func (e OperationType) MarshalJSON() ([]byte, error) {
-	return []byte("\"" + e.String() + "\""), nil
+	if e.isFlag() {
+		// marshal as mask
+		result := flag{
+			Value: int32(e),
+		}
+		for _, value := range OperationTypeAll {
+			if (value & e) == value {
+				result.Flags = append(result.Flags, flagValue{
+					Value: int32(value),
+					Name:  value.ShortString(),
+				})
+			}
+		}
+		return json.Marshal(&result)
+	} else {
+		// marshal as enum
+		result := enum{
+			Value:  int32(e),
+			String: e.ShortString(),
+		}
+		return json.Marshal(&result)
+	}
 }
 
-func (e *OperationType) UnmarshalJSON(d []byte) error {
-	var raw string
-	err := json.Unmarshal(d, &raw)
-	if err != nil {
+func (e *OperationType) UnmarshalJSON(data []byte) error {
+	var t value
+	if err := json.Unmarshal(data, &t); err != nil {
 		return err
 	}
-
-	value, ok := operationTypeRevMap[raw]
-	if !ok {
-		return fmt.Errorf("unexpected json value: %s", raw)
-	}
-
-	*e = OperationType(value)
+	*e = OperationType(t.Value)
 	return nil
 }
 

@@ -5,41 +5,78 @@ import (
 
 	"encoding/json"
 
+	. "github.com/go-ozzo/ozzo-validation"
+	"github.com/pkg/errors"
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/ape/problems"
 	"gitlab.com/swarmfund/api/internal/api/movetoape"
 	"gitlab.com/swarmfund/api/internal/api/resources"
+	"gitlab.com/swarmfund/api/internal/api/urlval"
 	"gitlab.com/swarmfund/go/doorman"
 )
 
 type (
 	WalletsIndexResponse struct {
-		Data WalletsIndexData `json:"data"`
+		Data  WalletsIndexData   `json:"data"`
+		Links urlval.FilterLinks `json:"links"`
 	}
-	WalletsIndexData []*resources.Wallet
+	WalletsIndexData    []resources.WalletData
+	WalletsIndexFitlers struct {
+		Page  uint64  `url:"page"`
+		State *uint64 `url:"state"`
+	}
 )
 
+func NewWalletsFilters(r *http.Request) (WalletsIndexFitlers, error) {
+	filters := WalletsIndexFitlers{
+		Page: 1,
+	}
+	if err := urlval.Decode(r.URL.Query(), &filters); err != nil {
+		return filters, errors.Wrap(err, "failed to populate")
+	}
+	return filters, filters.Validate()
+}
+
+func (r WalletsIndexFitlers) Validate() error {
+	return ValidateStruct(&r,
+		Field(&r.Page, Min(uint64(1))),
+		Field(&r.State, Min(uint64(1))),
+	)
+}
+
 func WalletsIndex(w http.ResponseWriter, r *http.Request) {
-	if err := Doorman(r, doorman.SignerOf("master-account")); err != nil {
+	filters, err := NewWalletsFilters(r)
+	if err != nil {
+		ape.RenderErr(w, problems.BadRequest(err)...)
+		return
+	}
+
+	// TODO unhardcode
+	if err := Doorman(r, doorman.SignerOf("GD7AHJHCDSQI6LVMEJEE2FTNCA2LJQZ4R64GUI3PWANSVEO4GEOWB636")); err != nil {
 		movetoape.RenderDoormanErr(w, err)
 		return
 	}
 
-	// load paging params
-	wallets, err := WalletQ(r).Select()
+	q := WalletQ(r).Page(filters.Page)
+
+	if filters.State != nil {
+		q = q.ByState(*filters.State)
+	}
+
+	wallets, err := q.Select()
 	if err != nil {
 		Log(r).WithError(err).Error("failed to get wallets")
 		ape.RenderErr(w, problems.InternalError())
 		return
 	}
 
-	wallets = wallets
-
 	response := WalletsIndexResponse{
 		Data: make(WalletsIndexData, 0, len(wallets)),
 	}
 	for _, wallet := range wallets {
-		response.Data = append(response.Data, resources.NewWallet(&wallet, nil))
+		response.Data = append(response.Data, resources.NewWalletData(&wallet))
 	}
+	response.Links = urlval.Encode(r, filters)
+
 	json.NewEncoder(w).Encode(&response)
 }
