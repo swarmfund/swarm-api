@@ -54,6 +54,7 @@ deploy:staging:
   script:
     - ssh ubuntu@$HOST_DEV "artifacts/update.sh api staging ${CI_COMMIT_SHA:0:8}"
     - curl -X POST http://$HOST_STAGING:8842/ec96h_fVyGnrRXZ0X9r8RQ
+  when: manual
   only:
     - staging
     
