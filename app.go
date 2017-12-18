@@ -9,6 +9,7 @@ import (
 	"github.com/patrickmn/go-cache"
 	"github.com/pkg/errors"
 	"gitlab.com/swarmfund/api/config"
+	"gitlab.com/swarmfund/api/coreinfo"
 	"gitlab.com/swarmfund/api/db2"
 	"gitlab.com/swarmfund/api/db2/api"
 	api2 "gitlab.com/swarmfund/api/internal/api"
@@ -96,6 +97,7 @@ func (a *App) Serve() {
 		a.AccountManagerKP(),
 		a.APIQ().TFA(),
 		a.Storage(),
+		a.CoreInfoConn(),
 	)
 	r.Mount("/", a.web.router)
 	http.Handle("/", r)
@@ -153,6 +155,15 @@ func (action *Action) Notificator() *notificator.Connector {
 
 func (a *App) Storage() *storage.Connector {
 	connector, err := storage.New(a.Config().Storage())
+	if err != nil {
+		panic(err)
+	}
+	return connector
+}
+
+// CoreInfoConn create new instance of coreinfo.Connector.
+func (a *App) CoreInfoConn() *coreinfo.Connector {
+	connector, err := coreinfo.NewConnector(a.Config().API().HorizonURL)
 	if err != nil {
 		panic(err)
 	}
