@@ -10,39 +10,31 @@ import (
 )
 
 func deleteExpiredWallets(log *log.Entry, emailTokensQ data.EmailTokensQ, walletQI api.WalletQI, expireDuration time.Duration) {
-	var emTokens []data.EmailToken
-	var err error
-	for {
-		time.Sleep(expireDuration / 10)
-
-		emTokens, err = emailTokensQ.GetUnconfirmed()
+	for ; ; time.Sleep(expireDuration / 10) {
+		tokens, err := emailTokensQ.GetUnconfirmed()
 		if err != nil {
 			log.WithError(err).Error("unable to get unconfirmed email tokens")
 			continue
 		}
 
-		if len(emTokens) == 0 {
+		if len(tokens) == 0 {
 			continue
 		}
 
-		walletIDs := []string{}
-		for _, emt := range emTokens {
-			if emt.LastSentAt.UTC().Before(time.Now().UTC().Add(-1 * expireDuration)) {
-				walletIDs = append(walletIDs, emt.WalletID)
+		expiredWallets := []string{}
+		for _, token := range tokens {
+			if token.LastSentAt.Add(expireDuration).Before(time.Now()) {
+				expiredWallets = append(expiredWallets, token.WalletID)
 			}
 		}
 
-		if len(walletIDs) == 0 {
-			continue
-		}
-
-		err = walletQI.DeleteWallets(walletIDs)
+		err = walletQI.DeleteWallets(expiredWallets)
 		if err != nil {
-			log.WithError(err).Error("Unable to delete expired wallets")
+			log.WithError(err).Error("unable to delete expired wallets")
 			continue
 		}
 
-		log.WithField("quantity", len(walletIDs)).Debug("Successfully deleted wallets")
+		log.WithField("count", len(expiredWallets)).Info("wallets deleted")
 	}
 }
 

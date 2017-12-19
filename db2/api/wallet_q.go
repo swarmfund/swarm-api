@@ -27,6 +27,7 @@ var walletInsert = sq.Insert("wallets")
 var walletUpdate = sq.Update("wallets")
 
 const (
+	tableWallets                 = "wallets"
 	tableWalletsLimit            = 10
 	walletsKDFFkeyConstraint     = `wallets_kdf_fkey`
 	walletsWalletIDKeyConstraint = `wallets_wallet_id_key`
@@ -286,7 +287,7 @@ func (q *WalletQ) DeleteWallets(walletIDs []string) error {
 		return nil
 	}
 
-	sqq := sq.Delete("wallets").Where(sq.Eq{"wallet_id": walletIDs})
+	sqq := sq.Delete(tableWallets).Where(sq.Eq{"wallet_id": walletIDs})
 	_, err := q.parent.Exec(sqq)
 	return err
 }

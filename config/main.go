@@ -35,5 +35,5 @@ func (c *ViperConfig) Init() error {
 }
 
 func (c *ViperConfig) Get(key string) map[string]interface{} {
-	return c.Get(key)
+	return c.Viper.GetStringMap(key)
 }
