@@ -3,22 +3,21 @@ package api
 import (
 	"time"
 
+	"gitlab.com/distributed_lab/figure"
 	"gitlab.com/swarmfund/api/db2/api"
 	"gitlab.com/swarmfund/api/internal/data"
 	"gitlab.com/swarmfund/api/log"
 )
 
-func deleteExpiredWallets(emailTokensQ data.EmailTokensQ, walletQI api.WalletQI, expireDuration time.Duration) {
+func deleteExpiredWallets(log *log.Entry, emailTokensQ data.EmailTokensQ, walletQI api.WalletQI, expireDuration time.Duration) {
 	var emTokens []data.EmailToken
 	var err error
-	logger := log.WithField("service", "wallet_cleaner")
-
 	for {
 		time.Sleep(expireDuration / 10)
 
 		emTokens, err = emailTokensQ.GetUnconfirmed()
 		if err != nil {
-			logger.WithError(err).Error("unable to get unconfirmed email tokens")
+			log.WithError(err).Error("unable to get unconfirmed email tokens")
 			continue
 		}
 
@@ -39,27 +38,36 @@ func deleteExpiredWallets(emailTokensQ data.EmailTokensQ, walletQI api.WalletQI,
 
 		err = walletQI.DeleteWallets(walletIDs)
 		if err != nil {
-			logger.WithError(err).Error("Unable to delete expired wallets")
+			log.WithError(err).Error("Unable to delete expired wallets")
 			continue
 		}
 
-		logger.WithField("quantity", len(walletIDs)).Debug("Successfully deleted wallets")
+		log.WithField("quantity", len(walletIDs)).Debug("Successfully deleted wallets")
 	}
 }
 
 func initWalletCleaner(app *App) {
-	cfg := app.config.WalletCleaner()
-	if !cfg.Enabled {
-		return
+	service := "wallet_cleaner"
+	entry := log.WithField("service", service)
+	var config struct {
+		Enabled    bool
+		Expiration time.Duration
 	}
-
-	expireDuration, err := time.ParseDuration(cfg.Expiration)
+	err := figure.
+		Out(&config).
+		From(app.config.Get(service)).
+		Please()
 	if err != nil {
-		log.WithField("error", err.Error()).Error("failed to init wallet_cleaner")
+		entry.WithError(err).Error("failed to figure out")
 		return
 	}
 
-	go deleteExpiredWallets(app.EmailTokensQ(), app.APIQ().Wallet(), expireDuration)
+	if !config.Enabled {
+		entry.Info("disabled")
+		return
+	}
+
+	go deleteExpiredWallets(entry, app.EmailTokensQ(), app.APIQ().Wallet(), config.Expiration)
 }
 
 func init() {

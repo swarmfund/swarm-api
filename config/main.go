@@ -12,26 +12,11 @@ type Config interface {
 	Storage() Storage
 	Log() Log
 	Notificator() Notificator
-	WalletCleaner() WalletCleaner
+	Get(string) map[string]interface{}
 }
 
 type ViperConfig struct {
 	*viper.Viper
-	//apiDatabaseURL string
-	//port           int
-	//
-	//LogLevel     logrus.Level
-	//ClientRouter *url.URL
-	//ClientDomain string
-	//// SkipCheck disables signature validation, for testing and development purpose
-	//SkipCheck     bool
-	//Notificator   Notificator
-	//TFA           TFA
-	//Core          Core
-	//Storage       Storage
-	//HorizonURL    string
-	//Deposit       Deposit
-	//NoEmailVerify bool
 }
 
 func NewViperConfig(fn string) Config {
@@ -47,4 +32,8 @@ func (c *ViperConfig) Init() error {
 		return errors.Wrap(err, "failed to read config file")
 	}
 	return nil
+}
+
+func (c *ViperConfig) Get(key string) map[string]interface{} {
+	return c.Get(key)
 }
