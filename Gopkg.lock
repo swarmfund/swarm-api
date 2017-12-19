@@ -278,10 +278,10 @@
   version = "v0.1"
 
 [[projects]]
-  branch = "master"
   name = "gitlab.com/distributed_lab/figure"
   packages = ["."]
-  revision = "a02d226a1f2467982746bdeb284c58a53f4557aa"
+  revision = "4b0eba4ac8e5a5b02f39a6c6660a93d557edd735"
+  version = "v1.1"
 
 [[projects]]
   name = "gitlab.com/distributed_lab/logan"

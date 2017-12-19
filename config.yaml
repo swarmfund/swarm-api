@@ -1,8 +1,22 @@
 api:
-  database_url: postgres://postgres@localhost/api_swarm?sslmode=disable
+  database_url: postgres://postgres@localhost/api?sslmode=disable
   horizon_url: http://localhost:8000
   account_manager: SBMFQCGDVJBC2NYBRPURK3ISC4XJGGOLHMGHF7MIHVXE2DIQSMY6NYRH
+  # disable only signature validity check
   skip_signature_check: true
+
+notificator:
+  client_router: http://localhost:8888/hredir
+  endpoint: http://localhost:9009
+  #secret: foo
+  #public: bar
+
+http:
+  host: localhost
+  port: 8001
+
+log:
+  level: info
 
 storage:
   # gracefully disable storage services
@@ -24,15 +38,6 @@ storage:
   force_ssl: false
   form_data_expire: 50000
 
-notificator:
-  client_router: http://localhost:8888/hredir
-  endpoint: http://95.85.47.33:7000
-  #secret: foo
-  #public: bar
-
-http:
-  host: localhost
-  port: 8001
-
-log:
-  level: info
+wallet_cleaner:
+  enabled: true
+  expiration: 48h
