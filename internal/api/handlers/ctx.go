@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 
+	"gitlab.com/swarmfund/api/coreinfo"
 	"gitlab.com/swarmfund/api/db2/api"
 	"gitlab.com/swarmfund/api/internal/data"
 	"gitlab.com/swarmfund/api/log"
@@ -25,6 +26,7 @@ const (
 	tfaQCtxKey
 	doormanCtxKey
 	storageCtxKey
+	coreInfoCtxKey
 )
 
 func CtxWalletQ(q api.WalletQI) func(context.Context) context.Context {
@@ -116,4 +118,14 @@ func CtxStorage(s *storage.Connector) func(context.Context) context.Context {
 
 func Storage(r *http.Request) *storage.Connector {
 	return r.Context().Value(storageCtxKey).(*storage.Connector)
+}
+
+func CtxCoreInfo(s *coreinfo.Connector) func(context.Context) context.Context {
+	return func(ctx context.Context) context.Context {
+		return context.WithValue(ctx, coreInfoCtxKey, s)
+	}
+}
+
+func CoreInfo(r *http.Request) data.CoreInfoI {
+	return r.Context().Value(coreInfoCtxKey).(data.CoreInfoI)
 }

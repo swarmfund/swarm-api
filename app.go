@@ -9,6 +9,7 @@ import (
 	"github.com/patrickmn/go-cache"
 	"github.com/pkg/errors"
 	"gitlab.com/swarmfund/api/config"
+	"gitlab.com/swarmfund/api/coreinfo"
 	"gitlab.com/swarmfund/api/db2"
 	"gitlab.com/swarmfund/api/db2/api"
 	api2 "gitlab.com/swarmfund/api/internal/api"
@@ -96,6 +97,7 @@ func (a *App) Serve() {
 		a.AccountManagerKP(),
 		a.APIQ().TFA(),
 		a.Storage(),
+		a.CoreInfoConn(),
 	)
 	r.Mount("/", a.web.router)
 	http.Handle("/", r)
@@ -159,6 +161,15 @@ func (a *App) Storage() *storage.Connector {
 	return connector
 }
 
+// CoreInfoConn create new instance of coreinfo.Connector.
+func (a *App) CoreInfoConn() *coreinfo.Connector {
+	connector, err := coreinfo.NewConnector(a.Config().API().HorizonURL)
+	if err != nil {
+		panic(err)
+	}
+	return connector
+}
+
 // UpdateStellarCoreInfo updates the value of coreVersion and networkPassphrase
 // from the Stellar core API.
 func (a *App) UpdateStellarCoreInfo() {
@@ -177,13 +188,22 @@ func (a *App) Tick() {
 	log.Debug("ticking app")
 	// update ledger state and stellar-core info in parallel
 	wg.Add(2)
-	go func() { a.UpdateStellarCoreInfo(); wg.Done() }()
-	wg.Wait()
 
-	wg.Add(1)
-	wg.Wait()
+	go func() {
+		defer func() {
+			wg.Done()
+		}()
+		a.UpdateStellarCoreInfo()
+	}()
 
-	sse.Tick()
+	go func() {
+		defer func() {
+			wg.Done()
+		}()
+		sse.Tick()
+	}()
+
+	wg.Wait()
 
 	log.Debug("finished ticking app")
 }
