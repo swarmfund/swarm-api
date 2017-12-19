@@ -188,13 +188,22 @@ func (a *App) Tick() {
 	log.Debug("ticking app")
 	// update ledger state and stellar-core info in parallel
 	wg.Add(2)
-	go func() { a.UpdateStellarCoreInfo(); wg.Done() }()
-	wg.Wait()
 
-	wg.Add(1)
-	wg.Wait()
+	go func() {
+		defer func() {
+			wg.Done()
+		}()
+		a.UpdateStellarCoreInfo()
+	}()
 
-	sse.Tick()
+	go func() {
+		defer func() {
+			wg.Done()
+		}()
+		sse.Tick()
+	}()
+
+	wg.Wait()
 
 	log.Debug("finished ticking app")
 }
