@@ -1,12 +1,13 @@
 api:
-  database_url: postgres://sheb:2222@localhost/api?sslmode=disable
+  database_url: postgres://postgres@localhost/api?sslmode=disable
   horizon_url: http://localhost:8000
   account_manager: SBMFQCGDVJBC2NYBRPURK3ISC4XJGGOLHMGHF7MIHVXE2DIQSMY6NYRH
+  # disable only signature validity check
   skip_signature_check: true
 
 notificator:
   client_router: http://localhost:8888/hredir
-  endpoint: http://18.195.18.3:9009
+  endpoint: http://localhost:9009
   #secret: foo
   #public: bar
 
@@ -17,11 +18,10 @@ http:
 log:
   level: info
 
-
 storage:
   # gracefully disable storage services
   disabled: true
-  host: "18.195.18.3:9000"
+  host: "localhost:9000"
   # minio credentials
   access_key: "2SRMRAST49JEIMUUKWKH"
   secret_key: "vm7+HyjPijP6xgzzjsxJrUs7dJgim0mj+K/lD2im"
