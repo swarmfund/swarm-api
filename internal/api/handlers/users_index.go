@@ -56,8 +56,7 @@ func UsersIndex(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO unhardcode
-	if err := Doorman(r, doorman.SignerOf("GD7AHJHCDSQI6LVMEJEE2FTNCA2LJQZ4R64GUI3PWANSVEO4GEOWB636")); err != nil {
+	if err := Doorman(r, doorman.SignerOf(CoreInfo(r).GetMasterAccountID())); err != nil {
 		movetoape.RenderDoormanErr(w, err)
 		return
 	}
