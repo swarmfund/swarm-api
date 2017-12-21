@@ -55,7 +55,7 @@ func NewApp(config config.Config) (*App, error) {
 		config:  config,
 		horizon: horizon,
 	}
-	result.ticks = time.NewTicker(1 * time.Second)
+	result.ticks = time.NewTicker(10 * time.Second)
 	result.init()
 	return result, nil
 }
