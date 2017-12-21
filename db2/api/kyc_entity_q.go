@@ -11,6 +11,7 @@ type KYCQI interface {
 	Create(uid int64, entity kyc.Entity) error
 	Update(eid int64, data []byte) error
 	Delete(eid int64) error
+	Select(uid int64) ([]KYCEntityRecord, error)
 }
 
 const (
@@ -22,6 +23,11 @@ var (
 	ErrKYCEntitiesConstraintViolated = errors.New("kyc_entities constraint violated")
 )
 
+type KYCEntityRecord struct {
+	ID     int64      `db:"id"`
+	Entity kyc.Entity `db:"data"`
+}
+
 type KYCQ struct {
 	parent *Q
 }
@@ -30,6 +36,14 @@ func (q *UsersQ) KYC() KYCQI {
 	return &KYCQ{
 		parent: q.parent,
 	}
+}
+
+func (q *KYCQ) Select(uid int64) (result []KYCEntityRecord, err error) {
+	stmt := squirrel.Select("id, data").
+		From(kycEntitiesTable).
+		Where("user_id = ?", uid)
+	err = q.parent.Select(&result, stmt)
+	return result, err
 }
 
 func (q *KYCQ) Create(uid int64, entity kyc.Entity) error {

@@ -9,6 +9,7 @@ import (
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/ape/problems"
 	"gitlab.com/distributed_lab/logan/v3/errors"
+	"gitlab.com/swarmfund/api/coreinfo"
 	"gitlab.com/swarmfund/api/db2/api"
 	"gitlab.com/swarmfund/api/internal/api/handlers"
 	"gitlab.com/swarmfund/api/internal/api/middlewares"
@@ -19,7 +20,6 @@ import (
 	"gitlab.com/swarmfund/go/doorman"
 	"gitlab.com/swarmfund/go/keypair"
 	"gitlab.com/swarmfund/horizon-connector"
-	"gitlab.com/swarmfund/api/coreinfo"
 )
 
 func Router(
@@ -104,6 +104,7 @@ func Router(
 		// kyc
 		r.Route("/{address}/entities", func(r chi.Router) {
 			r.Post("/", handlers.CreateKYCEntity)
+			r.Get("/", handlers.KYCEntitiesIndex)
 		})
 	})
 

@@ -21,6 +21,15 @@ type Entity struct {
 	Individual *Individual         `json:"individual,omitempty"`
 }
 
+func (e Entity) Attributes() interface{} {
+	switch e.Type {
+	case types.KYCEntityTypeIndividual:
+		return e.Individual
+	default:
+		panic(fmt.Errorf("unknown user type %s", e.Type))
+	}
+}
+
 func (e Entity) Validate() error {
 	return validation.ValidateStruct(&e,
 		validation.Field(&e.Type, validation.Required),
@@ -51,6 +60,22 @@ func (e *Entity) UnmarshalJSON(data []byte) error {
 	}
 
 	return nil
+}
+
+func (e Entity) MarshalJSON() ([]byte, error) {
+	var t struct {
+		Type types.KYCEntityType `json:"type"`
+		Raw  interface{}         `json:"attributes"`
+	}
+
+	switch t.Type = e.Type; t.Type {
+	case types.KYCEntityTypeIndividual:
+		t.Raw = e.Individual
+	default:
+		panic(fmt.Errorf("unknown user type %s", t.Type))
+	}
+
+	return json.Marshal(t)
 }
 
 func (e *Entity) Scan(src interface{}) error {
