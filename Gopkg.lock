@@ -311,13 +311,13 @@
   branch = "master"
   name = "gitlab.com/swarmfund/go"
   packages = ["amount","crc16","doorman","doorman/data","hash","keypair","network","resources","signcontrol","strkey","xdr"]
-  revision = "17d5ed7a4e0f2c070498f6ad6ec7bda3b0d36d94"
+  revision = "a75c7b0e01b80cbfc893ba117a00c6b8825b82cd"
 
 [[projects]]
   branch = "master"
   name = "gitlab.com/swarmfund/horizon-connector"
   packages = [".","internal/resources"]
-  revision = "82effe63b3cb7a4b95a52c90883d8274d72e2617"
+  revision = "7b31107445466be4ec4d244569276821a42eb8df"
 
 [[projects]]
   branch = "master"
