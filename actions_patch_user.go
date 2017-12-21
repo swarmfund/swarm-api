@@ -147,18 +147,20 @@ func (action *PatchUserAction) patchDetails() {
 				return
 			}
 		} else {
-			entity := api.KYCEntity{
-				Data:   data,
-				UserID: action.User.ID,
-				Type:   entityType,
-			}
-			if _, err = action.APIQ().Users().KYC().Create(entity); err != nil {
-				action.Log.WithError(err).Error("failed to save entity")
-				action.Err = &problem.ServerError
-				return
-			}
+			//entity := api.KYCEntity{
+			//	Data:   data,
+			//	UserID: action.User.ID,
+			//	Type:   entityType,
+			//}
+			//if _, err = action.APIQ().Users().KYC().Create(entity); err != nil {
+			//	action.Log.WithError(err).Error("failed to save entity")
+			//	action.Err = &problem.ServerError
+			//	return
+			//}
 		}
 	}
+
+	action.User.CheckState()
 }
 
 func (action *PatchUserAction) blockAccount() {

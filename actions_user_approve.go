@@ -242,11 +242,11 @@ func (action *UserApproveAction) rejectUser() {
 			return
 		}
 	} else {
-		_, err = action.APIQ().Users().KYC().Create(api.KYCEntity{
-			Type:   rrEntityType,
-			UserID: action.User.ID,
-			Data:   rr,
-		})
+		//_, err = action.APIQ().Users().KYC().Create(api.KYCEntity{
+		//	Type:   rrEntityType,
+		//	UserID: action.User.ID,
+		//	Data:   rr,
+		//})
 		if err != nil {
 			action.Log.WithError(err).Error("failed to save entity")
 			action.Err = &problem.ServerError
@@ -272,11 +272,11 @@ func (action *UserApproveAction) rejectUser() {
 				return
 			}
 		} else {
-			_, err = action.APIQ().Users().KYC().Create(api.KYCEntity{
-				Type:   api.KYCEntityTypeDocumentsRejectReasons,
-				UserID: action.User.ID,
-				Data:   data,
-			})
+			//_, err = action.APIQ().Users().KYC().Create(api.KYCEntity{
+			//	Type:   api.KYCEntityTypeDocumentsRejectReasons,
+			//	UserID: action.User.ID,
+			//	Data:   data,
+			//})
 			if err != nil {
 				action.Log.WithError(err).Error("failed to save entity")
 				action.Err = &problem.ServerError

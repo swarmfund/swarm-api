@@ -100,6 +100,11 @@ func Router(
 		r.Route("/{address}/documents", func(r chi.Router) {
 			r.Post("/", handlers.PutDocument)
 		})
+
+		// kyc
+		r.Route("/{address}/entities", func(r chi.Router) {
+			r.Post("/", handlers.CreateKYCEntity)
+		})
 	})
 
 	return r

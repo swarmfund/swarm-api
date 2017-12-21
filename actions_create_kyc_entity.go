@@ -1,8 +1,6 @@
 package api
 
 import (
-	"encoding/json"
-
 	"github.com/pkg/errors"
 	"gitlab.com/swarmfund/api/db2/api"
 	"gitlab.com/swarmfund/api/render/hal"
@@ -70,7 +68,7 @@ func (action *CreateKYCEntityAction) loadUser() {
 }
 
 func (action *CreateKYCEntityAction) performRequest() {
-	var record interface{}
+	//var record interface{}
 	switch action.Request.Type {
 	//case api.KYCEntityTypeJointIdentity:
 	//	if action.User.UserType != api.UserTypeJoint {
@@ -88,26 +86,26 @@ func (action *CreateKYCEntityAction) performRequest() {
 		action.SetInvalidField("type", errors.New("invalid"))
 		return
 	}
-	data, err := json.Marshal(&record)
-	if err != nil {
-		action.Log.WithError(err).WithField("type", action.Request.Type).Error("failed to marshal")
-		action.Err = &problem.ServerError
-		return
-	}
-	entity := api.KYCEntity{
-		Data:   data,
-		UserID: action.User.ID,
-		Type:   action.Request.Type,
-	}
-	eid, err := action.APIQ().Users().KYC().Create(entity)
-	if err != nil {
-		action.Log.WithError(err).Error("failed to save entity")
-		action.Err = &problem.ServerError
-		return
-	}
-	action.Resource = resource.KYCEntity{
-		ID: eid,
-	}
+	//data, err := json.Marshal(&record)
+	//if err != nil {
+	//	action.Log.WithError(err).WithField("type", action.Request.Type).Error("failed to marshal")
+	//	action.Err = &problem.ServerError
+	//	return
+	//}
+	//entity := api.KYCEntity{
+	//	Data:   data,
+	//	UserID: action.User.ID,
+	//	Type:   action.Request.Type,
+	//}
+	//eid, err := action.APIQ().Users().KYC().Create(entity)
+	//if err != nil {
+	//	action.Log.WithError(err).Error("failed to save entity")
+	//	action.Err = &problem.ServerError
+	//	return
+	//}
+	//action.Resource = resource.KYCEntity{
+	//	ID: eid,
+	//}
 }
 
 func (action *CreateKYCEntityAction) blockAccount() {
