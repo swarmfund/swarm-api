@@ -12,6 +12,7 @@ import (
 	"gitlab.com/distributed_lab/ape/problems"
 	"gitlab.com/swarmfund/api/db2/api"
 	"gitlab.com/swarmfund/api/internal/kyc"
+	"gitlab.com/swarmfund/api/internal/lorem"
 )
 
 type (
@@ -61,7 +62,7 @@ func CreateKYCEntity(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err = UsersQ(r).Transaction(func(q api.UsersQI) error {
-		if err = q.KYC().Create(user.ID, request.Data); err != nil {
+		if err = q.KYC().Create(user.ID, lorem.ULID(), request.Data); err != nil {
 			return errors.Wrap(err, "failed to create entity")
 		}
 

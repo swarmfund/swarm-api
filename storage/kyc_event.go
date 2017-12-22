@@ -23,9 +23,9 @@ func (c *Consumer) ProcessKYCUpload(user *api.User, document *api.Document) erro
 			return errors.Wrap(err, "failed to marshal reject reasons")
 		}
 		entity.Data = data
-		if err = c.apiQ.Users().KYC().Update(entity.ID, entity.Data); err != nil {
-			return errors.Wrap(err, "failed to update kyc entity")
-		}
+		//if err = c.apiQ.Users().KYC().Update(entity.ID, entity.Data); err != nil {
+		//	return errors.Wrap(err, "failed to update kyc entity")
+		//}
 	}
 
 	//state := user.CheckState()

@@ -105,6 +105,7 @@ func Router(
 		r.Route("/{address}/entities", func(r chi.Router) {
 			r.Post("/", handlers.CreateKYCEntity)
 			r.Get("/", handlers.KYCEntitiesIndex)
+			r.Put("/{entity}", handlers.PatchKYCEntity)
 		})
 	})
 

@@ -1,8 +1,6 @@
 package api
 
 import (
-	"encoding/json"
-
 	"gitlab.com/swarmfund/api/db2/api"
 	"gitlab.com/swarmfund/api/render/hal"
 	"gitlab.com/swarmfund/api/render/problem"
@@ -133,32 +131,32 @@ func (action *PatchUserAction) patchDetails() {
 		return
 	}
 
-	for entityType, strct := range update {
-		data, err := json.Marshal(&strct)
-		if err != nil {
-			action.Log.WithError(err).WithField("type", entityType).Error("failed to marshal")
-			action.Err = &problem.ServerError
-			return
-		}
-		if eid, ok := action.User.KYCEntities.Exists(entityType); ok {
-			if err = action.APIQ().Users().KYC().Update(eid, data); err != nil {
-				action.Log.WithError(err).Error("failed to update entity")
-				action.Err = &problem.ServerError
-				return
-			}
-		} else {
-			//entity := api.KYCEntity{
-			//	Data:   data,
-			//	UserID: action.User.ID,
-			//	Type:   entityType,
-			//}
-			//if _, err = action.APIQ().Users().KYC().Create(entity); err != nil {
-			//	action.Log.WithError(err).Error("failed to save entity")
-			//	action.Err = &problem.ServerError
-			//	return
-			//}
-		}
-	}
+	//for entityType, strct := range update {
+	//data, err := json.Marshal(&strct)
+	//if err != nil {
+	//	action.Log.WithError(err).WithField("type", entityType).Error("failed to marshal")
+	//	action.Err = &problem.ServerError
+	//	return
+	//}
+	//if eid, ok := action.User.KYCEntities.Exists(entityType); ok {
+	//if err = action.APIQ().Users().KYC().Update(eid, data); err != nil {
+	//	action.Log.WithError(err).Error("failed to update entity")
+	//	action.Err = &problem.ServerError
+	//	return
+	//}
+	//} else {
+	//entity := api.KYCEntity{
+	//	Data:   data,
+	//	UserID: action.User.ID,
+	//	Type:   entityType,
+	//}
+	//if _, err = action.APIQ().Users().KYC().Create(entity); err != nil {
+	//	action.Log.WithError(err).Error("failed to save entity")
+	//	action.Err = &problem.ServerError
+	//	return
+	//}
+	//}
+	//}
 
 	action.User.CheckState()
 }

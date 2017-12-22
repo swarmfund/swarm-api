@@ -6,7 +6,7 @@ import (
 )
 
 type KYCEntity struct {
-	ID         int64               `json:"id,string"`
+	ID         string              `json:"id"`
 	Type       types.KYCEntityType `json:"type"`
 	Attributes interface{}         `json:"attributes"`
 }

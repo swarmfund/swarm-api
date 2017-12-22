@@ -205,6 +205,7 @@ func (action *UserApproveAction) approveUser() {
 }
 
 func (action *UserApproveAction) rejectUser() {
+	var err error
 	if action.Err != nil {
 		return
 	}
@@ -214,11 +215,11 @@ func (action *UserApproveAction) rejectUser() {
 		return
 	}
 
-	rr, err := action.User.ValidateRejectReasons(action.Request.RejectReasons)
-	if err != nil {
-		action.SetInvalidField("reject_reasons", errors.New("invalid in some way"))
-		return
-	}
+	//rr, err := action.User.ValidateRejectReasons(action.Request.RejectReasons)
+	//if err != nil {
+	//	action.SetInvalidField("reject_reasons", errors.New("invalid in some way"))
+	//	return
+	//}
 
 	var rrEntityType api.KYCEntityType
 	switch action.User.UserType {
@@ -235,12 +236,12 @@ func (action *UserApproveAction) rejectUser() {
 	rrEntity := action.User.KYCEntities.GetSingle(rrEntityType)
 	if rrEntity != nil {
 		// update rr entity
-		err := action.APIQ().Users().KYC().Update(rrEntity.ID, rr)
-		if err != nil {
-			action.Log.WithError(err).Error("failed to update entity")
-			action.Err = &problem.ServerError
-			return
-		}
+		//err := action.APIQ().Users().KYC().Update(rrEntity.ID, rr)
+		//if err != nil {
+		//	action.Log.WithError(err).Error("failed to update entity")
+		//	action.Err = &problem.ServerError
+		//	return
+		//}
 	} else {
 		//_, err = action.APIQ().Users().KYC().Create(api.KYCEntity{
 		//	Type:   rrEntityType,
@@ -256,21 +257,21 @@ func (action *UserApproveAction) rejectUser() {
 
 	// documents reject
 	if action.Request.Documents != nil {
-		data, err := json.Marshal(action.Request.Documents)
-		if err != nil {
-			action.Log.WithError(err).Error("failed to marshal documents reject reasons")
-			action.Err = &problem.ServerError
-			return
-		}
+		//data, err := json.Marshal(action.Request.Documents)
+		//if err != nil {
+		//	action.Log.WithError(err).Error("failed to marshal documents reject reasons")
+		//	action.Err = &problem.ServerError
+		//	return
+		//}
 		rrEntity = action.User.KYCEntities.GetSingle(api.KYCEntityTypeDocumentsRejectReasons)
 		if rrEntity != nil {
 			// update rr entity
-			err := action.APIQ().Users().KYC().Update(rrEntity.ID, data)
-			if err != nil {
-				action.Log.WithError(err).Error("failed to update entity")
-				action.Err = &problem.ServerError
-				return
-			}
+			//err := action.APIQ().Users().KYC().Update(rrEntity.ID, data)
+			//if err != nil {
+			//	action.Log.WithError(err).Error("failed to update entity")
+			//	action.Err = &problem.ServerError
+			//	return
+			//}
 		} else {
 			//_, err = action.APIQ().Users().KYC().Create(api.KYCEntity{
 			//	Type:   api.KYCEntityTypeDocumentsRejectReasons,

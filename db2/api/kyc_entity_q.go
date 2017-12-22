@@ -1,6 +1,8 @@
 package api
 
 import (
+	"database/sql"
+
 	"github.com/lann/squirrel"
 	"github.com/lib/pq"
 	"github.com/pkg/errors"
@@ -8,10 +10,11 @@ import (
 )
 
 type KYCQI interface {
-	Create(uid int64, entity kyc.Entity) error
-	Update(eid int64, data []byte) error
+	Create(uid int64, eid string, entity kyc.Entity) error
+	Update(eid string, entity kyc.Entity) error
 	Delete(eid int64) error
 	Select(uid int64) ([]KYCEntityRecord, error)
+	Get(eid string) (*KYCEntityRecord, error)
 }
 
 const (
@@ -24,7 +27,7 @@ var (
 )
 
 type KYCEntityRecord struct {
-	ID     int64      `db:"id"`
+	ID     string     `db:"id"`
 	Entity kyc.Entity `db:"data"`
 }
 
@@ -46,8 +49,21 @@ func (q *KYCQ) Select(uid int64) (result []KYCEntityRecord, err error) {
 	return result, err
 }
 
-func (q *KYCQ) Create(uid int64, entity kyc.Entity) error {
+func (q *KYCQ) Get(eid string) (*KYCEntityRecord, error) {
+	stmt := squirrel.Select("id", "data").
+		From(kycEntitiesTable).
+		Where("id = ?", eid)
+	var result KYCEntityRecord
+	err := q.parent.Get(&result, stmt)
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
+	return &result, err
+}
+
+func (q *KYCQ) Create(uid int64, eid string, entity kyc.Entity) error {
 	stmt := squirrel.Insert(kycEntitiesTable).SetMap(map[string]interface{}{
+		"id":      eid,
 		"user_id": uid,
 		"data":    entity,
 		"type":    entity.Type,
@@ -65,9 +81,9 @@ func (q *KYCQ) Create(uid int64, entity kyc.Entity) error {
 	return err
 }
 
-func (q *KYCQ) Update(eid int64, data []byte) error {
-	stmt := squirrel.Update("kyc_entities").
-		Set("data", data).
+func (q *KYCQ) Update(eid string, entity kyc.Entity) error {
+	stmt := squirrel.Update(kycEntitiesTable).
+		Set("data", entity).
 		Where("id = ?", eid)
 	_, err := q.parent.Exec(stmt)
 	return err

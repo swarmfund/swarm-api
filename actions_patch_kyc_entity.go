@@ -245,21 +245,21 @@ func (action *PatchKYCEntityAction) performRequest() {
 		panic("wrong state")
 	}
 
-	err := action.APIQ().Users().KYC().Update(action.Entity.ID, action.Entity.Data)
-	if err != nil {
-		action.Log.WithError(err).Error("failed to update entity")
-		action.Err = &problem.ServerError
-		return
-	}
-
-	if rejectReasonsEntity != nil {
-		err = action.APIQ().Users().KYC().Update(rejectReasonsEntity.ID, rejectReasonsEntity.Data)
-		if err != nil {
-			action.Log.WithError(err).Error("failed to update entity")
-			action.Err = &problem.ServerError
-			return
-		}
-	}
+	//err := action.APIQ().Users().KYC().Update(action.Entity.ID, action.Entity.Data)
+	//if err != nil {
+	//	action.Log.WithError(err).Error("failed to update entity")
+	//	action.Err = &problem.ServerError
+	//	return
+	//}
+	//
+	//if rejectReasonsEntity != nil {
+	//	err = action.APIQ().Users().KYC().Update(rejectReasonsEntity.ID, rejectReasonsEntity.Data)
+	//	if err != nil {
+	//		action.Log.WithError(err).Error("failed to update entity")
+	//		action.Err = &problem.ServerError
+	//		return
+	//	}
+	//}
 }
 
 func (action *PatchKYCEntityAction) updateState() {
