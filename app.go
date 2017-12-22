@@ -14,7 +14,7 @@ import (
 	"gitlab.com/swarmfund/api/db2/api"
 	api2 "gitlab.com/swarmfund/api/internal/api"
 	"gitlab.com/swarmfund/api/internal/data"
-	horizon2 "gitlab.com/swarmfund/api/internal/horizon"
+	horizon2 "gitlab.com/swarmfund/api/internal/data/horizon"
 	"gitlab.com/swarmfund/api/log"
 	"gitlab.com/swarmfund/api/notificator"
 	"gitlab.com/swarmfund/api/pentxsub"

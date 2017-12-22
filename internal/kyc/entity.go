@@ -1,37 +1,27 @@
 package kyc
 
 import (
+	"database/sql/driver"
 	"encoding/json"
 	"fmt"
 
-	"database/sql/driver"
-
-	"github.com/go-ozzo/ozzo-validation"
+	validation "github.com/go-ozzo/ozzo-validation"
 	"github.com/pkg/errors"
 	"gitlab.com/swarmfund/api/internal/types"
 )
 
-type Individual struct {
-	FirstName string `json:"first_name"`
-	LastName  string `json:"last_name"`
-}
-
-func (e Individual) Validate() error {
-	return validation.ValidateStruct(&e,
-		validation.Field(&e.FirstName, validation.Required),
-		validation.Field(&e.LastName, validation.Required),
-	)
-}
-
 type Entity struct {
 	Type       types.KYCEntityType `json:"type"`
 	Individual *Individual         `json:"individual,omitempty"`
+	Syndicate  *Syndicate          `json:"syndicate,omitempty"`
 }
 
 func (e Entity) Attributes() interface{} {
 	switch e.Type {
 	case types.KYCEntityTypeIndividual:
 		return e.Individual
+	case types.KYCEntityTypeSyndicate:
+		return e.Syndicate
 	default:
 		panic(fmt.Errorf("unknown user type %s", e.Type))
 	}
@@ -58,6 +48,8 @@ func (e *Entity) UnmarshalJSON(data []byte) error {
 	switch t.Type {
 	case types.KYCEntityTypeIndividual:
 		specific = &e.Individual
+	case types.KYCEntityTypeSyndicate:
+		specific = &e.Syndicate
 	default:
 		panic(fmt.Errorf("unknown user type %s", t.Type))
 	}
@@ -75,12 +67,8 @@ func (e Entity) MarshalJSON() ([]byte, error) {
 		Raw  interface{}         `json:"attributes"`
 	}
 
-	switch t.Type = e.Type; t.Type {
-	case types.KYCEntityTypeIndividual:
-		t.Raw = e.Individual
-	default:
-		panic(fmt.Errorf("unknown user type %s", t.Type))
-	}
+	t.Type = e.Type
+	t.Raw = e.Attributes()
 
 	return json.Marshal(t)
 }

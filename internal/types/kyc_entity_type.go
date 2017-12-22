@@ -5,4 +5,5 @@ type KYCEntityType int32
 
 const (
 	KYCEntityTypeIndividual KYCEntityType = 1 << iota
+	KYCEntityTypeSyndicate
 )

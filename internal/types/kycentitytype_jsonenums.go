@@ -22,16 +22,19 @@ func init() {
 	if _, ok := interface{}(v).(fmt.Stringer); ok {
 		_KYCEntityTypeNameToValue = map[string]KYCEntityType{
 			interface{}(KYCEntityTypeIndividual).(fmt.Stringer).String(): KYCEntityTypeIndividual,
+			interface{}(KYCEntityTypeSyndicate).(fmt.Stringer).String():  KYCEntityTypeSyndicate,
 		}
 	}
 }
 
 var _KYCEntityTypeNameToValue = map[string]KYCEntityType{
 	"individual": KYCEntityTypeIndividual,
+	"syndicate":  KYCEntityTypeSyndicate,
 }
 
 var _KYCEntityTypeValueToName = map[KYCEntityType]string{
 	KYCEntityTypeIndividual: "individual",
+	KYCEntityTypeSyndicate:  "syndicate",
 }
 
 // String is generated so KYCEntityType satisfies fmt.Stringer.
