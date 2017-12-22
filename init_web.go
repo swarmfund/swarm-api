@@ -60,13 +60,6 @@ func initWebActions(app *App) {
 	r.Post("/details", &DetailsAction{})
 	r.Post("/participants", &ParticipantsAction{})
 
-	// kyc
-	r.Patch("/users/:id", &PatchUserAction{})
-	r.Post("/users/:user/entities", &CreateKYCEntityAction{})
-	r.Patch("/users/:user/entities/:entity", &PatchKYCEntityAction{})
-	r.Delete("/users/:user/entities/:entity", &DeleteKYCEntityAction{})
-	r.Post("/users/:user/approve", &UserApproveAction{})
-
 	// documents
 	r.Get("/users/:id/documents", &GetUserDocsAction{})
 	r.Get("/users/:id/documents/:version", &GetUserFileAction{})
