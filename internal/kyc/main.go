@@ -16,6 +16,13 @@ type Individual struct {
 	LastName  string `json:"last_name"`
 }
 
+func (e Individual) Validate() error {
+	return validation.ValidateStruct(&e,
+		validation.Field(&e.FirstName, validation.Required),
+		validation.Field(&e.LastName, validation.Required),
+	)
+}
+
 type Entity struct {
 	Type       types.KYCEntityType `json:"type"`
 	Individual *Individual         `json:"individual,omitempty"`

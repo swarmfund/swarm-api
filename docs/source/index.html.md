@@ -522,7 +522,9 @@ HTTP/1.1 204
 | Field                    | User | Admin | Description                              |
 | ------------------------ | ---- | ----- | ---------------------------------------- |
 | `/data/type`             | +    | -     | Updating user type is allowed only if current type is `not_verified` |
-| `/data/attributes/state` | -    | +     | Used by admin to update state from `waiting_for_approval` to `rejected` or `approved` |
+| `/data/attributes/state` | +    | +     | Used by admin to update state from `waiting_for_approval` to `rejected` or `approved`. User could try to set state to `waiting_for_approval` why KYC is ready for review. |
+|                          |      |       |                                          |
+|                          |      |       |                                          |
 
 
 

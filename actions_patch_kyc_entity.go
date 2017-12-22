@@ -75,12 +75,12 @@ func (action *PatchKYCEntityAction) loadUser() {
 }
 
 func (action *PatchKYCEntityAction) getEntity() {
-	for _, entity := range action.User.KYCEntities {
-		if entity.ID == action.EntityID {
-			action.Entity = &entity
-			return
-		}
-	}
+	//for _, entity := range action.User.KYCEntities {
+	//	if entity.ID == action.EntityID {
+	//		action.Entity = &entity
+	//		return
+	//	}
+	//}
 	action.Err = &problem.Forbidden
 	return
 }
@@ -100,7 +100,7 @@ func (action *PatchKYCEntityAction) performRequest() {
 			action.Err = &problem.ServerError
 			return
 		}
-		rejectReasonsEntity, rejectReasons = action.User.KYCEntities.JointRejectReasons()
+		//rejectReasonsEntity, rejectReasons = action.User.KYCEntities.JointRejectReasons()
 		if action.Request.PersonalDetails != nil {
 			identity.PersonalDetails = *action.Request.PersonalDetails
 			identityRR, ok := rejectReasons.IdentityDetails[eid]
@@ -161,7 +161,7 @@ func (action *PatchKYCEntityAction) performRequest() {
 			action.Err = &problem.ServerError
 			return
 		}
-		rejectReasonsEntity, rejectReasons = action.User.KYCEntities.BusinessRejectReasons()
+		//rejectReasonsEntity, rejectReasons = action.User.KYCEntities.BusinessRejectReasons()
 		if action.Request.PersonalDetails != nil {
 			person.PersonDetails = *action.Request.PersonalDetails
 			ownerRR, ok := rejectReasons.Signatories[eid]
@@ -206,7 +206,7 @@ func (action *PatchKYCEntityAction) performRequest() {
 			action.Err = &problem.ServerError
 			return
 		}
-		rejectReasonsEntity, rejectReasons = action.User.KYCEntities.BusinessRejectReasons()
+		//rejectReasonsEntity, rejectReasons = action.User.KYCEntities.BusinessRejectReasons()
 		if action.Request.PersonalDetails != nil {
 			person.PersonDetails = *action.Request.PersonalDetails
 			ownerRR, ok := rejectReasons.Owners[eid]

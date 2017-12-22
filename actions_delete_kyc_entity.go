@@ -59,16 +59,16 @@ func (action *DeleteKYCEntityAction) loadUser() {
 }
 
 func (action *DeleteKYCEntityAction) performRequest() {
-	for _, entity := range action.User.KYCEntities {
-		if entity.ID == action.EntityID {
-			if err := action.APIQ().Users().KYC().Delete(entity.ID); err != nil {
-				action.Log.WithError(err).Error("failed to delete entity")
-				action.Err = &problem.ServerError
-				return
-			}
-			return
-		}
-	}
+	//for _, entity := range action.User.KYCEntities {
+	//if entity.ID == action.EntityID {
+	//	if err := action.APIQ().Users().KYC().Delete(entity.ID); err != nil {
+	//		action.Log.WithError(err).Error("failed to delete entity")
+	//		action.Err = &problem.ServerError
+	//		return
+	//	}
+	//	return
+	//}
+	//}
 	action.Err = &problem.Forbidden
 	return
 }

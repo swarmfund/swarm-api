@@ -221,7 +221,7 @@ func (action *UserApproveAction) rejectUser() {
 	//	return
 	//}
 
-	var rrEntityType api.KYCEntityType
+	//var rrEntityType api.KYCEntityType
 	switch action.User.UserType {
 	//case api.UserTypeIndividual:
 	//	rrEntityType = api.KYCEntityTypeIndividualRejectReasons
@@ -233,27 +233,27 @@ func (action *UserApproveAction) rejectUser() {
 		panic("unknown user type")
 	}
 
-	rrEntity := action.User.KYCEntities.GetSingle(rrEntityType)
-	if rrEntity != nil {
-		// update rr entity
-		//err := action.APIQ().Users().KYC().Update(rrEntity.ID, rr)
-		//if err != nil {
-		//	action.Log.WithError(err).Error("failed to update entity")
-		//	action.Err = &problem.ServerError
-		//	return
-		//}
-	} else {
-		//_, err = action.APIQ().Users().KYC().Create(api.KYCEntity{
-		//	Type:   rrEntityType,
-		//	UserID: action.User.ID,
-		//	Data:   rr,
-		//})
-		if err != nil {
-			action.Log.WithError(err).Error("failed to save entity")
-			action.Err = &problem.ServerError
-			return
-		}
+	//rrEntity := action.User.KYCEntities.GetSingle(rrEntityType)
+	//if rrEntity != nil {
+	// update rr entity
+	//err := action.APIQ().Users().KYC().Update(rrEntity.ID, rr)
+	//if err != nil {
+	//	action.Log.WithError(err).Error("failed to update entity")
+	//	action.Err = &problem.ServerError
+	//	return
+	//}
+	//} else {
+	//_, err = action.APIQ().Users().KYC().Create(api.KYCEntity{
+	//	Type:   rrEntityType,
+	//	UserID: action.User.ID,
+	//	Data:   rr,
+	//})
+	if err != nil {
+		action.Log.WithError(err).Error("failed to save entity")
+		action.Err = &problem.ServerError
+		return
 	}
+	//}
 
 	// documents reject
 	if action.Request.Documents != nil {
@@ -263,26 +263,26 @@ func (action *UserApproveAction) rejectUser() {
 		//	action.Err = &problem.ServerError
 		//	return
 		//}
-		rrEntity = action.User.KYCEntities.GetSingle(api.KYCEntityTypeDocumentsRejectReasons)
-		if rrEntity != nil {
-			// update rr entity
-			//err := action.APIQ().Users().KYC().Update(rrEntity.ID, data)
-			//if err != nil {
-			//	action.Log.WithError(err).Error("failed to update entity")
-			//	action.Err = &problem.ServerError
-			//	return
+		//rrEntity = action.User.KYCEntities.GetSingle(api.KYCEntityTypeDocumentsRejectReasons)
+		//if rrEntity != nil {
+		// update rr entity
+		//err := action.APIQ().Users().KYC().Update(rrEntity.ID, data)
+		//if err != nil {
+		//	action.Log.WithError(err).Error("failed to update entity")
+		//	action.Err = &problem.ServerError
+		//	return
+		//}
+		//} else {
+		//_, err = action.APIQ().Users().KYC().Create(api.KYCEntity{
+		//	Type:   api.KYCEntityTypeDocumentsRejectReasons,
+		//	UserID: action.User.ID,
+		//	Data:   data,
+		//})
+		if err != nil {
+			action.Log.WithError(err).Error("failed to save entity")
+			action.Err = &problem.ServerError
+			return
 			//}
-		} else {
-			//_, err = action.APIQ().Users().KYC().Create(api.KYCEntity{
-			//	Type:   api.KYCEntityTypeDocumentsRejectReasons,
-			//	UserID: action.User.ID,
-			//	Data:   data,
-			//})
-			if err != nil {
-				action.Log.WithError(err).Error("failed to save entity")
-				action.Err = &problem.ServerError
-				return
-			}
 		}
 	}
 

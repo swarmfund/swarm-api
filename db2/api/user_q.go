@@ -20,7 +20,7 @@ var (
 	tableUserAliased = fmt.Sprintf("%s u", tableUser)
 	selectUser       = sq.Select(
 		"u.*",
-		/*"(select json_agg(kyc) from kyc_entities kyc where kyc.user_id=u.id) as kyc_entities"*/).
+		"(select json_agg(kyc) from kyc_entities kyc where kyc.user_id=u.id) as kyc_entities").
 		From(tableUserAliased)
 
 	insertUser = sq.Insert(tableUser)
