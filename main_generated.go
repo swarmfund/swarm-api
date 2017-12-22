@@ -1,8 +1,9 @@
 package api
 
 import (
-	"github.com/zenazn/goji/web"
 	"net/http"
+
+	"github.com/zenazn/goji/web"
 )
 
 // ServeHTTPC is a method for web.Handler
@@ -10,14 +11,6 @@ func (action ApproveRecoveryRequestAction) ServeHTTPC(c web.C, w http.ResponseWr
 	ap := &action.Action
 	ap.Prepare(c, w, r)
 	action.Log = action.Log.WithField("action", "ApproveRecoveryRequestAction")
-	ap.Execute(&action)
-}
-
-// ServeHTTPC is a method for web.Handler
-func (action CreateKYCEntityAction) ServeHTTPC(c web.C, w http.ResponseWriter, r *http.Request) {
-	ap := &action.Action
-	ap.Prepare(c, w, r)
-	action.Log = action.Log.WithField("action", "CreateKYCEntityAction")
 	ap.Execute(&action)
 }
 
@@ -34,14 +27,6 @@ func (action DeleteContactShareAction) ServeHTTPC(c web.C, w http.ResponseWriter
 	ap := &action.Action
 	ap.Prepare(c, w, r)
 	action.Log = action.Log.WithField("action", "DeleteContactShareAction")
-	ap.Execute(&action)
-}
-
-// ServeHTTPC is a method for web.Handler
-func (action DeleteKYCEntityAction) ServeHTTPC(c web.C, w http.ResponseWriter, r *http.Request) {
-	ap := &action.Action
-	ap.Prepare(c, w, r)
-	action.Log = action.Log.WithField("action", "DeleteKYCEntityAction")
 	ap.Execute(&action)
 }
 
@@ -166,26 +151,10 @@ func (action ParticipantsAction) ServeHTTPC(c web.C, w http.ResponseWriter, r *h
 }
 
 // ServeHTTPC is a method for web.Handler
-func (action PatchKYCEntityAction) ServeHTTPC(c web.C, w http.ResponseWriter, r *http.Request) {
-	ap := &action.Action
-	ap.Prepare(c, w, r)
-	action.Log = action.Log.WithField("action", "PatchKYCEntityAction")
-	ap.Execute(&action)
-}
-
-// ServeHTTPC is a method for web.Handler
 func (action PatchNotificationsAction) ServeHTTPC(c web.C, w http.ResponseWriter, r *http.Request) {
 	ap := &action.Action
 	ap.Prepare(c, w, r)
 	action.Log = action.Log.WithField("action", "PatchNotificationsAction")
-	ap.Execute(&action)
-}
-
-// ServeHTTPC is a method for web.Handler
-func (action PatchUserAction) ServeHTTPC(c web.C, w http.ResponseWriter, r *http.Request) {
-	ap := &action.Action
-	ap.Prepare(c, w, r)
-	action.Log = action.Log.WithField("action", "PatchUserAction")
 	ap.Execute(&action)
 }
 
@@ -258,14 +227,6 @@ func (action ResolveUserRecoveryRequestAction) ServeHTTPC(c web.C, w http.Respon
 	ap := &action.Action
 	ap.Prepare(c, w, r)
 	action.Log = action.Log.WithField("action", "ResolveUserRecoveryRequestAction")
-	ap.Execute(&action)
-}
-
-// ServeHTTPC is a method for web.Handler
-func (action UserApproveAction) ServeHTTPC(c web.C, w http.ResponseWriter, r *http.Request) {
-	ap := &action.Action
-	ap.Prepare(c, w, r)
-	action.Log = action.Log.WithField("action", "UserApproveAction")
 	ap.Execute(&action)
 }
 

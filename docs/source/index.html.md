@@ -1,12 +1,15 @@
 ---
-title: TokenD API Reference
+title: Swarm API Reference
 
 search: true
+
+includes:
+  - kyc
 ---
 
 # Overview
 
-The TokenD API tries its best to follow [JSONAPI](http://jsonapi.org/format/1.0/).
+The Swarm API tries its best to follow [JSONAPI](http://jsonapi.org/format/1.0/).
 Most important parts of protocol will be included here, but to get better feel of what's going on it's advised to get yourself familiar with JSONAPI before continuing.
 
 | Legend | Description                |
@@ -23,7 +26,7 @@ Each request must include correct content negotiation headers.
 
 API uses conventional HTTP response codes to indicate the success or failure of a request.
 In general, codes in the `2xx` range indicate success, codes in the `4xx` range indicate an error that 
-failed given the information provided and codes in `5xx` range indicate an problem with TokenD servers.
+failed given the information provided and codes in `5xx` range indicate an problem with Swarm servers.
 
 ## General HTTP response status codes
 
@@ -519,7 +522,9 @@ HTTP/1.1 204
 | Field                    | User | Admin | Description                              |
 | ------------------------ | ---- | ----- | ---------------------------------------- |
 | `/data/type`             | +    | -     | Updating user type is allowed only if current type is `not_verified` |
-| `/data/attributes/state` | -    | +     | Used by admin to update state from `waiting_for_approval` to `rejected` or `approved` |
+| `/data/attributes/state` | +    | +     | Used by admin to update state from `waiting_for_approval` to `rejected` or `approved`. User could try to set state to `waiting_for_approval` why KYC is ready for review. |
+|                          |      |       |                                          |
+|                          |      |       |                                          |
 
 
 

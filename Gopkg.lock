@@ -164,6 +164,12 @@
   revision = "a875e7c9fa2388ce03279f6b5ba1c2ccd1f9e917"
 
 [[projects]]
+  name = "github.com/oklog/ulid"
+  packages = ["."]
+  revision = "d311cb43c92434ec4072dfbbda3400741d0a6337"
+  version = "v0.3.0"
+
+[[projects]]
   name = "github.com/patrickmn/go-cache"
   packages = ["."]
   revision = "a3647f8e31d79543b2d0f0ae2fe5c379d72cedc0"
@@ -364,6 +370,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "144a2ef42a00bb40740bed47c10015db55c1f28c7b871a2c8a711433d1736fee"
+  inputs-digest = "eff152afb6c83f027c34c2799e61d1dc49034d6d1bd185626fdd002ec66d4fef"
   solver-name = "gps-cdcl"
   solver-version = 1

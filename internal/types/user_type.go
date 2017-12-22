@@ -6,4 +6,5 @@ type UserType int32
 const (
 	UserTypeNotVerified UserType = 1 << iota
 	UserTypeSyndicate
+	UserTypeGeneral
 )

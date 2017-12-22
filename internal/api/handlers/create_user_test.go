@@ -59,7 +59,7 @@ func TestNewCreateUserRequest(t *testing.T) {
 				t.Fatalf("expected error got nil")
 			}
 			if err == nil && !reflect.DeepEqual(got, tc.expected) {
-				t.Fatal("expected %#v got #%v", tc.expected, got)
+				t.Fatalf("expected %#v got #%v", tc.expected, got)
 			}
 		})
 	}
