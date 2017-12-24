@@ -1,8 +1,19 @@
 package types
 
+import "fmt"
+
 //go:generate jsonenums -tprefix=false -transform=snake -type=DocumentType
 type DocumentType int32
 
 const (
 	DocumentTypeAssetLogo DocumentType = 1 << iota
 )
+
+func IsPublicDocument(t DocumentType) bool {
+	switch t {
+	case DocumentTypeAssetLogo:
+		return true
+	default:
+		panic(fmt.Errorf("unknown document type %s", t))
+	}
+}
