@@ -6,6 +6,7 @@ search: true
 includes:
   - documents
   - kyc
+  - blobs
 ---
 
 # Overview

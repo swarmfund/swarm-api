@@ -26,7 +26,7 @@ func Router(
 	entry *log.Entry, walletQ api.WalletQI, tokensQ data.EmailTokensQ,
 	usersQ api.UsersQI, doorman doorman.Doorman, horizon *horizon.Connector,
 	accountManager keypair.KP, tfaQ api.TFAQI, storage *storage.Connector,
-	coreConn *coreinfo.Connector,
+	coreConn *coreinfo.Connector, blobQ data.Blobs,
 ) chi.Router {
 	r := chi.NewRouter()
 
@@ -106,6 +106,15 @@ func Router(
 			r.Post("/", handlers.CreateKYCEntity)
 			r.Get("/", handlers.KYCEntitiesIndex)
 			r.Put("/{entity}", handlers.PatchKYCEntity)
+		})
+
+		// blobs
+		r.Route("/{address}/blobs", func(r chi.Router) {
+			r.Use(middlewares.Ctx(
+				handlers.CtxBlobQ(blobQ),
+			))
+			r.Post("/", handlers.CreateBlob)
+			r.Get("/{blob}", handlers.GetBlob)
 		})
 	})
 
