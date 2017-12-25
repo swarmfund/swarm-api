@@ -7,7 +7,7 @@ type Blob struct {
 	Type       types.BlobType `json:"type"`
 	Attributes struct {
 		Value string `json:"value"`
-	}
+	} `json:"attributes"`
 }
 
 func NewBlob(blob *types.Blob) Blob {
