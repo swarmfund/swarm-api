@@ -157,14 +157,14 @@ func (action *PutDocumentAction) performRequest() {
 }
 
 func (action *PutDocumentAction) signForm() {
-	form, err := action.App.Storage().UploadFormData(
-		string(action.Document.AccountID), action.Document.Key(),
-	)
-	if err != nil {
-		action.Log.WithError(err).Error("failed to build form data")
-		action.Err = &problem.ServerError
-		return
-	}
-
-	action.Response = form
+	//form, err := action.App.Storage().UploadFormData(
+	//	string(action.Document.AccountID), action.Document.Key(),
+	//)
+	//if err != nil {
+	//	action.Log.WithError(err).Error("failed to build form data")
+	//	action.Err = &problem.ServerError
+	//	return
+	//}
+	//
+	//action.Response = form
 }

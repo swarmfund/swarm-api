@@ -4,6 +4,7 @@ title: Swarm API Reference
 search: true
 
 includes:
+  - documents
   - kyc
 ---
 
@@ -160,13 +161,13 @@ Create wallet requests should contain following resources:
 
 #### Wallet
 
-| Field           | Description                              |
-| --------------- | ---------------------------------------- |
-| `id`            | lowercase, hex-encoded string with key derived from password, email and salt using KDF parameters |
-| `account_id`    | address of derived from wallet secret key |
-| `salt`          | client generated salt                    |
-| `keychain_data` | secret key encrypted with password, email and salt |
-| `email`         | wallet email address                     |
+| Field                 | Description                              |
+| --------------------- | ---------------------------------------- |
+| `id`                  | lowercase, hex-encoded string with key derived from password, email and salt using KDF parameters |
+| `account_idDocuments` | address of derived from wallet secret key |
+| `salt`                | client generated salt                    |
+| `keychain_data`       | secret key encrypted with password, email and salt |
+| `email`               | wallet email address                     |
 
 #### KDF
 
@@ -707,42 +708,3 @@ DELETE /wallets/388108095960430b80554ac3efb6807a9f286854033aca47f6f466094ab50876
 HTTP/1.1 204
 ```
 `DELETE /wallets/{wallet-id}/factors/{factor}`
-
-# Documents
-
-## Upload 🔒
-
-```http
-POST /users/GBT3XFWQUHUTKZMI22TVTWRA7UHV2LIO2BIFNRCH3CXWPYVYPTMXMDGC/documents
-Content-Type: application/vnd.api+json
-Accept: application/vnd.api+json
-
-{
-	"data": {
-     	"type": "asset_logo",
-     	"attributes": {
-        	"content_type": "image/png"
-     	}
-	}
-}
-
-HTTP/1.1 200
-Content-Type: application/vnd.api+json
-
-{
-    "data": {
-        "type": "upload_policy",
-        "attributes": {
-            "bucket": "gccjpb7qqlnemcj72cqj4odazffgxhet5upogsdwt222gxqpmto6zqw3",
-            "key": "16-0-pfukiwvbemonfdfsevzq.png",
-            "policy": "eyJleHBpcmF0aW9uIj...QiXV19",
-            "url": "http://example.com/gccjpb7qqlnemcj72cqj4odazffgxhet5upogsdwt222gxqpmto6zqw3/",
-            "x-amz-algorithm": "AWS4-HMAC-SHA256",
-            "x-amz-credential": "2SRMRAST49JEIMUUKWKH/20171207/us-east-1/s3/aws4_request",
-            "x-amz-date": "20171207T180259Z",
-            "x-amz-signature": "e5fc4db1ce8a29e74f6a5e79340ddeee331ab751e9c61899389e79d31273b717"
-        }
-    }
-}
-```
-

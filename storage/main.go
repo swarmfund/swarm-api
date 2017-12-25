@@ -1,14 +1,20 @@
 package storage
 
 import (
-	"errors"
 	"net/url"
 	"strings"
 	"time"
 
 	"github.com/minio/minio-go"
+	"github.com/minio/minio-go/pkg/policy"
+	"github.com/pkg/errors"
 	"gitlab.com/swarmfund/api/config"
 	"gitlab.com/swarmfund/api/log"
+)
+
+const (
+	bucketName   = "api"
+	publicPrefix = "dpu"
 )
 
 type Connector struct {
@@ -18,21 +24,37 @@ type Connector struct {
 }
 
 func New(conf config.Storage) (*Connector, error) {
-	minioClient, err := minio.New(conf.Host, conf.AccessKey, conf.SecretKey, conf.ForceSSL)
+	minio, err := minio.New(conf.Host, conf.AccessKey, conf.SecretKey, conf.ForceSSL)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to init client")
 	}
-	return &Connector{
-		minio: minioClient,
+
+	c := &Connector{
+		minio: minio,
 		log:   log.WithField("service", "storage"),
 		conf:  conf,
-	}, nil
+	}
+
+	return c, nil
 }
 
-func (c *Connector) UploadFormData(bucket, key string) (map[string]string, error) {
+func (c *Connector) ensureInitialized() error {
+	if err := c.makeBucket(bucketName); err != nil {
+		return errors.Wrap(err, "failed to create bucket")
+	}
+
+	err := c.minio.SetBucketPolicy(bucketName, publicPrefix, policy.BucketPolicyReadOnly)
+	if err != nil {
+		return errors.Wrap(err, "failed to ensure bucket policy")
+	}
+
+	return nil
+}
+
+func (c *Connector) UploadFormData(key string) (map[string]string, error) {
 	policy := minio.NewPostPolicy()
 
-	policy.SetBucket(strings.ToLower(bucket))
+	policy.SetBucket(bucketName)
 	policy.SetKey(strings.ToLower(key))
 	// TODO investigate expire
 	policy.SetExpires(time.Now().UTC().Add(72 * time.Hour))
@@ -43,11 +65,11 @@ func (c *Connector) UploadFormData(bucket, key string) (map[string]string, error
 		if minioErr, ok := err.(minio.ErrorResponse); ok {
 			if minioErr.Code == "NoSuchBucket" {
 				// bucket does not exists, yet
-				err = c.makeBucket(bucket)
+				err = c.ensureInitialized()
 				if err != nil {
 					return nil, err
 				}
-				return c.UploadFormData(bucket, key)
+				return c.UploadFormData(key)
 			} else {
 				return nil, err
 			}
@@ -56,6 +78,7 @@ func (c *Connector) UploadFormData(bucket, key string) (map[string]string, error
 		}
 	}
 	formData["url"] = url.String()
+
 	return formData, nil
 }
 

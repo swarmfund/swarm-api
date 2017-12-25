@@ -156,7 +156,7 @@ func (action *Action) Notificator() *notificator.Connector {
 func (a *App) Storage() *storage.Connector {
 	connector, err := storage.New(a.Config().Storage())
 	if err != nil {
-		panic(err)
+		panic(errors.Wrap(err, "failed to init connector"))
 	}
 	return connector
 }
