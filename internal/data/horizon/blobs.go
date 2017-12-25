@@ -1,6 +1,8 @@
 package horizon
 
 import (
+	"database/sql"
+
 	"github.com/lann/squirrel"
 	"github.com/lib/pq"
 	"github.com/pkg/errors"
@@ -38,4 +40,17 @@ func (q *Blobs) Create(address types.Address, blob *types.Blob) error {
 		}
 	}
 	return err
+}
+
+func (q *Blobs) Get(id string) (*types.Blob, error) {
+	var result types.Blob
+	stmt := squirrel.Select("id", "value", "type").From(blobsTable)
+	err := q.Repo.Get(&result, stmt)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &result, nil
 }
