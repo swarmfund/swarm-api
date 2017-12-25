@@ -2,15 +2,17 @@
 package types
 
 import (
+	"database/sql/driver"
 	"encoding/json"
 	"errors"
 	"fmt"
 )
 
 func init() {
-	// stub usage of json for situation when
-	// (Un)MarshalJSON methods will be omitted
+	// stubs for imports
 	_ = json.Delim('s')
+	_ = driver.Int32
+
 }
 
 var ErrUserTypeInvalid = errors.New("UserType is invalid")
@@ -21,6 +23,7 @@ func init() {
 		_UserTypeNameToValue = map[string]UserType{
 			interface{}(UserTypeNotVerified).(fmt.Stringer).String(): UserTypeNotVerified,
 			interface{}(UserTypeSyndicate).(fmt.Stringer).String():   UserTypeSyndicate,
+			interface{}(UserTypeGeneral).(fmt.Stringer).String():     UserTypeGeneral,
 		}
 	}
 }
@@ -28,11 +31,13 @@ func init() {
 var _UserTypeNameToValue = map[string]UserType{
 	"not_verified": UserTypeNotVerified,
 	"syndicate":    UserTypeSyndicate,
+	"general":      UserTypeGeneral,
 }
 
 var _UserTypeValueToName = map[UserType]string{
 	UserTypeNotVerified: "not_verified",
 	UserTypeSyndicate:   "syndicate",
+	UserTypeGeneral:     "general",
 }
 
 // String is generated so UserType satisfies fmt.Stringer.
@@ -77,4 +82,17 @@ func (r *UserType) UnmarshalJSON(data []byte) error {
 	}
 	*r = v
 	return nil
+}
+
+func (t *UserType) Scan(src interface{}) error {
+	i, ok := src.(int64)
+	if !ok {
+		return fmt.Errorf("can't scan from %T", src)
+	}
+	*t = UserType(i)
+	return nil
+}
+
+func (t UserType) Value() (driver.Value, error) {
+	return int64(t), nil
 }

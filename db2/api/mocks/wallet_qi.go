@@ -212,6 +212,20 @@ func (_m *WalletQI) DeletePasswordFactor(walletID string) error {
 	return r0
 }
 
+// DeleteWallets provides a mock function with given fields: walletIDs
+func (_m *WalletQI) DeleteWallets(walletIDs []string) error {
+	ret := _m.Called(walletIDs)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func([]string) error); ok {
+		r0 = rf(walletIDs)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // New provides a mock function with given fields:
 func (_m *WalletQI) New() api.WalletQI {
 	ret := _m.Called()

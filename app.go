@@ -14,7 +14,7 @@ import (
 	"gitlab.com/swarmfund/api/db2/api"
 	api2 "gitlab.com/swarmfund/api/internal/api"
 	"gitlab.com/swarmfund/api/internal/data"
-	horizon2 "gitlab.com/swarmfund/api/internal/horizon"
+	horizon2 "gitlab.com/swarmfund/api/internal/data/horizon"
 	"gitlab.com/swarmfund/api/log"
 	"gitlab.com/swarmfund/api/notificator"
 	"gitlab.com/swarmfund/api/pentxsub"
@@ -55,7 +55,7 @@ func NewApp(config config.Config) (*App, error) {
 		config:  config,
 		horizon: horizon,
 	}
-	result.ticks = time.NewTicker(1 * time.Second)
+	result.ticks = time.NewTicker(10 * time.Second)
 	result.init()
 	return result, nil
 }
@@ -156,7 +156,7 @@ func (action *Action) Notificator() *notificator.Connector {
 func (a *App) Storage() *storage.Connector {
 	connector, err := storage.New(a.Config().Storage())
 	if err != nil {
-		panic(err)
+		panic(errors.Wrap(err, "failed to init connector"))
 	}
 	return connector
 }

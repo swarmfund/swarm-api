@@ -2,15 +2,17 @@
 package types
 
 import (
+	"database/sql/driver"
 	"encoding/json"
 	"errors"
 	"fmt"
 )
 
 func init() {
-	// stub usage of json for situation when
-	// (Un)MarshalJSON methods will be omitted
+	// stubs for imports
 	_ = json.Delim('s')
+	_ = driver.Int32
+
 }
 
 var ErrUserStateInvalid = errors.New("UserState is invalid")
@@ -83,4 +85,17 @@ func (r *UserState) UnmarshalJSON(data []byte) error {
 	}
 	*r = v
 	return nil
+}
+
+func (t *UserState) Scan(src interface{}) error {
+	i, ok := src.(int64)
+	if !ok {
+		return fmt.Errorf("can't scan from %T", src)
+	}
+	*t = UserState(i)
+	return nil
+}
+
+func (t UserState) Value() (driver.Value, error) {
+	return int64(t), nil
 }
