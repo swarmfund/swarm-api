@@ -80,6 +80,12 @@ func (a *App) EmailTokensQ() data.EmailTokensQ {
 	return api.NewEmailTokensQ(a.APIRepo(a.ctx))
 }
 
+func (a *App) Blobs() data.Blobs {
+	return &horizon2.Blobs{
+		a.APIRepo(a.ctx),
+	}
+}
+
 // Serve starts the horizon web server, binding it to a socket, setting up
 // the shutdown signals.
 func (a *App) Serve() {
@@ -98,6 +104,7 @@ func (a *App) Serve() {
 		a.APIQ().TFA(),
 		a.Storage(),
 		a.CoreInfoConn(),
+		a.Blobs(),
 	)
 	r.Mount("/", a.web.router)
 	http.Handle("/", r)

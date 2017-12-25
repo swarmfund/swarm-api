@@ -27,6 +27,7 @@ const (
 	doormanCtxKey
 	storageCtxKey
 	coreInfoCtxKey
+	blobQCtxKey
 )
 
 func CtxWalletQ(q api.WalletQI) func(context.Context) context.Context {
@@ -128,4 +129,14 @@ func CtxCoreInfo(s *coreinfo.Connector) func(context.Context) context.Context {
 
 func CoreInfo(r *http.Request) data.CoreInfoI {
 	return r.Context().Value(coreInfoCtxKey).(data.CoreInfoI)
+}
+
+func CtxBlobQ(q data.Blobs) func(context.Context) context.Context {
+	return func(ctx context.Context) context.Context {
+		return context.WithValue(ctx, blobQCtxKey, q)
+	}
+}
+
+func BlobQ(r *http.Request) data.Blobs {
+	return r.Context().Value(blobQCtxKey).(data.Blobs)
 }
