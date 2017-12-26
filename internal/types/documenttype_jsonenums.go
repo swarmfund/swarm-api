@@ -21,17 +21,26 @@ func init() {
 	var v DocumentType
 	if _, ok := interface{}(v).(fmt.Stringer); ok {
 		_DocumentTypeNameToValue = map[string]DocumentType{
-			interface{}(DocumentTypeAssetLogo).(fmt.Stringer).String(): DocumentTypeAssetLogo,
+			interface{}(DocumentTypeAssetLogo).(fmt.Stringer).String():    DocumentTypeAssetLogo,
+			interface{}(DocumentTypeFundLogo).(fmt.Stringer).String():     DocumentTypeFundLogo,
+			interface{}(DocumentTypeFundDocument).(fmt.Stringer).String(): DocumentTypeFundDocument,
+			interface{}(DocumentTypeNavReport).(fmt.Stringer).String():    DocumentTypeNavReport,
 		}
 	}
 }
 
 var _DocumentTypeNameToValue = map[string]DocumentType{
-	"asset_logo": DocumentTypeAssetLogo,
+	"asset_logo":    DocumentTypeAssetLogo,
+	"fund_logo":     DocumentTypeFundLogo,
+	"fund_document": DocumentTypeFundDocument,
+	"nav_report":    DocumentTypeNavReport,
 }
 
 var _DocumentTypeValueToName = map[DocumentType]string{
-	DocumentTypeAssetLogo: "asset_logo",
+	DocumentTypeAssetLogo:    "asset_logo",
+	DocumentTypeFundLogo:     "fund_logo",
+	DocumentTypeFundDocument: "fund_document",
+	DocumentTypeNavReport:    "nav_report",
 }
 
 // String is generated so DocumentType satisfies fmt.Stringer.
