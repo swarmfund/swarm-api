@@ -16,7 +16,8 @@ http:
   port: 8001
 
 log:
-  level: info
+  level: error
+  slow_query_bound: 300ms
 
 storage:
   # gracefully disable storage services

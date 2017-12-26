@@ -13,6 +13,12 @@ import (
 	"golang.org/x/net/context"
 )
 
+var SlowQueryBound time.Duration
+
+func init() {
+	SlowQueryBound = 250 * time.Millisecond
+}
+
 // Transaction is generic helper method for specific Q's to implement Transaction capabilities
 func (r *Repo) Transaction(fn func() error) (err error) {
 	if err = r.Begin(); err != nil {
@@ -282,12 +288,19 @@ func (r *Repo) conn() Conn {
 }
 
 func (r *Repo) log(typ string, start time.Time, query string, args []interface{}) {
-	log.
+	dur := time.Since(start)
+	lEntry := log.
 		Ctx(r.logCtx()).
-		WithField("args", args).
-		WithField("sql", query).
-		WithField("dur", time.Since(start).String()).
-		Debugf("sql: %s", typ)
+		WithFields(log.F{
+			"args": args,
+			"sql":  query,
+			"dur":  dur.String(),
+		})
+
+	lEntry.Debugf("sql: %s", typ)
+	if dur > SlowQueryBound {
+		lEntry.Errorf("too slow sql: %s", typ)
+	}
 }
 
 func (r *Repo) logBegin() {

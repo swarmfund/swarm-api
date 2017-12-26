@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"reflect"
 
+	"time"
+
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"gitlab.com/distributed_lab/figure"
@@ -34,16 +36,18 @@ var (
 )
 
 type Log struct {
-	Level logrus.Level
+	Level          logrus.Level  `fig:"level"`
+	SlowQueryBound *time.Duration `fig:"slow_query_bound"`
 }
 
 func (c *ViperConfig) Log() Log {
 	if logConfig == nil {
 		logConfig = &Log{}
 		config := c.GetStringMap(logConfigKey)
-		if err := figure.Out(logConfig).With(logLevelHook).From(config).Please(); err != nil {
+		if err := figure.Out(logConfig).With(figure.BaseHooks, logLevelHook).From(config).Please(); err != nil {
 			panic(errors.Wrap(err, "failed to figure out log"))
 		}
+		fmt.Printf("%+v", *logConfig)
 	}
 	return *logConfig
 }

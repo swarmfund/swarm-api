@@ -26,15 +26,15 @@ type Connector struct {
 }
 
 func NewConnector(endpoint string) (*Connector, error) {
-	info, err := NewInfo(endpoint)
-	if err != nil {
-		return nil, err
-	}
+	//info, err := NewInfo(endpoint)
+	//if err != nil {
+	//	return nil, err
+	//}
 
 	return &Connector{
 		baseURL: strings.TrimRight(endpoint, "/"),
 		client:  &http.Client{},
-		info:    info,
+		//info:    info,
 	}, nil
 }
 

@@ -286,8 +286,8 @@
 [[projects]]
   name = "gitlab.com/distributed_lab/figure"
   packages = ["."]
-  revision = "4b0eba4ac8e5a5b02f39a6c6660a93d557edd735"
-  version = "v1.1"
+  revision = "5bfbf12980bf6c46c6be65f0c155bcab4a439562"
+  version = "v1.2"
 
 [[projects]]
   name = "gitlab.com/distributed_lab/logan"
@@ -370,6 +370,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "eff152afb6c83f027c34c2799e61d1dc49034d6d1bd185626fdd002ec66d4fef"
+  inputs-digest = "db5a6ba1fb087cdbefa9ad0667975a8eeb0a7b622a043f1b845d41c052a26ebc"
   solver-name = "gps-cdcl"
   solver-version = 1
