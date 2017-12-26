@@ -66,9 +66,6 @@ func initWebActions(app *App) {
 	r.Post("/users/:id/documents", &PutDocumentAction{})
 	r.Get("/user_id", &GetUserIdAction{})
 
-	// wallet
-	r.Get("/wallets/unverified", &GetUnverifiedWalletsAction{})
-
 	r.Patch("/wallets/:id", &PatchWalletAction{})
 	r.Get("/wallets/:id/organization", &GetWalletOrganizationAction{})
 
@@ -86,10 +83,6 @@ func initWebActions(app *App) {
 	r.Post("/users/:id/poi/:version", &UserProofOfIncomeApproveAction{})
 
 	r.Get("/data/enums", &GetEnumsAction{})
-
-	// deposit
-	r.Get("/deposit/:method", &DepositInfoAction{})
-	r.Post("/deposit", &DepositAction{})
 
 	// transaction submission
 	r.Post("/transactions", &PendingTransactionCreateAction{})
