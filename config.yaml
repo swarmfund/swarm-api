@@ -18,6 +18,7 @@ http:
 log:
   level: error
   slow_query_bound: 300ms
+  slow_request_bound: 1s
 
 storage:
   # gracefully disable storage services

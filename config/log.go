@@ -36,8 +36,9 @@ var (
 )
 
 type Log struct {
-	Level          logrus.Level  `fig:"level"`
-	SlowQueryBound *time.Duration `fig:"slow_query_bound"`
+	Level            logrus.Level   `fig:"level"`
+	SlowQueryBound   *time.Duration `fig:"slow_query_bound"`
+	SlowRequestBound *time.Duration `fig:"slow_request_bound"`
 }
 
 func (c *ViperConfig) Log() Log {

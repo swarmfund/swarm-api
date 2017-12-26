@@ -2,6 +2,7 @@ package api
 
 import (
 	"gitlab.com/swarmfund/api/db2"
+	"gitlab.com/swarmfund/api/internal/api/middlewares"
 	"gitlab.com/swarmfund/api/log"
 )
 
@@ -12,6 +13,9 @@ func initLog(app *App) {
 
 	if app.Config().Log().SlowQueryBound != nil {
 		db2.SlowQueryBound = *app.Config().Log().SlowQueryBound
+	}
+	if app.Config().Log().SlowRequestBound != nil {
+		middlewares.SlowRequestBound = *app.Config().Log().SlowRequestBound
 	}
 }
 
