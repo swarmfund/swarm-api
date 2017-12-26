@@ -81,11 +81,14 @@ func PatchUser(w http.ResponseWriter, r *http.Request) {
 	signedByAdmin := false
 	if err := Doorman(r, doorman.SignerOf(request.Address)); err != nil {
 		// request not signed by user, let's check admin
-		if err := Doorman(r, doorman.SignerOf(CoreInfo(r).GetMasterAccountID())); err != nil {
+		master := CoreInfo(r).GetMasterAccountID()
+		Log(r).WithField("master", master).Debug("checking admin signature")
+		if err := Doorman(r, doorman.SignerOf(master)); err != nil {
 			// not by admin either
 			movetoape.RenderDoormanErr(w, err)
 			return
 		}
+		// seems like admin to me
 		signedByAdmin = true
 	}
 
