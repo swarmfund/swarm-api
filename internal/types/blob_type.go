@@ -5,4 +5,6 @@ type BlobType int32
 
 const (
 	BlobTypeAssetDescription BlobType = 1 << iota
+	BlobTypeFundOverview
+	BlobTypeFundUpdate
 )

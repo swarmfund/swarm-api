@@ -2,9 +2,12 @@
 
 ### Document types
 
-| Type         | Visibility |
-| ------------ | ---------- |
-| `asset_logo` | public     |
+| Type            | Visibility |
+| --------------- | ---------- |
+| `asset_logo`    | public     |
+| `fund_logo`     | public     |
+| `fund_document` | public     |
+| `nav_report`    | public     |
 
 ### Allowed content types
 
