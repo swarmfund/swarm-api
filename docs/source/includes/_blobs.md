@@ -3,6 +3,8 @@
 ### Blob types
 
 * `asset_description`
+* `fund_overview`
+* `fund_update`
 
 
 
@@ -57,4 +59,3 @@ Content-Type: application/vnd.api+json
     }
 }
 ```
-

@@ -22,16 +22,22 @@ func init() {
 	if _, ok := interface{}(v).(fmt.Stringer); ok {
 		_BlobTypeNameToValue = map[string]BlobType{
 			interface{}(BlobTypeAssetDescription).(fmt.Stringer).String(): BlobTypeAssetDescription,
+			interface{}(BlobTypeFundOverview).(fmt.Stringer).String():     BlobTypeFundOverview,
+			interface{}(BlobTypeFundUpdate).(fmt.Stringer).String():       BlobTypeFundUpdate,
 		}
 	}
 }
 
 var _BlobTypeNameToValue = map[string]BlobType{
 	"asset_description": BlobTypeAssetDescription,
+	"fund_overview":     BlobTypeFundOverview,
+	"fund_update":       BlobTypeFundUpdate,
 }
 
 var _BlobTypeValueToName = map[BlobType]string{
 	BlobTypeAssetDescription: "asset_description",
+	BlobTypeFundOverview:     "fund_overview",
+	BlobTypeFundUpdate:       "fund_update",
 }
 
 // String is generated so BlobType satisfies fmt.Stringer.
