@@ -15,7 +15,6 @@ import (
 	"gitlab.com/swarmfund/api/internal/api/movetoape"
 	"gitlab.com/swarmfund/api/internal/types"
 	"gitlab.com/swarmfund/go/doorman"
-	"gitlab.com/swarmfund/go/signcontrol"
 )
 
 type (
@@ -79,10 +78,15 @@ func PatchUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// check is allowed
-	master := CoreInfo(r).GetMasterAccountID()
-	if err = Doorman(r, doorman.SignerOf(request.Address), doorman.SignerOf(master)); err != nil {
-		movetoape.RenderDoormanErr(w, err)
-		return
+	signedByAdmin := false
+	if err := Doorman(r, doorman.SignerOf(request.Address)); err != nil {
+		// request not signed by user, let's check admin
+		if err := Doorman(r, doorman.SignerOf(CoreInfo(r).GetMasterAccountID())); err != nil {
+			// not by admin either
+			movetoape.RenderDoormanErr(w, err)
+			return
+		}
+		signedByAdmin = true
 	}
 
 	user, err := UsersQ(r).ByAddress(request.Address)
@@ -97,8 +101,9 @@ func PatchUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	signer := r.Header.Get(signcontrol.PublicKeyHeader)
-	if signer == master {
+	Log(r).WithField("admin", signedByAdmin).Debug("attempting user update")
+
+	if signedByAdmin {
 		// admin can update state
 		if request.Data.Attributes.State != nil && user.State != *request.Data.Attributes.State {
 			// only when user is waiting for approval
