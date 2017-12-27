@@ -44,7 +44,10 @@ func (q *Blobs) Create(address types.Address, blob *types.Blob) error {
 
 func (q *Blobs) Get(id string) (*types.Blob, error) {
 	var result types.Blob
-	stmt := squirrel.Select("id", "value", "type").From(blobsTable)
+	stmt := squirrel.
+		Select("id", "value", "type").
+		From(blobsTable).
+		Where("id = ?", id)
 	err := q.Repo.Get(&result, stmt)
 	if err != nil {
 		if err == sql.ErrNoRows {
