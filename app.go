@@ -18,7 +18,6 @@ import (
 	"gitlab.com/swarmfund/api/log"
 	"gitlab.com/swarmfund/api/notificator"
 	"gitlab.com/swarmfund/api/pentxsub"
-	"gitlab.com/swarmfund/api/render/sse"
 	"gitlab.com/swarmfund/api/storage"
 	"gitlab.com/swarmfund/go/doorman"
 	"gitlab.com/swarmfund/go/keypair"
@@ -194,20 +193,13 @@ func (a *App) Tick() {
 	var wg sync.WaitGroup
 	log.Debug("ticking app")
 	// update ledger state and stellar-core info in parallel
-	wg.Add(2)
+	wg.Add(1)
 
 	go func() {
 		defer func() {
 			wg.Done()
 		}()
 		a.UpdateStellarCoreInfo()
-	}()
-
-	go func() {
-		defer func() {
-			wg.Done()
-		}()
-		sse.Tick()
 	}()
 
 	wg.Wait()
