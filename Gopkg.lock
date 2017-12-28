@@ -302,12 +302,6 @@
   revision = "939a613db2add16474a15d5058867fdb7252f1df"
 
 [[projects]]
-  name = "gitlab.com/distributed_lab/skrill-go"
-  packages = ["."]
-  revision = "8842a82569d1e64bf9ada9cb9918cbf0071943c9"
-  version = "v0.0.1"
-
-[[projects]]
   name = "gitlab.com/distributed_lab/sse-go"
   packages = ["."]
   revision = "388ea1372a9a6807e2c9eb2c47200241a7d27484"
@@ -320,15 +314,21 @@
   revision = "e7074e87e64f38f959a7798e0916a2cf6fc0bce4"
 
 [[projects]]
-  branch = "master"
+  branch = "feature/v2"
   name = "gitlab.com/swarmfund/horizon-connector"
-  packages = [".","internal/resources"]
-  revision = "3a301da42c43912d166ed678f33df4de21ecf884"
+  packages = [".","internal/resources","v2","v2/internal","v2/internal/account","v2/internal/asset","v2/internal/listener","v2/internal/operation","v2/internal/resources","v2/internal/responses","v2/internal/transaction","v2/types"]
+  revision = "ddba080306809280f3038a485edd88044a3881ba"
+
+[[projects]]
+  branch = "master"
+  name = "gitlab.com/tokend/keypair"
+  packages = [".","internal","internal/crc16","internal/strkey"]
+  revision = "c148f15306edac6a1ad994d8b218e8ae61a0b2c1"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/crypto"
-  packages = ["ssh/terminal"]
+  packages = ["ed25519","ed25519/internal/edwards25519","ssh/terminal"]
   revision = "94eea52f7b742c7cbe0b03b22f0c4c8631ece122"
 
 [[projects]]
@@ -370,6 +370,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "eff152afb6c83f027c34c2799e61d1dc49034d6d1bd185626fdd002ec66d4fef"
+  inputs-digest = "7c8764681e677bae7fc938a5770c6ae1f397d96d377a37c0f64cd1118d1a80f2"
   solver-name = "gps-cdcl"
   solver-version = 1
