@@ -21,5 +21,5 @@ func initConsumer(app *App) {
 }
 
 func init() {
-	appInit.Add(ServiceDocumentConsumer, initConsumer, "app-context", "log")
+	appInit.Add(ServiceDocumentConsumer, initConsumer, "app-context")
 }
