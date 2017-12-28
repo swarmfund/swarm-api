@@ -56,9 +56,9 @@ deploy:dev: *deploy
 
 deploy:staging:
   <<: *deploy
-    when: manual
-    only:
-      - staging
+  when: manual
+  only:
+    - staging
 
 pages:
   image: ruby:2.3.1
