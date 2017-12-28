@@ -302,12 +302,6 @@
   revision = "939a613db2add16474a15d5058867fdb7252f1df"
 
 [[projects]]
-  name = "gitlab.com/distributed_lab/sse-go"
-  packages = ["."]
-  revision = "388ea1372a9a6807e2c9eb2c47200241a7d27484"
-  version = "v1"
-
-[[projects]]
   branch = "master"
   name = "gitlab.com/swarmfund/go"
   packages = ["amount","crc16","doorman","doorman/data","hash","keypair","network","resources","signcontrol","strkey","xdr"]
@@ -364,6 +358,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "f60b2a0c71afc9a244106fe7b3892a80a7cc2701f62b9e43ac1b3790dc863b87"
+  inputs-digest = "f8c5d70990d5d833af2a193e257d4666714b399c87c65ed9872ae0de0d23524f"
   solver-name = "gps-cdcl"
   solver-version = 1

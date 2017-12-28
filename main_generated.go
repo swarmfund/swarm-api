@@ -95,14 +95,6 @@ func (action GetUserIdAction) ServeHTTPC(c web.C, w http.ResponseWriter, r *http
 }
 
 // ServeHTTPC is a method for web.Handler
-func (action GetWalletOrganizationAction) ServeHTTPC(c web.C, w http.ResponseWriter, r *http.Request) {
-	ap := &action.Action
-	ap.Prepare(c, w, r)
-	action.Log = action.Log.WithField("action", "GetWalletOrganizationAction")
-	ap.Execute(&action)
-}
-
-// ServeHTTPC is a method for web.Handler
 func (action NotFoundAction) ServeHTTPC(c web.C, w http.ResponseWriter, r *http.Request) {
 	ap := &action.Action
 	ap.Prepare(c, w, r)
@@ -123,14 +115,6 @@ func (action PatchNotificationsAction) ServeHTTPC(c web.C, w http.ResponseWriter
 	ap := &action.Action
 	ap.Prepare(c, w, r)
 	action.Log = action.Log.WithField("action", "PatchNotificationsAction")
-	ap.Execute(&action)
-}
-
-// ServeHTTPC is a method for web.Handler
-func (action PatchWalletAction) ServeHTTPC(c web.C, w http.ResponseWriter, r *http.Request) {
-	ap := &action.Action
-	ap.Prepare(c, w, r)
-	action.Log = action.Log.WithField("action", "PatchWalletAction")
 	ap.Execute(&action)
 }
 
