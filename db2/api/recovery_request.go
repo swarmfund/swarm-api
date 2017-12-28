@@ -24,9 +24,6 @@ type RecoveryRequest struct {
 
 func NewRecoveryRequest(wallet *Wallet) (*RecoveryRequest, error) {
 	accountID := wallet.AccountID
-	if wallet.OrganizationAddress != nil {
-		accountID = wallet.AccountID
-	}
 	return &RecoveryRequest{
 		WalletID:   wallet.Id,
 		AccountID:  accountID,

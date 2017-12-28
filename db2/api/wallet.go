@@ -12,11 +12,4 @@ type Wallet struct {
 	VerificationToken string `db:"verification_token"`
 	// Verified comes from join on email_tokens and shows if wallet email was confirmed
 	Verified bool `db:"verified"`
-	// Detached comes from join on organization_wallets and shows if wallet is
-	// independent or used in organization flow
-	Detached bool `db:"detached"`
-	// OrganizationAddress comes from join on organization_wallets and is a
-	// foreign key to users.address. If wallet has non nil OrganizationAddress
-	// means it's connected to one and his signature should be checked against it
-	OrganizationAddress *string `db:"organization_address"`
 }

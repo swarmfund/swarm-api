@@ -302,18 +302,6 @@
   revision = "939a613db2add16474a15d5058867fdb7252f1df"
 
 [[projects]]
-  name = "gitlab.com/distributed_lab/skrill-go"
-  packages = ["."]
-  revision = "8842a82569d1e64bf9ada9cb9918cbf0071943c9"
-  version = "v0.0.1"
-
-[[projects]]
-  name = "gitlab.com/distributed_lab/sse-go"
-  packages = ["."]
-  revision = "388ea1372a9a6807e2c9eb2c47200241a7d27484"
-  version = "v1"
-
-[[projects]]
   branch = "master"
   name = "gitlab.com/swarmfund/go"
   packages = ["amount","crc16","doorman","doorman/data","hash","keypair","network","resources","signcontrol","strkey","xdr"]
@@ -370,6 +358,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "eff152afb6c83f027c34c2799e61d1dc49034d6d1bd185626fdd002ec66d4fef"
+  inputs-digest = "f8c5d70990d5d833af2a193e257d4666714b399c87c65ed9872ae0de0d23524f"
   solver-name = "gps-cdcl"
   solver-version = 1

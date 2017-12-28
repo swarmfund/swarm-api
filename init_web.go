@@ -66,9 +66,6 @@ func initWebActions(app *App) {
 	r.Post("/users/:id/documents", &PutDocumentAction{})
 	r.Get("/user_id", &GetUserIdAction{})
 
-	r.Patch("/wallets/:id", &PatchWalletAction{})
-	r.Get("/wallets/:id/organization", &GetWalletOrganizationAction{})
-
 	// wallet recovery
 	//   user endpoints
 	r.Post("/wallets/recovery", &CreateRecoveryRequestAction{})
