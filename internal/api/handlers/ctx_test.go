@@ -5,15 +5,15 @@ import (
 	"net/http"
 	"testing"
 
+	"gitlab.com/distributed_lab/logan/v3"
 	"gitlab.com/swarmfund/api/db2/api"
 	"gitlab.com/swarmfund/api/internal/data"
-	"gitlab.com/swarmfund/api/log"
 	"gitlab.com/swarmfund/go/keypair"
 	"gitlab.com/swarmfund/horizon-connector"
 )
 
 func TestCtxLog(t *testing.T) {
-	entry := log.WithField("foo", "bar")
+	entry := logan.New()
 	ctx := context.Background()
 	request := &http.Request{}
 	request = request.WithContext(CtxLog(entry)(ctx))

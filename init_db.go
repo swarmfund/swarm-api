@@ -19,5 +19,5 @@ func initAPIDB(app *App) {
 }
 
 func init() {
-	appInit.Add("api-db", initAPIDB, "app-context", "log")
+	appInit.Add("api-db", initAPIDB, "app-context")
 }

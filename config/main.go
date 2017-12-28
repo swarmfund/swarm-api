@@ -3,6 +3,7 @@ package config
 import (
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
+	"gitlab.com/distributed_lab/logan/v3"
 )
 
 type Config interface {
@@ -10,7 +11,7 @@ type Config interface {
 	API() API
 	HTTP() HTTP
 	Storage() Storage
-	Log() Log
+	Log() *logan.Entry
 	Notificator() Notificator
 	Get(string) map[string]interface{}
 }

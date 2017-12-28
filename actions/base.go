@@ -8,11 +8,10 @@ import (
 	"errors"
 	"net/http"
 
-	"gitlab.com/swarmfund/api/render"
-	"gitlab.com/swarmfund/api/render/problem"
-	"gitlab.com/swarmfund/api/render/sse"
 	gctx "github.com/goji/context"
 	"github.com/zenazn/goji/web"
+	"gitlab.com/swarmfund/api/render"
+	"gitlab.com/swarmfund/api/render/problem"
 	"golang.org/x/net/context"
 )
 
@@ -84,37 +83,6 @@ func (base *Base) Execute(action interface{}) {
 		if base.Err != nil {
 			problem.Render(base.Ctx, base.W, base.Err)
 			return
-		}
-
-	case render.MimeEventStream:
-		action, ok := action.(SSE)
-		if !ok {
-			goto NotAcceptable
-		}
-
-		stream := sse.NewStream(base.Ctx, base.W, base.R)
-
-		for {
-			action.SSE(stream)
-
-			if base.Err != nil {
-				// in the case that we haven't yet sent an event, is also means we
-				// havent sent the preamble, meaning we should simply return the normal
-				// error.
-				if stream.SentCount() == 0 {
-					problem.Render(base.Ctx, base.W, base.Err)
-					return
-				}
-
-				stream.Err(base.Err)
-			}
-
-			select {
-			case <-base.Ctx.Done():
-				return
-			case <-sse.Pumped():
-				//no-op, continue onto the next iteration
-			}
 		}
 	case render.MimeRaw:
 		action, ok := action.(Raw)

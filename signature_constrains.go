@@ -18,33 +18,6 @@ type AccountGetter func(address string) (*horizon.Account, error)
 type SignerConstraint func(app *App, r *http.Request, getter AccountGetter, signer string) error
 type AccountSignerConstraint func(address string, app *App, r *http.Request, getter AccountGetter, signer string) error
 
-func HMAC(address string, extra ...AccountSignerConstraint) SignerConstraint {
-	return func(app *App, r *http.Request, getter AccountGetter, signer string) error {
-		if signer != address {
-			return ErrNotAllowed
-		}
-		secret, err := app.APIQ().HMAC().GetSecret(signer)
-		if err != nil {
-			return errors.Wrap(err, "failed to get hmac secret")
-		}
-
-		if secret == nil {
-			return ErrNotAllowed
-		}
-
-		err = signcontrol.CheckHMACSignature(r, *secret)
-		if err == signcontrol.ErrNotSigned || err == signcontrol.ErrNotAllowed {
-			return ErrNotAllowed
-		}
-		for _, constraint := range extra {
-			if err := constraint(address, app, r, getter, signer); err != nil {
-				return err
-			}
-		}
-		return nil
-	}
-}
-
 // SignedBy is only useful for wallet-bound operations, where only entity involved
 // is wallet itself.
 func SignedBy(address string) SignerConstraint {
@@ -87,22 +60,6 @@ func SignerOf(address string, extra ...AccountSignerConstraint) SignerConstraint
 			}
 		}
 		return ErrNotAllowed
-	}
-}
-
-func AccountPolicy(policy xdr.AccountPolicies) AccountSignerConstraint {
-	return func(address string, app *App, r *http.Request, getter AccountGetter, signer string) error {
-		account, err := getter(address)
-		if err != nil {
-			return err
-		}
-		if account == nil {
-			return ErrNotAllowed
-		}
-		if account.Policies.Type&int32(policy) == 0 {
-			return ErrNotAllowed
-		}
-		return nil
 	}
 }
 
