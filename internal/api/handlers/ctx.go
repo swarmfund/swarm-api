@@ -4,10 +4,10 @@ import (
 	"context"
 	"net/http"
 
+	"gitlab.com/distributed_lab/logan/v3"
 	"gitlab.com/swarmfund/api/coreinfo"
 	"gitlab.com/swarmfund/api/db2/api"
 	"gitlab.com/swarmfund/api/internal/data"
-	"gitlab.com/swarmfund/api/log"
 	"gitlab.com/swarmfund/api/storage"
 	"gitlab.com/swarmfund/go/doorman"
 	"gitlab.com/swarmfund/go/keypair"
@@ -40,14 +40,14 @@ func WalletQ(r *http.Request) api.WalletQI {
 	return r.Context().Value(walletCtxKey).(api.WalletQI).New()
 }
 
-func CtxLog(entry *log.Entry) func(context.Context) context.Context {
+func CtxLog(entry *logan.Entry) func(context.Context) context.Context {
 	return func(ctx context.Context) context.Context {
 		return context.WithValue(ctx, logCtxKey, entry)
 	}
 }
 
-func Log(r *http.Request) *log.Entry {
-	return r.Context().Value(logCtxKey).(*log.Entry)
+func Log(r *http.Request) *logan.Entry {
+	return r.Context().Value(logCtxKey).(*logan.Entry)
 }
 
 func CtxEmailTokensQ(q data.EmailTokensQ) func(context.Context) context.Context {

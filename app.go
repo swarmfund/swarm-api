@@ -90,7 +90,7 @@ func (a *App) Blobs() data.Blobs {
 func (a *App) Serve() {
 	a.web.router.Compile()
 	r := api2.Router(
-		log.WithField("service", "api"),
+		a.Config().Log().WithField("service", "api"),
 		a.APIQ().Wallet(),
 		a.EmailTokensQ(),
 		a.APIQ().Users(),

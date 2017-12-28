@@ -8,6 +8,7 @@ import (
 	"github.com/google/jsonapi"
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/ape/problems"
+	"gitlab.com/distributed_lab/logan/v3"
 	"gitlab.com/distributed_lab/logan/v3/errors"
 	"gitlab.com/swarmfund/api/coreinfo"
 	"gitlab.com/swarmfund/api/db2/api"
@@ -15,7 +16,6 @@ import (
 	"gitlab.com/swarmfund/api/internal/api/middlewares"
 	"gitlab.com/swarmfund/api/internal/data"
 	"gitlab.com/swarmfund/api/internal/secondfactor"
-	"gitlab.com/swarmfund/api/log"
 	"gitlab.com/swarmfund/api/storage"
 	"gitlab.com/swarmfund/go/doorman"
 	"gitlab.com/swarmfund/go/keypair"
@@ -23,7 +23,7 @@ import (
 )
 
 func Router(
-	entry *log.Entry, walletQ api.WalletQI, tokensQ data.EmailTokensQ,
+	entry *logan.Entry, walletQ api.WalletQI, tokensQ data.EmailTokensQ,
 	usersQ api.UsersQI, doorman doorman.Doorman, horizon *horizon.Connector,
 	accountManager keypair.KP, tfaQ api.TFAQI, storage *storage.Connector,
 	coreConn *coreinfo.Connector, blobQ data.Blobs,
