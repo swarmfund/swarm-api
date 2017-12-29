@@ -20,6 +20,11 @@ log:
   slow_query_bound: 300ms
   slow_request_bound: 1s
 
+
+sentry:
+  dsn: http://9be51faad32741f3a18020fa29982edf:aa57a4cad13740ca8957c79100e4c9a7@128.199.229.140:9090/9
+  level: warn
+
 storage:
   # gracefully disable storage services
   disabled: true

@@ -109,6 +109,7 @@ func Router(
 				handlers.CtxBlobQ(blobQ),
 			))
 			r.Post("/", handlers.CreateBlob)
+			r.Get("/", handlers.BlobIndex)
 			r.Get("/{blob}", handlers.GetBlob)
 		})
 	})

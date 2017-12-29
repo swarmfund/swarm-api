@@ -25,6 +25,7 @@ func (q *Blobs) Create(address types.Address, blob *types.Blob) error {
 		"id":            blob.ID,
 		"type":          blob.Type,
 		"value":         blob.Value,
+		"relationships": blob.Relationships,
 	})
 
 	_, err := q.Exec(stmt)
@@ -42,12 +43,28 @@ func (q *Blobs) Create(address types.Address, blob *types.Blob) error {
 	return err
 }
 
+func (q *Blobs) Filter(owner string, filters map[string]string) ([]types.Blob, error) {
+	var result []types.Blob
+	stmt := squirrel.
+		Select("id", "value", "type", "relationships").
+		From(blobsTable).
+		Where("owner_address = ?", owner)
+
+	for k, v := range filters {
+		stmt = stmt.Where("relationships->>? = ?", k, v)
+	}
+
+	err := q.Repo.Select(&result, stmt)
+	return result, err
+}
+
 func (q *Blobs) Get(id string) (*types.Blob, error) {
 	var result types.Blob
 	stmt := squirrel.
-		Select("id", "value", "type").
+		Select("id", "value", "type", "relationships").
 		From(blobsTable).
 		Where("id = ?", id)
+
 	err := q.Repo.Get(&result, stmt)
 	if err != nil {
 		if err == sql.ErrNoRows {
