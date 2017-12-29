@@ -32,7 +32,7 @@ func Router(
 	r := chi.NewRouter()
 
 	r.Use(
-		//ape.RecoverMiddleware(entry, sentry),
+		ape.RecoverMiddleware(entry, sentry),
 		secondfactor.HashMiddleware(),
 		middlewares.Logger(entry, 200*time.Second),
 		middlewares.ContenType(jsonapi.MediaType),
