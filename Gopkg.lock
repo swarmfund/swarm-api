@@ -298,8 +298,8 @@
 [[projects]]
   name = "gitlab.com/distributed_lab/ape"
   packages = [".","problems"]
-  revision = "5e0ac955031f0365592d326c8c1bfc23bff2f34d"
-  version = "v0.1"
+  revision = "d91553d505e0ffb7bcc38d75271338ef3f5c3e0b"
+  version = "v0.2"
 
 [[projects]]
   name = "gitlab.com/distributed_lab/figure"
@@ -310,8 +310,8 @@
 [[projects]]
   name = "gitlab.com/distributed_lab/logan"
   packages = [".","v3","v3/errors","v3/fields"]
-  revision = "7302865ec11ed497b745a7415fc6e59a26e0631b"
-  version = "v3.1"
+  revision = "0f4dfbd71ca22492150c91510966d936f434a3eb"
+  version = "v3.3.1"
 
 [[projects]]
   branch = "master"
@@ -376,6 +376,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "3114123df14cc11cc4100fc6e2e840c083ef9614e15fbcfd9bb17a10a2cf1f36"
+  inputs-digest = "8471253f4654486fe7008e39d36dc99a74ab2e53c554a36465bca45652f3cc9f"
   solver-name = "gps-cdcl"
   solver-version = 1
