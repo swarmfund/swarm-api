@@ -23,6 +23,29 @@ func (_m *Blobs) Create(address types.Address, blob *types.Blob) error {
 	return r0
 }
 
+// Filter provides a mock function with given fields: owner, filters
+func (_m *Blobs) Filter(owner string, filters map[string]string) ([]types.Blob, error) {
+	ret := _m.Called(owner, filters)
+
+	var r0 []types.Blob
+	if rf, ok := ret.Get(0).(func(string, map[string]string) []types.Blob); ok {
+		r0 = rf(owner, filters)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]types.Blob)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(string, map[string]string) error); ok {
+		r1 = rf(owner, filters)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Get provides a mock function with given fields: id
 func (_m *Blobs) Get(id string) (*types.Blob, error) {
 	ret := _m.Called(id)
