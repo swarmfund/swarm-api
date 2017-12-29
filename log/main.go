@@ -6,7 +6,6 @@ import (
 	"github.com/go-errors/errors"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
-	// glog "log"
 )
 
 var contextKey = 0

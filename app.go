@@ -104,6 +104,7 @@ func (a *App) Serve() {
 		a.Storage(),
 		a.CoreInfoConn(),
 		a.Blobs(),
+		a.Config().Sentry(),
 	)
 	r.Mount("/", a.web.router)
 	http.Handle("/", r)

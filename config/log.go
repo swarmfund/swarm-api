@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"reflect"
 
+	"time"
+
 	"github.com/pkg/errors"
 	"gitlab.com/distributed_lab/figure"
 	"gitlab.com/distributed_lab/logan/v3"
@@ -39,11 +41,14 @@ func (c *ViperConfig) Log() *logan.Entry {
 	}
 
 	var config struct {
-		Level logan.Level
+		Level            logan.Level
+		QueryThreshold   time.Duration
+		RequestThreshold time.Duration
 	}
+
 	err := figure.
 		Out(&config).
-		With(logLevelHook).
+		With(figure.BaseHooks, logLevelHook).
 		From(c.GetStringMap(logConfigKey)).
 		Please()
 	if err != nil {
