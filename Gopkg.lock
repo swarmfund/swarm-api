@@ -286,8 +286,8 @@
 [[projects]]
   name = "gitlab.com/distributed_lab/figure"
   packages = ["."]
-  revision = "4b0eba4ac8e5a5b02f39a6c6660a93d557edd735"
-  version = "v1.1"
+  revision = "5bfbf12980bf6c46c6be65f0c155bcab4a439562"
+  version = "v1.2"
 
 [[projects]]
   name = "gitlab.com/distributed_lab/logan"

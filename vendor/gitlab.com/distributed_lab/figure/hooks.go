@@ -55,6 +55,16 @@ var (
 			}
 			return reflect.ValueOf(result), nil
 		},
+		"*time.Duration": func(value interface{}) (reflect.Value, error) {
+			if value == nil {
+				return reflect.ValueOf(nil), nil
+			}
+			result, err := cast.ToDurationE(value)
+			if err != nil {
+				return reflect.Value{}, errors.Wrap(err, "failed to parse duration")
+			}
+			return reflect.ValueOf(&result), nil
+		},
 		"*big.Int": func(value interface{}) (reflect.Value, error) {
 			switch v := value.(type) {
 			case string:
