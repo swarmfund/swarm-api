@@ -8,8 +8,8 @@ import (
 	"gitlab.com/distributed_lab/logan/v3"
 )
 
-// TODO move to ape, once logan
-func Logger(entry *logan.Entry) func(http.Handler) http.Handler {
+// TODO move to ape
+func Logger(entry *logan.Entry, durationThreshold time.Duration) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			ww := middleware.NewWrapResponseWriter(w, r.ProtoMajor)
@@ -22,10 +22,10 @@ func Logger(entry *logan.Entry) func(http.Handler) http.Handler {
 					"duration": dur,
 					"status":   ww.Status(),
 				})
-
 				lEntry.Info("request finished")
-				if dur > 100 {
-					lEntry.Warning("request finished")
+
+				if dur > durationThreshold {
+					lEntry.WithField("http_request", r).Warning("slow request")
 				}
 			}()
 
