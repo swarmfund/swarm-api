@@ -25,8 +25,9 @@ type (
 		Data    CreateBlobRequestData `json:"data"`
 	}
 	CreateBlobRequestData struct {
-		Type       types.BlobType              `json:"type"`
-		Attributes CreateBlobRequestAttributes `json:"attributes"`
+		Type          types.BlobType              `json:"type"`
+		Attributes    CreateBlobRequestAttributes `json:"attributes"`
+		Relationships Relationships               `json:"relationships"`
 	}
 	CreateBlobRequestAttributes struct {
 		Value string `json:"value"`
@@ -34,7 +35,34 @@ type (
 	CreateBlobResponse struct {
 		Data resources.Blob `json:"data"`
 	}
+	Relationships map[string]Object
+	Object        struct {
+		Data ObjectData `json:"data"`
+	}
+	ObjectData struct {
+		ID string `json:"id"`
+	}
 )
+
+func (r ObjectData) Validate() error {
+	return ValidateStruct(&r,
+		Field(&r.ID, Required),
+	)
+}
+
+func (r Object) Validate() error {
+	return ValidateStruct(&r,
+		Field(&r.Data, Required),
+	)
+}
+
+func (r Relationships) Validate() error {
+	errs := Errors{}
+	for k, v := range r {
+		errs[k] = Validate(v.Data, Required)
+	}
+	return errs.Filter()
+}
 
 func NewCreateBlobRequest(r *http.Request) (CreateBlobRequest, error) {
 	request := CreateBlobRequest{
@@ -59,6 +87,7 @@ func (r CreateBlobRequestData) Validate() error {
 		Field(&r.Attributes, Required),
 	)
 }
+
 func (r CreateBlobRequestAttributes) Validate() error {
 	return ValidateStruct(&r,
 		Field(&r.Value, Required),
@@ -68,10 +97,17 @@ func (r CreateBlobRequestAttributes) Validate() error {
 func (r CreateBlobRequest) Blob() *types.Blob {
 	msg := fmt.Sprintf("%s%d%s", r.Address, r.Data.Type, r.Data.Attributes.Value)
 	hash := hash.Hash([]byte(msg))
+
+	relationships := types.BlobRelationships{}
+	for k, v := range r.Data.Relationships {
+		relationships[k] = v.Data.ID
+	}
+
 	return &types.Blob{
-		ID:    base32.StdEncoding.WithPadding(base32.NoPadding).EncodeToString(hash[:]),
-		Type:  r.Data.Type,
-		Value: r.Data.Attributes.Value,
+		ID:            base32.StdEncoding.WithPadding(base32.NoPadding).EncodeToString(hash[:]),
+		Type:          r.Data.Type,
+		Value:         r.Data.Attributes.Value,
+		Relationships: relationships,
 	}
 }
 
