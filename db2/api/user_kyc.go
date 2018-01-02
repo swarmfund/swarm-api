@@ -3,6 +3,8 @@ package api
 import (
 	"encoding/json"
 
+	"fmt"
+
 	"github.com/pkg/errors"
 	"gitlab.com/swarmfund/api/internal/types"
 )
@@ -13,20 +15,33 @@ type RequiredDocument struct {
 }
 
 func (user *User) CheckState() types.UserState {
-	//if err := user.Details().Validate(); err != nil {
-	//	return UserRejected
-	//}
-	//
-	//if !user.RejectReasons().Empty() {
-	//	return UserRejected
-	//}
-	//
-	//requiredDocs := user.Details().RequiredDocuments()
-	//for _, check := range requiredDocs {
-	//	if ok := user.HaveDocument(check.EntityID, check.Type); !ok {
-	//		return UserNeedDocs
-	//	}
-	//}
+	switch user.UserType {
+	case types.UserTypeNotVerified:
+		return types.UserStateNil
+	case types.UserTypeGeneral:
+		// should have individual details
+		for _, record := range user.KYCEntities {
+			if record.Entity.Type == types.KYCEntityTypeIndividual {
+				if err := record.Entity.Individual.Validate(); err != nil {
+					return types.UserStateRejected
+				}
+				if user.State == types.UserStateApproved {
+					return types.UserStateApproved
+				}
+				return types.UserStateWaitingForApproval
+			}
+		}
+	case types.UserTypeSyndicate:
+		// TODO should have syndicate details
+		if user.State == types.UserStateApproved {
+			return types.UserStateApproved
+		}
+		return types.UserStateWaitingForApproval
+
+	default:
+		panic(fmt.Errorf("unknown user type %s", user.UserType))
+	}
+
 	return types.UserStateWaitingForApproval
 }
 

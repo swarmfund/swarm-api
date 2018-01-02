@@ -11,6 +11,7 @@ import (
 	"bytes"
 	"encoding/hex"
 	"fmt"
+	"gitlab.com/swarmfund/go/signcontrol"
 )
 
 type ctxKey int
@@ -66,8 +67,8 @@ func RequestHash(r *http.Request) string {
 	if r.ContentLength > 0 && bytes.Equal(DefaultNilHash, hash) {
 		panic("body should be read before hashing")
 	}
-
-	target := fmt.Sprintf("%s:%s:%x", r.Method, r.URL.Path, hash)
+	signer := r.Header.Get(signcontrol.PublicKeyHeader)
+	target := fmt.Sprintf("%s:%s:%x:%s", r.Method, r.URL.Path, hash, signer)
 	raw := sha1.Sum([]byte(target))
 	return hex.EncodeToString(raw[:])
 }

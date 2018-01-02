@@ -96,13 +96,13 @@ func (action *GetUserFileAction) performRequest() {
 	//	key = fmt.Sprintf("%s-%s", action.Type, *recoveryRequest.RecoveryWalletID)
 	//}
 
-	url, err := action.App.Storage().DocumentURL(string(action.User.Address), document.Key)
-	if err != nil {
-		action.Log.WithError(err).Error("failed to get document url")
-		action.Err = &problem.ServerError
-		return
-	}
-	action.Response = map[string]string{
-		"url": url.String(),
-	}
+	//url, err := action.App.Storage().DocumentURL(string(action.User.Address), document.Key)
+	//if err != nil {
+	//	action.Log.WithError(err).Error("failed to get document url")
+	//	action.Err = &problem.ServerError
+	//	return
+	//}
+	//action.Response = map[string]string{
+	//	"url": url.String(),
+	//}
 }

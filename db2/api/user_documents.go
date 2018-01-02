@@ -1,10 +1,11 @@
 package api
 
 func (user *User) DocumentRejectReason() DocumentsRejectReasons {
-	entity := user.KYCEntities.GetSingle(KYCEntityTypeDocumentsRejectReasons)
-	var result DocumentsRejectReasons
-	result.Populate(entity)
-	return result
+	//entity := user.KYCEntities.GetSingle(KYCEntityTypeDocumentsRejectReasons)
+	//var result DocumentsRejectReasons
+	//result.Populate(entity)
+	//return result
+	panic("not implemented")
 }
 
 func (user *User) HaveDocument(entity int64, docType DocumentType) bool {

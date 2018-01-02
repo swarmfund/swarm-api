@@ -9,6 +9,7 @@ import (
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/ape/problems"
 	"gitlab.com/distributed_lab/logan/v3/errors"
+	"gitlab.com/swarmfund/api/coreinfo"
 	"gitlab.com/swarmfund/api/db2/api"
 	"gitlab.com/swarmfund/api/internal/api/handlers"
 	"gitlab.com/swarmfund/api/internal/api/middlewares"
@@ -19,14 +20,13 @@ import (
 	"gitlab.com/swarmfund/go/doorman"
 	"gitlab.com/swarmfund/go/keypair"
 	"gitlab.com/swarmfund/horizon-connector"
-	"gitlab.com/swarmfund/api/coreinfo"
 )
 
 func Router(
 	entry *log.Entry, walletQ api.WalletQI, tokensQ data.EmailTokensQ,
 	usersQ api.UsersQI, doorman doorman.Doorman, horizon *horizon.Connector,
 	accountManager keypair.KP, tfaQ api.TFAQI, storage *storage.Connector,
-	coreConn *coreinfo.Connector,
+	coreConn *coreinfo.Connector, blobQ data.Blobs,
 ) chi.Router {
 	r := chi.NewRouter()
 
@@ -99,6 +99,22 @@ func Router(
 		// documents
 		r.Route("/{address}/documents", func(r chi.Router) {
 			r.Post("/", handlers.PutDocument)
+		})
+
+		// kyc
+		r.Route("/{address}/entities", func(r chi.Router) {
+			r.Post("/", handlers.CreateKYCEntity)
+			r.Get("/", handlers.KYCEntitiesIndex)
+			r.Put("/{entity}", handlers.PatchKYCEntity)
+		})
+
+		// blobs
+		r.Route("/{address}/blobs", func(r chi.Router) {
+			r.Use(middlewares.Ctx(
+				handlers.CtxBlobQ(blobQ),
+			))
+			r.Post("/", handlers.CreateBlob)
+			r.Get("/{blob}", handlers.GetBlob)
 		})
 	})
 
