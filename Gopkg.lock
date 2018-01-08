@@ -26,6 +26,12 @@
   version = "v1.0.0"
 
 [[projects]]
+  name = "github.com/certifi/gocertifi"
+  packages = ["."]
+  revision = "a4ab0227d360091084658029ec8ae45f989fba3e"
+  version = "2017.11.05"
+
+[[projects]]
   name = "github.com/davecgh/go-spew"
   packages = ["spew"]
   revision = "346938d642f2ec3594ed81d874461961cd0faa76"
@@ -38,10 +44,22 @@
   revision = "bb3d318650d48840a39aa21a027c6630e198e626"
 
 [[projects]]
+  name = "github.com/evalphobia/logrus_sentry"
+  packages = ["."]
+  revision = "13ba9278e2adf1537fd94143a6b6a1c0dc008ac7"
+  version = "v0.4.2"
+
+[[projects]]
   name = "github.com/fsnotify/fsnotify"
   packages = ["."]
   revision = "629574ca2a5df945712d3079857300b5e4da0236"
   version = "v1.4.2"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/getsentry/raven-go"
+  packages = ["."]
+  revision = "32a13797442ccb601b11761d74232773c1402d14"
 
 [[projects]]
   name = "github.com/go-chi/chi"
@@ -280,38 +298,26 @@
 [[projects]]
   name = "gitlab.com/distributed_lab/ape"
   packages = [".","problems"]
-  revision = "5e0ac955031f0365592d326c8c1bfc23bff2f34d"
-  version = "v0.1"
+  revision = "d91553d505e0ffb7bcc38d75271338ef3f5c3e0b"
+  version = "v0.2"
 
 [[projects]]
   name = "gitlab.com/distributed_lab/figure"
   packages = ["."]
-  revision = "4b0eba4ac8e5a5b02f39a6c6660a93d557edd735"
-  version = "v1.1"
+  revision = "5bfbf12980bf6c46c6be65f0c155bcab4a439562"
+  version = "v1.2"
 
 [[projects]]
   name = "gitlab.com/distributed_lab/logan"
-  packages = [".","v3/errors","v3/fields"]
-  revision = "7302865ec11ed497b745a7415fc6e59a26e0631b"
-  version = "v3.1"
+  packages = [".","v3","v3/errors","v3/fields"]
+  revision = "0f4dfbd71ca22492150c91510966d936f434a3eb"
+  version = "v3.3.1"
 
 [[projects]]
   branch = "master"
   name = "gitlab.com/distributed_lab/notificator"
   packages = ["."]
   revision = "939a613db2add16474a15d5058867fdb7252f1df"
-
-[[projects]]
-  name = "gitlab.com/distributed_lab/skrill-go"
-  packages = ["."]
-  revision = "8842a82569d1e64bf9ada9cb9918cbf0071943c9"
-  version = "v0.0.1"
-
-[[projects]]
-  name = "gitlab.com/distributed_lab/sse-go"
-  packages = ["."]
-  revision = "388ea1372a9a6807e2c9eb2c47200241a7d27484"
-  version = "v1"
 
 [[projects]]
   branch = "master"
@@ -370,6 +376,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "eff152afb6c83f027c34c2799e61d1dc49034d6d1bd185626fdd002ec66d4fef"
+  inputs-digest = "8471253f4654486fe7008e39d36dc99a74ab2e53c554a36465bca45652f3cc9f"
   solver-name = "gps-cdcl"
   solver-version = 1

@@ -16,11 +16,8 @@ import (
 
 var walletSelect = sq.Select(
 	"w.*",
-	"ow.organization_address",
-	"ow.id is null as detached",
 	"et.confirmed as verified").
 	From("wallets w").
-	LeftJoin("organization_wallets ow ON w.id = ow.wallet_id").
 	Join("email_tokens et on w.wallet_id = et.wallet_id")
 
 var walletInsert = sq.Insert("wallets")

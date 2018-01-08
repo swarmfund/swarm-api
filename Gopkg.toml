@@ -135,3 +135,11 @@
 [[constraint]]
   name = "gopkg.in/tylerb/graceful.v1"
   version = "1.2.15"
+
+[[constraint]]
+  name = "gitlab.com/distributed_lab/figure"
+  version = "v1.2"
+
+[[constraint]]
+  name = "gitlab.com/distributed_lab/ape"
+  version = "v0.2"

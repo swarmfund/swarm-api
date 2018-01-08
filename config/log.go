@@ -4,9 +4,11 @@ import (
 	"fmt"
 	"reflect"
 
+	"time"
+
 	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
 	"gitlab.com/distributed_lab/figure"
+	"gitlab.com/distributed_lab/logan/v3"
 )
 
 const (
@@ -14,12 +16,12 @@ const (
 )
 
 var (
-	logConfig    *Log
+	entry        *logan.Entry
 	logLevelHook = figure.Hooks{
-		"logrus.Level": func(value interface{}) (reflect.Value, error) {
+		"logan.Level": func(value interface{}) (reflect.Value, error) {
 			switch v := value.(type) {
 			case string:
-				lvl, err := logrus.ParseLevel(v)
+				lvl, err := logan.ParseLevel(v)
 				if err != nil {
 					return reflect.Value{}, errors.Wrap(err, "failed to parse log level")
 				}
@@ -33,17 +35,27 @@ var (
 	}
 )
 
-type Log struct {
-	Level logrus.Level
-}
-
-func (c *ViperConfig) Log() Log {
-	if logConfig == nil {
-		logConfig = &Log{}
-		config := c.GetStringMap(logConfigKey)
-		if err := figure.Out(logConfig).With(logLevelHook).From(config).Please(); err != nil {
-			panic(errors.Wrap(err, "failed to figure out log"))
-		}
+func (c *ViperConfig) Log() *logan.Entry {
+	if entry != nil {
+		return entry
 	}
-	return *logConfig
+
+	var config struct {
+		Level            logan.Level
+		QueryThreshold   time.Duration
+		RequestThreshold time.Duration
+	}
+
+	err := figure.
+		Out(&config).
+		With(figure.BaseHooks, logLevelHook).
+		From(c.GetStringMap(logConfigKey)).
+		Please()
+	if err != nil {
+		panic(errors.Wrap(err, "failed to figure out log"))
+	}
+
+	entry = logan.New().Level(config.Level)
+
+	return entry
 }

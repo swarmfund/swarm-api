@@ -1,15 +1,9 @@
 package logan
 
 import (
-	"fmt"
-	pkgerrors "github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"gitlab.com/distributed_lab/logan/v3/errors"
 	"gitlab.com/distributed_lab/logan/v3/fields"
-)
-
-const (
-	unknownStack = "unknown"
 )
 
 var (
@@ -45,7 +39,7 @@ func (e *Entry) WithFields(fields F) *Entry {
 }
 
 func (e *Entry) WithStack(err error) *Entry {
-	return e.WithField(StackKey, getStack(err))
+	return e.WithField(StackKey, errors.GetStack(err))
 }
 
 // Debugf logs a message at the debug severity.
@@ -96,26 +90,4 @@ func (e *Entry) Panicf(format string, args ...interface{}) {
 // Panic logs a message at the Panic severity.
 func (e *Entry) Panic(args ...interface{}) {
 	e.Entry.Panic(args...)
-}
-
-// getStack returns the stack, as a string, if one can be extracted from `err`.
-// If provided `err` is NOT of go-errors.Error type - returns "unknown".
-func getStack(err error) string {
-	// pkg/errors
-	type stackTraceProvider interface {
-		StackTrace() pkgerrors.StackTrace
-	}
-	if s, ok := err.(stackTraceProvider); ok {
-		return fmt.Sprintf("%+v", s.StackTrace())
-	}
-
-	// go-errors
-	type stackProvider interface {
-		Stack() []byte
-	}
-	if s, ok := err.(stackProvider); ok {
-		return string(s.Stack())
-	}
-
-	return unknownStack
 }

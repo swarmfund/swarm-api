@@ -5,5 +5,5 @@ func initStellarCoreInfo(app *App) {
 }
 
 func init() {
-	appInit.Add("stellarCoreInfo", initStellarCoreInfo, "app-context", "log")
+	appInit.Add("stellarCoreInfo", initStellarCoreInfo, "app-context")
 }

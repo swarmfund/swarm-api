@@ -14,9 +14,6 @@ type Wallet struct {
 	KeychainData string `json:"keychainData"`
 	Verified     bool   `json:"verified"`
 	LockVersion  int    `json:"lockVersion"`
-
-	Detached     bool    `json:"detached"`
-	Organization *string `json:"organization,omitempty"`
 }
 
 func (p *Wallet) Populate(w *api.Wallet) {
@@ -27,8 +24,6 @@ func (p *Wallet) Populate(w *api.Wallet) {
 	p.KeychainData = w.KeychainData
 	p.Verified = w.Verified
 	p.LockVersion = 0
-	p.Detached = w.Detached
-	p.Organization = w.OrganizationAddress
 }
 
 func (p Wallet) PagingToken() string {

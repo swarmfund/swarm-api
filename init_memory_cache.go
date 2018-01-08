@@ -11,5 +11,5 @@ func initMemoryCache(app *App) {
 }
 
 func init() {
-	appInit.Add("memory_cache", initMemoryCache, "app-context", "log")
+	appInit.Add("memory_cache", initMemoryCache, "app-context")
 }

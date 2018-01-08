@@ -1,8 +1,10 @@
 package config
 
 import (
+	raven "github.com/getsentry/raven-go"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
+	"gitlab.com/distributed_lab/logan/v3"
 )
 
 type Config interface {
@@ -10,8 +12,9 @@ type Config interface {
 	API() API
 	HTTP() HTTP
 	Storage() Storage
-	Log() Log
+	Log() *logan.Entry
 	Notificator() Notificator
+	Sentry() *raven.Client
 	Get(string) map[string]interface{}
 }
 

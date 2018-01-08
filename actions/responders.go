@@ -1,7 +1,5 @@
 package actions
 
-import "gitlab.com/swarmfund/api/render/sse"
-
 // JSON implementors can respond to a request whose response type was negotiated
 // to be MimeHal or MimeJSON.
 type JSON interface {
@@ -12,10 +10,4 @@ type JSON interface {
 // to be MimeRaw.
 type Raw interface {
 	Raw()
-}
-
-// SSE implementors can respond to a request whose response type was negotiated
-// to be MimeEventStream.
-type SSE interface {
-	SSE(sse.Stream)
 }
