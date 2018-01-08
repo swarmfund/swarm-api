@@ -6,5 +6,10 @@ import "gitlab.com/swarmfund/api/internal/types"
 type Blobs interface {
 	Create(address types.Address, blob *types.Blob) error
 	Get(id string) (*types.Blob, error)
-	Filter(owner string, filters map[string]string) ([]types.Blob, error)
+
+	// filter
+	ByOwner(types.Address) Blobs
+	ByType(types.BlobType) Blobs
+	ByRelationships(map[string]string) Blobs
+	Select() ([]types.Blob, error)
 }

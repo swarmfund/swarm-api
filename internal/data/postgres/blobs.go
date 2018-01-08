@@ -1,4 +1,4 @@
-package horizon
+package postgres
 
 import (
 	"database/sql"
@@ -7,6 +7,7 @@ import (
 	"github.com/lib/pq"
 	"github.com/pkg/errors"
 	"gitlab.com/swarmfund/api/db2"
+	"gitlab.com/swarmfund/api/internal/data"
 	"gitlab.com/swarmfund/api/internal/types"
 )
 
@@ -15,8 +16,51 @@ const (
 	blobsPKConstraint = "blobs_pkey"
 )
 
+var (
+	blobsSelect = squirrel.
+		Select("id", "value", "type", "relationships").
+		From(blobsTable)
+)
+
 type Blobs struct {
 	*db2.Repo
+	stmt squirrel.SelectBuilder
+}
+
+func NewBlobs(repo *db2.Repo) *Blobs {
+	return &Blobs{
+		repo, blobsSelect,
+	}
+}
+
+func (q *Blobs) ByOwner(owner types.Address) data.Blobs {
+	return &Blobs{
+		q.Repo,
+		q.stmt.Where("owner_address = ?", owner),
+	}
+}
+
+func (q *Blobs) ByType(tpe types.BlobType) data.Blobs {
+	return &Blobs{
+		q.Repo,
+		q.stmt.Where("type & ? != 0", tpe),
+	}
+}
+
+func (q *Blobs) ByRelationships(filters map[string]string) data.Blobs {
+	builder := q.stmt
+	for k, v := range filters {
+		builder = builder.Where("relationships->>? = ?", k, v)
+	}
+	return &Blobs{
+		q.Repo,
+		builder,
+	}
+}
+
+func (q *Blobs) Select() (result []types.Blob, err error) {
+	err = q.Repo.Select(&result, q.stmt)
+	return result, err
 }
 
 func (q *Blobs) Create(address types.Address, blob *types.Blob) error {
@@ -43,27 +87,9 @@ func (q *Blobs) Create(address types.Address, blob *types.Blob) error {
 	return err
 }
 
-func (q *Blobs) Filter(owner string, filters map[string]string) ([]types.Blob, error) {
-	var result []types.Blob
-	stmt := squirrel.
-		Select("id", "value", "type", "relationships").
-		From(blobsTable).
-		Where("owner_address = ?", owner)
-
-	for k, v := range filters {
-		stmt = stmt.Where("relationships->>? = ?", k, v)
-	}
-
-	err := q.Repo.Select(&result, stmt)
-	return result, err
-}
-
 func (q *Blobs) Get(id string) (*types.Blob, error) {
 	var result types.Blob
-	stmt := squirrel.
-		Select("id", "value", "type", "relationships").
-		From(blobsTable).
-		Where("id = ?", id)
+	stmt := q.stmt.Where("id = ?", id)
 
 	err := q.Repo.Get(&result, stmt)
 	if err != nil {

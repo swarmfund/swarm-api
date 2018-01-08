@@ -15,6 +15,7 @@ import (
 	api2 "gitlab.com/swarmfund/api/internal/api"
 	"gitlab.com/swarmfund/api/internal/data"
 	horizon2 "gitlab.com/swarmfund/api/internal/data/horizon"
+	"gitlab.com/swarmfund/api/internal/data/postgres"
 	"gitlab.com/swarmfund/api/log"
 	"gitlab.com/swarmfund/api/notificator"
 	"gitlab.com/swarmfund/api/pentxsub"
@@ -80,9 +81,7 @@ func (a *App) EmailTokensQ() data.EmailTokensQ {
 }
 
 func (a *App) Blobs() data.Blobs {
-	return &horizon2.Blobs{
-		a.APIRepo(a.ctx),
-	}
+	return postgres.NewBlobs(a.APIRepo(a.ctx))
 }
 
 // Serve starts the horizon web server, binding it to a socket, setting up
