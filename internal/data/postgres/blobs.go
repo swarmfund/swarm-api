@@ -17,9 +17,10 @@ const (
 )
 
 var (
-	blobsSelect = squirrel.
-		Select("id", "value", "type", "relationships").
-		From(blobsTable)
+	ErrBlobsConflict = errors.New("blobs primary key conflict")
+	blobsSelect      = squirrel.
+				Select("id", "value", "type", "relationships").
+				From(blobsTable)
 )
 
 type Blobs struct {
@@ -31,6 +32,25 @@ func NewBlobs(repo *db2.Repo) *Blobs {
 	return &Blobs{
 		repo, blobsSelect,
 	}
+}
+
+func (q *Blobs) Transaction(fn func(data.Blobs) error) error {
+	return q.Repo.Transaction(func() error {
+		return fn(q)
+	})
+}
+
+func (q *Blobs) Delete(blobs ...types.Blob) error {
+	if len(blobs) == 0 {
+		return nil
+	}
+	ids := make([]string, 0, len(blobs))
+	for _, blob := range blobs {
+		ids = append(ids, blob.ID)
+	}
+	stmt := squirrel.Delete(blobsTable).Where(squirrel.Eq{"id": ids})
+	_, err := q.Exec(stmt)
+	return err
 }
 
 func (q *Blobs) ByOwner(owner types.Address) data.Blobs {
@@ -78,9 +98,7 @@ func (q *Blobs) Create(address types.Address, blob *types.Blob) error {
 		pqerr, ok := cause.(*pq.Error)
 		if ok {
 			if pqerr.Constraint == blobsPKConstraint {
-				// id is deterministic based on blob,
-				// silencing error makes request idempotent
-				return nil
+				return ErrBlobsConflict
 			}
 		}
 	}

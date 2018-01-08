@@ -15,6 +15,8 @@ import (
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/ape/problems"
 	"gitlab.com/swarmfund/api/internal/api/resources"
+	"gitlab.com/swarmfund/api/internal/data"
+	"gitlab.com/swarmfund/api/internal/data/postgres"
 	"gitlab.com/swarmfund/api/internal/types"
 	"gitlab.com/swarmfund/go/hash"
 )
@@ -122,10 +124,33 @@ func CreateBlob(w http.ResponseWriter, r *http.Request) {
 
 	blob := request.Blob()
 
-	if err := BlobQ(r).Create(request.Address, blob); err != nil {
-		Log(r).WithError(err).Error("failed to save blob")
-		ape.RenderErr(w, problems.InternalError())
-		return
+	err = BlobQ(r).Transaction(func(blobs data.Blobs) error {
+		if blob.Type == types.BlobTypeNavUpdate {
+			existing, err := blobs.
+				ByOwner(request.Address).
+				ByType(blob.Type).
+				ByRelationships(blob.Relationships).
+				Select()
+			if err != nil {
+				return errors.Wrap(err, "failed to get existing blobs")
+			}
+
+			if err := blobs.Delete(existing...); err != nil {
+				return errors.Wrap(err, "failed to delete existing blobs")
+			}
+		}
+		if err := blobs.Create(request.Address, blob); err != nil {
+			return errors.Wrap(err, "failed to create blob")
+		}
+		return nil
+	})
+	if err != nil {
+		// silencing error to make request idempotent
+		if errors.Cause(err) != postgres.ErrBlobsConflict {
+			Log(r).WithError(err).Error("failed to save blob")
+			ape.RenderErr(w, problems.InternalError())
+			return
+		}
 	}
 
 	response := CreateBlobResponse{

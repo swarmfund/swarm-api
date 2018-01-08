@@ -1,9 +1,13 @@
 package data
 
-import "gitlab.com/swarmfund/api/internal/types"
+import (
+	"gitlab.com/swarmfund/api/internal/types"
+)
 
 //go:generate mockery -case underscore -name Blobs
 type Blobs interface {
+	Transaction(fn func(Blobs) error) error
+	Delete(...types.Blob) error
 	Create(address types.Address, blob *types.Blob) error
 	Get(id string) (*types.Blob, error)
 
