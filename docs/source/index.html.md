@@ -386,6 +386,7 @@ http://client.com/r/eyAic3RhdHVzIjoyMDAsImF...G4zbmZqbWZ4OXA1OGdlbzVzdHQ5In19
 | -------------- | ------ |
 | `not_verified` | 1      |
 | `syndicate`    | 2      |
+| `general`      | 4      |
 
 #### States
 

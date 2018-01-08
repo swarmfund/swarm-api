@@ -7,4 +7,5 @@ const (
 	BlobTypeAssetDescription BlobType = 1 << iota
 	BlobTypeFundOverview
 	BlobTypeFundUpdate
+	BlobTypeNavUpdate
 )
