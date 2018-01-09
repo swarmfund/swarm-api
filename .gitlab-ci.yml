@@ -59,7 +59,7 @@ test:
     - BRANCH=${CI_COMMIT_REF_NAME}
     - THOST=$( echo "HOST_${BRANCH}" | awk '{print toupper($0)}' )
     - ssh ubuntu@$HOST_DEV "artifacts/update.sh api $BRANCH ${CI_COMMIT_SHA:0:8}"
-    - 'curl -X POST http://${!THOST}:8842/HOOK_TOKEN'
+    - 'curl -X POST http://${!THOST}:8842/${HOOK_TOKEN}'
 
 deploy:dev:
   <<: *deploy
