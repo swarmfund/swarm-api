@@ -8,4 +8,5 @@ const (
 	BlobTypeFundOverview
 	BlobTypeFundUpdate
 	BlobTypeNavUpdate
+	BlobTypeFundDocument
 )
