@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"net/url"
 
+	"encoding/json"
+
 	"github.com/go-ozzo/ozzo-validation"
 	"github.com/pkg/errors"
 	"gitlab.com/distributed_lab/ape"
@@ -21,6 +23,9 @@ type (
 		Nonce     string
 		Signature string
 		ReturnURL string
+	}
+	SSORedirectResponse struct {
+		Location string
 	}
 )
 
@@ -82,5 +87,8 @@ func SSORedirect(w http.ResponseWriter, r *http.Request) {
 	sig := fmt.Sprintf("%x", hash.Sum(nil))
 
 	// TODO build url properly
-	http.Redirect(w, r, fmt.Sprintf("%s?sso=%s&sig=%s", request.ReturnURL, escaped, sig), 302)
+	response := SSORedirectResponse{
+		Location: fmt.Sprintf("%s?sso=%s&sig=%s", request.ReturnURL, escaped, sig),
+	}
+	json.NewEncoder(w).Encode(&response)
 }
