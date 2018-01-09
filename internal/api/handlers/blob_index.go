@@ -15,16 +15,17 @@ import (
 
 type (
 	BlobIndexRequest struct {
-		Address types.Address
-		Filters map[string]string
-		Type    *types.BlobType
+		Address       types.Address
+		Relationships map[string]string
+		Type          *types.BlobType
 	}
+	// TODO paginate with custom filters
 )
 
 func NewBlobIndexRequest(r *http.Request) (BlobIndexRequest, error) {
 	request := BlobIndexRequest{
-		Address: types.Address(chi.URLParam(r, "address")),
-		Filters: make(map[string]string),
+		Address:       types.Address(chi.URLParam(r, "address")),
+		Relationships: make(map[string]string),
 	}
 	values := r.URL.Query()
 	{
@@ -39,7 +40,7 @@ func NewBlobIndexRequest(r *http.Request) (BlobIndexRequest, error) {
 		values.Del("type")
 	}
 	for k := range values {
-		request.Filters[k] = values.Get(k)
+		request.Relationships[k] = values.Get(k)
 	}
 	return request, request.Validate()
 }
@@ -63,7 +64,7 @@ func BlobIndex(w http.ResponseWriter, r *http.Request) {
 
 	q := BlobQ(r).
 		ByOwner(request.Address).
-		ByRelationships(request.Filters)
+		ByRelationships(request.Relationships)
 
 	if request.Type != nil {
 		q = q.ByType(*request.Type)
