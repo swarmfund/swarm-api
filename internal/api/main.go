@@ -16,6 +16,7 @@ import (
 	"gitlab.com/swarmfund/api/internal/api/handlers"
 	"gitlab.com/swarmfund/api/internal/api/middlewares"
 	"gitlab.com/swarmfund/api/internal/data"
+	"gitlab.com/swarmfund/api/internal/discourse"
 	"gitlab.com/swarmfund/api/internal/secondfactor"
 	"gitlab.com/swarmfund/api/storage"
 	"gitlab.com/swarmfund/go/doorman"
@@ -112,6 +113,12 @@ func Router(
 			r.Get("/", handlers.BlobIndex)
 			r.Get("/{blob}", handlers.GetBlob)
 		})
+	})
+
+	r.Route("/integrations", func(r chi.Router) {
+		// discourse ping-pong
+		r.Get("/discourse-sso", discourse.SSOReceiver)
+		r.Post("/discourse-sso", discourse.SSORedirect)
 	})
 
 	return r

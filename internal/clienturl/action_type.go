@@ -5,4 +5,5 @@ type RedirectType int
 const (
 	_ RedirectType = iota
 	RedirectTypeEmailVerification
+	RedirectTypeDiscourseSSO
 )
