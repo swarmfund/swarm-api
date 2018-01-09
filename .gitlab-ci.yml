@@ -15,14 +15,6 @@ stages:
   - delivery
   - test
   - deploy
-
-.move_to_gopath: &move_to_gopath
-  variables:
-    APP_PATH: gitlab.com/swarmfund/api
-  script:
-    - mkdir -p $GOPATH/src/$APP_PATH
-    - cp -rf ./* $GOPATH/src/$APP_PATH
-    - cd $GOPATH/src/$APP_PATH
     
 build:
   stage: build
@@ -67,7 +59,7 @@ test:
     - BRANCH=${CI_COMMIT_REF_NAME}
     - THOST=$( echo "HOST_${BRANCH}" | awk '{print toupper($0)}' )
     - ssh ubuntu@$HOST_DEV "artifacts/update.sh api $BRANCH ${CI_COMMIT_SHA:0:8}"
-    - 'curl -X POST http://${!THOST}:8842/ec96h_fVyGnrRXZ0X9r8RQ'
+    - 'curl -X POST http://${!THOST}:8842/HOOK_TOKEN'
 
 deploy:dev:
   <<: *deploy
