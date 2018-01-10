@@ -9,18 +9,16 @@ import (
 
 	"strings"
 
-	"github.com/sirupsen/logrus"
-	"gitlab.com/swarmfund/api/log"
+	"time"
+
+	"gitlab.com/distributed_lab/logan/v3"
 )
 
 func TestLogger(t *testing.T) {
 	var buf bytes.Buffer
-	logger := logrus.New()
-	logger.Out = &buf
-	entry := log.Entry{}
-	entry.Logger = logger
+	logger := logan.New().Out(&buf)
 
-	middleware := Logger(&entry)
+	middleware := Logger(logger, 1*time.Hour)
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(345)
 	})
