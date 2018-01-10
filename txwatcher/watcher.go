@@ -1,57 +1,41 @@
 package txwatcher
 
 import (
-	"net/url"
-
-	"gitlab.com/swarmfund/api/log"
+	"gitlab.com/distributed_lab/logan/v3"
+	"gitlab.com/swarmfund/api/internal/hose"
 	"gitlab.com/swarmfund/horizon-connector/v2"
 )
 
-type TxHandler func(horizon.TransactionEvent) error
-
 type Watcher struct {
-	horizonConn *horizon.Connector
-	logger      *log.Entry
-	handlers    []TxHandler
+	horizon  *horizon.Connector
+	log      *logan.Entry
+	dispatch hose.TransactionDispatch
 }
 
-func NewWatcher(horizonURL *url.URL) *Watcher {
+func NewWatcher(log *logan.Entry, connector *horizon.Connector, dispatch hose.TransactionDispatch) *Watcher {
 	return &Watcher{
-		horizonConn: horizon.NewConnector(horizonURL),
-		logger:      log.WithField("service", "tx_watcher"),
+		dispatch: dispatch,
+		horizon:  connector,
+		log:      log,
 	}
-}
-
-func (w *Watcher) AddHandlers(ls ...TxHandler) {
-	w.handlers = append(w.handlers, ls...)
 }
 
 func (w *Watcher) Run() {
-	transactions := make(chan horizon.TransactionEvent)
-	errs := w.horizonConn.Listener().Transactions(transactions)
+	defer func() {
+		// TODO recover
+	}()
+	events := make(chan horizon.TransactionEvent)
+	errs := w.horizon.Listener().Transactions(events)
 
 	for {
 		select {
-		case tx := <-transactions:
-			w.handleEvent(tx)
+		case event := <-events:
+			if event.Transaction != nil {
+				w.log.WithField("tx", event.Transaction.PagingToken).Debug("received tx")
+				w.dispatch(event)
+			}
 		case err := <-errs:
-			w.logger.WithError(err).Warn("failed to get transaction")
+			w.log.WithError(err).Warn("failed to get transaction")
 		}
-	}
-}
-
-func (w *Watcher) handleEvent(tx horizon.TransactionEvent) {
-	for _, handler := range w.handlers {
-		w.retryUntilSuccess(handler, tx)
-	}
-}
-
-func (w *Watcher) retryUntilSuccess(handler TxHandler, tx horizon.TransactionEvent) {
-	for {
-		if err := handler(tx); err != nil {
-			w.logger.WithError(err).Warn("handler failed")
-			continue
-		}
-		return
 	}
 }

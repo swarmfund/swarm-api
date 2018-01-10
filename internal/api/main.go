@@ -16,7 +16,8 @@ import (
 	"gitlab.com/swarmfund/api/internal/api/handlers"
 	"gitlab.com/swarmfund/api/internal/api/middlewares"
 	"gitlab.com/swarmfund/api/internal/data"
-	"gitlab.com/swarmfund/api/internal/discourse"
+	"gitlab.com/swarmfund/api/internal/discourse/sso"
+	"gitlab.com/swarmfund/api/internal/hose"
 	"gitlab.com/swarmfund/api/internal/secondfactor"
 	"gitlab.com/swarmfund/api/storage"
 	"gitlab.com/swarmfund/go/doorman"
@@ -29,6 +30,7 @@ func Router(
 	usersQ api.UsersQI, doorman doorman.Doorman, horizon *horizon.Connector,
 	accountManager keypair.KP, tfaQ api.TFAQI, storage *storage.Connector,
 	coreConn *coreinfo.Connector, blobQ data.Blobs, sentry *raven.Client,
+	userDispatch hose.UserDispatch,
 ) chi.Router {
 	r := chi.NewRouter()
 
@@ -48,6 +50,7 @@ func Router(
 			handlers.CtxDoorman(doorman),
 			handlers.CtxStorage(storage),
 			handlers.CtxCoreInfo(coreConn),
+			handlers.CtxUserBusDispatch(userDispatch),
 		),
 	)
 
@@ -117,8 +120,8 @@ func Router(
 
 	r.Route("/integrations", func(r chi.Router) {
 		// discourse ping-pong
-		r.Get("/discourse-sso", discourse.SSOReceiver)
-		r.Post("/discourse-sso", discourse.SSORedirect)
+		r.Get("/discourse-sso", sso.SSOReceiver)
+		r.Post("/discourse-sso", sso.SSORedirect)
 	})
 
 	return r

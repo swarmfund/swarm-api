@@ -1,3 +1,3 @@
 package hose
 
-type TEvent struct{}
+type GenericEvent struct{}

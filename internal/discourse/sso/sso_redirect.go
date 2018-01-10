@@ -1,4 +1,4 @@
-package discourse
+package sso
 
 import (
 	"crypto/hmac"

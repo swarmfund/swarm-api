@@ -4,30 +4,32 @@ import (
 	"sync"
 )
 
-//go:generate genny -in=$GOFILE -out=changes_bus_generated.go gen "T=Changes"
+//go:generate genny -in=$GOFILE -out=tx_bus_generated.go gen "Generic=Transaction"
+//go:generate genny -in=$GOFILE -out=user_bus_generated.go gen "Generic=User"
 
-type TCallback func(TEvent)
+type GenericCallback func(GenericEvent)
+type GenericDispatch func(GenericEvent)
 
-type TBus struct {
+type GenericBus struct {
 	*sync.RWMutex
-	callbacks []TCallback
+	callbacks []GenericCallback
 }
 
-func NewTBus() *TBus {
-	return &TBus{
+func NewGenericBus() *GenericBus {
+	return &GenericBus{
 		&sync.RWMutex{},
-		make([]TCallback, 0),
+		make([]GenericCallback, 0),
 	}
 }
 
-func (b *TBus) Subscribe(cb TCallback) *TBus {
+func (b *GenericBus) Subscribe(cb GenericCallback) *GenericBus {
 	b.Lock()
 	defer b.Unlock()
 	b.callbacks = append(b.callbacks, cb)
 	return b
 }
 
-func (b *TBus) Dispatch(event TEvent) {
+func (b *GenericBus) Dispatch(event GenericEvent) {
 	b.Lock()
 	defer b.Unlock()
 

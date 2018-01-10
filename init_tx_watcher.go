@@ -5,11 +5,14 @@ import (
 )
 
 func initTxWatcher(app *App) {
-	u := app.config.API().HorizonURL
-	app.txWatcher = txwatcher.NewWatcher(&u)
+	app.txWatcher = txwatcher.NewWatcher(
+		app.Config().Log().WithField("service", "tx-watcher"),
+		app.Config().Horizon(),
+		app.txBus.Dispatch,
+	)
 	go app.txWatcher.Run()
 }
 
 func init() {
-	appInit.Add("tx-watcher", initTxWatcher, "api-db")
+	appInit.Add("tx-watcher", initTxWatcher, "bus-init")
 }
