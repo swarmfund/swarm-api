@@ -5,6 +5,9 @@ api:
   # disable only signature validity check
   skip_signature_check: true
 
+horizon:
+  url: http://localhost:8000
+
 notificator:
   client_router: http://localhost:8888/hredir
   endpoint: http://localhost:9009

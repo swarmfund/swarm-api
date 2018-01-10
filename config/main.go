@@ -1,10 +1,13 @@
 package config
 
 import (
+	"sync"
+
 	raven "github.com/getsentry/raven-go"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 	"gitlab.com/distributed_lab/logan/v3"
+	"gitlab.com/swarmfund/horizon-connector/v2"
 )
 
 type Config interface {
@@ -15,16 +18,22 @@ type Config interface {
 	Log() *logan.Entry
 	Notificator() Notificator
 	Sentry() *raven.Client
+	Horizon() *horizon.Connector
 	Get(string) map[string]interface{}
 }
 
 type ViperConfig struct {
 	*viper.Viper
+	*sync.RWMutex
+
+	// runtime-initialized instances
+	horizon *horizon.Connector
 }
 
 func NewViperConfig(fn string) Config {
 	config := ViperConfig{
-		Viper: viper.GetViper(),
+		Viper:   viper.GetViper(),
+		RWMutex: &sync.RWMutex{},
 	}
 	config.SetConfigFile(fn)
 	return &config
