@@ -16,17 +16,15 @@ import (
 
 var walletSelect = sq.Select(
 	"w.*",
-	"ow.organization_address",
-	"ow.id is null as detached",
 	"et.confirmed as verified").
 	From("wallets w").
-	LeftJoin("organization_wallets ow ON w.id = ow.wallet_id").
 	Join("email_tokens et on w.wallet_id = et.wallet_id")
 
 var walletInsert = sq.Insert("wallets")
 var walletUpdate = sq.Update("wallets")
 
 const (
+	tableWallets                 = "wallets"
 	tableWalletsLimit            = 10
 	walletsKDFFkeyConstraint     = `wallets_kdf_fkey`
 	walletsWalletIDKeyConstraint = `wallets_wallet_id_key`
@@ -61,6 +59,8 @@ type WalletQI interface {
 	// LoadWallet
 	ByEmail(username string) (*Wallet, error)
 	ByWalletID(walletId string) (*Wallet, error)
+	DeleteWallets(walletIDs []string) error
+
 	// it's all S3 fault
 	RecoveryWallet(lowercaseWalletID, username string) (*Wallet, error)
 
@@ -277,6 +277,16 @@ func (q *WalletQ) ByWalletID(walletId string) (*Wallet, error) {
 	}
 
 	return &result, err
+}
+
+func (q *WalletQ) DeleteWallets(walletIDs []string) error {
+	if len(walletIDs) == 0 {
+		return nil
+	}
+
+	sqq := sq.Delete(tableWallets).Where(sq.Eq{"wallet_id": walletIDs})
+	_, err := q.parent.Exec(sqq)
+	return err
 }
 
 func (q *WalletQ) ByState(state uint64) WalletQI {

@@ -94,6 +94,15 @@ func (q *EmailTokensQ) GetUnsent() ([]data.EmailToken, error) {
 	return result, err
 }
 
+func (q *EmailTokensQ) GetUnconfirmed() ([]data.EmailToken, error) {
+	stmt := emailTokensSelect.
+		Where("confirmed = false")
+
+	result := []data.EmailToken{}
+	err := q.Select(&result, stmt)
+	return result, err
+}
+
 func (q *EmailTokensQ) MarkSent(tid int64) error {
 	stmt := squirrel.Update(emailTokenTable).Set("last_sent_at", time.Now().UTC())
 	_, err := q.Exec(stmt)

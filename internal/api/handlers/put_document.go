@@ -10,9 +10,8 @@ import (
 	"github.com/pkg/errors"
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/ape/problems"
-	"gitlab.com/swarmfund/api/db2/api"
 	"gitlab.com/swarmfund/api/internal/api/resources"
-	"gitlab.com/swarmfund/api/internal/lorem"
+	storage2 "gitlab.com/swarmfund/api/internal/storage"
 	"gitlab.com/swarmfund/api/internal/types"
 	"gitlab.com/swarmfund/api/storage"
 )
@@ -23,7 +22,7 @@ type (
 		Data      PutDocumentRequestData `json:"data"`
 	}
 	PutDocumentRequestData struct {
-		Type       string                       `json:"type"`
+		Type       types.DocumentType           `json:"type"`
 		Attributes PutDocumentRequestAttributes `json:"attributes"`
 	}
 	PutDocumentRequestAttributes struct {
@@ -73,6 +72,18 @@ func PutDocument(w http.ResponseWriter, r *http.Request) {
 
 	// TODO check allowed
 
+	user, err := UsersQ(r).ByAddress(string(request.AccountID))
+	if err != nil {
+		Log(r).WithError(err).Error("failed to get user")
+		ape.RenderErr(w, problems.InternalError())
+		return
+	}
+
+	if user == nil {
+		ape.RenderErr(w, problems.NotFound())
+		return
+	}
+
 	if !storage.IsContentTypeAllowed(request.Data.Attributes.ContentType) {
 		ape.RenderErr(w, problems.BadRequest(Errors{
 			"/data/attributes/content_type": errors.New("not allowed"),
@@ -80,15 +91,10 @@ func PutDocument(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	document := storage.Document{
-		AccountID: request.AccountID,
-		Type:      api.DocumentTypeAssetLogo,
-		Version:   lorem.Token(),
-		Extension: storage.ContentTypeExtension(request.Data.Attributes.ContentType),
-	}
+	key := storage2.NewKey(user.ID, request.Data.Type)
 
 	form, err := Storage(r).UploadFormData(
-		string(request.AccountID), document.Key(),
+		storage2.EncodeKey(key),
 	)
 	if err != nil {
 		Log(r).WithError(err).Error("failed to build form data")

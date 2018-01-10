@@ -37,7 +37,7 @@ func TestLogger(t *testing.T) {
 	out := buf.String()
 	lines := strings.Count(out, "\n")
 	if lines != 2 {
-		t.Error("expected 2 lines of output got %d", lines)
+		t.Errorf("expected 2 lines of output got %d", lines)
 	}
 
 	if strings.Count(out, "345") != 1 {

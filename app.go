@@ -9,15 +9,16 @@ import (
 	"github.com/patrickmn/go-cache"
 	"github.com/pkg/errors"
 	"gitlab.com/swarmfund/api/config"
+	"gitlab.com/swarmfund/api/coreinfo"
 	"gitlab.com/swarmfund/api/db2"
 	"gitlab.com/swarmfund/api/db2/api"
 	api2 "gitlab.com/swarmfund/api/internal/api"
 	"gitlab.com/swarmfund/api/internal/data"
-	horizon2 "gitlab.com/swarmfund/api/internal/horizon"
+	horizon2 "gitlab.com/swarmfund/api/internal/data/horizon"
+	"gitlab.com/swarmfund/api/internal/data/postgres"
 	"gitlab.com/swarmfund/api/log"
 	"gitlab.com/swarmfund/api/notificator"
 	"gitlab.com/swarmfund/api/pentxsub"
-	"gitlab.com/swarmfund/api/render/sse"
 	"gitlab.com/swarmfund/api/storage"
 	"gitlab.com/swarmfund/go/doorman"
 	"gitlab.com/swarmfund/go/keypair"
@@ -54,7 +55,7 @@ func NewApp(config config.Config) (*App, error) {
 		config:  config,
 		horizon: horizon,
 	}
-	result.ticks = time.NewTicker(1 * time.Second)
+	result.ticks = time.NewTicker(10 * time.Second)
 	result.init()
 	return result, nil
 }
@@ -79,12 +80,16 @@ func (a *App) EmailTokensQ() data.EmailTokensQ {
 	return api.NewEmailTokensQ(a.APIRepo(a.ctx))
 }
 
+func (a *App) Blobs() data.Blobs {
+	return postgres.NewBlobs(a.APIRepo(a.ctx))
+}
+
 // Serve starts the horizon web server, binding it to a socket, setting up
 // the shutdown signals.
 func (a *App) Serve() {
 	a.web.router.Compile()
 	r := api2.Router(
-		log.WithField("service", "api"),
+		a.Config().Log().WithField("service", "api"),
 		a.APIQ().Wallet(),
 		a.EmailTokensQ(),
 		a.APIQ().Users(),
@@ -96,6 +101,9 @@ func (a *App) Serve() {
 		a.AccountManagerKP(),
 		a.APIQ().TFA(),
 		a.Storage(),
+		a.CoreInfoConn(),
+		a.Blobs(),
+		a.Config().Sentry(),
 	)
 	r.Mount("/", a.web.router)
 	http.Handle("/", r)
@@ -154,6 +162,15 @@ func (action *Action) Notificator() *notificator.Connector {
 func (a *App) Storage() *storage.Connector {
 	connector, err := storage.New(a.Config().Storage())
 	if err != nil {
+		panic(errors.Wrap(err, "failed to init connector"))
+	}
+	return connector
+}
+
+// CoreInfoConn create new instance of coreinfo.Connector.
+func (a *App) CoreInfoConn() *coreinfo.Connector {
+	connector, err := coreinfo.NewConnector(a.Config().API().HorizonURL)
+	if err != nil {
 		panic(err)
 	}
 	return connector
@@ -176,14 +193,16 @@ func (a *App) Tick() {
 	var wg sync.WaitGroup
 	log.Debug("ticking app")
 	// update ledger state and stellar-core info in parallel
-	wg.Add(2)
-	go func() { a.UpdateStellarCoreInfo(); wg.Done() }()
-	wg.Wait()
-
 	wg.Add(1)
-	wg.Wait()
 
-	sse.Tick()
+	go func() {
+		defer func() {
+			wg.Done()
+		}()
+		a.UpdateStellarCoreInfo()
+	}()
+
+	wg.Wait()
 
 	log.Debug("finished ticking app")
 }

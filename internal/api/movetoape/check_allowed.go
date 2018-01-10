@@ -11,7 +11,7 @@ import (
 
 func RenderDoormanErr(w http.ResponseWriter, err error) {
 	switch err {
-	case signcontrol.ErrNotAllowed, signcontrol.ErrNotSigned:
+	case signcontrol.ErrNotSigned, signcontrol.ErrValidUntil, signcontrol.ErrExpired, signcontrol.ErrSignerKey, signcontrol.ErrSignature, signcontrol.ErrNotAllowed:
 		ape.RenderErr(w, problems.NotAllowed())
 	case nil:
 		panic("expected not nil error")

@@ -2,19 +2,21 @@ package api
 
 import (
 	"net/http"
-	"runtime/debug"
 
+	"time"
+
+	"github.com/getsentry/raven-go"
 	"github.com/go-chi/chi"
 	"github.com/google/jsonapi"
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/ape/problems"
-	"gitlab.com/distributed_lab/logan/v3/errors"
+	"gitlab.com/distributed_lab/logan/v3"
+	"gitlab.com/swarmfund/api/coreinfo"
 	"gitlab.com/swarmfund/api/db2/api"
 	"gitlab.com/swarmfund/api/internal/api/handlers"
 	"gitlab.com/swarmfund/api/internal/api/middlewares"
 	"gitlab.com/swarmfund/api/internal/data"
 	"gitlab.com/swarmfund/api/internal/secondfactor"
-	"gitlab.com/swarmfund/api/log"
 	"gitlab.com/swarmfund/api/storage"
 	"gitlab.com/swarmfund/go/doorman"
 	"gitlab.com/swarmfund/go/keypair"
@@ -22,22 +24,17 @@ import (
 )
 
 func Router(
-	entry *log.Entry, walletQ api.WalletQI, tokensQ data.EmailTokensQ,
+	entry *logan.Entry, walletQ api.WalletQI, tokensQ data.EmailTokensQ,
 	usersQ api.UsersQI, doorman doorman.Doorman, horizon *horizon.Connector,
 	accountManager keypair.KP, tfaQ api.TFAQI, storage *storage.Connector,
+	coreConn *coreinfo.Connector, blobQ data.Blobs, sentry *raven.Client,
 ) chi.Router {
 	r := chi.NewRouter()
 
 	r.Use(
-		middlewares.Recover(func(w http.ResponseWriter, r *http.Request, rvr interface{}) {
-			if entry != nil {
-				entry.WithField("stack", string(debug.Stack())).
-					WithError(errors.FromPanic(rvr)).Error("handler panicked")
-			}
-			ape.RenderErr(w, problems.InternalError())
-		}),
+		ape.RecoverMiddleware(entry, sentry),
 		secondfactor.HashMiddleware(),
-		middlewares.Logger(entry),
+		middlewares.Logger(entry, 200*time.Second),
 		middlewares.ContenType(jsonapi.MediaType),
 		middlewares.Ctx(
 			handlers.CtxWalletQ(walletQ),
@@ -49,8 +46,10 @@ func Router(
 			handlers.CtxTFAQ(tfaQ),
 			handlers.CtxDoorman(doorman),
 			handlers.CtxStorage(storage),
+			handlers.CtxCoreInfo(coreConn),
 		),
 	)
+
 	r.NotFound(func(w http.ResponseWriter, r *http.Request) {
 		ape.RenderErr(w, problems.NotFound())
 	})
@@ -95,6 +94,23 @@ func Router(
 		// documents
 		r.Route("/{address}/documents", func(r chi.Router) {
 			r.Post("/", handlers.PutDocument)
+		})
+
+		// kyc
+		r.Route("/{address}/entities", func(r chi.Router) {
+			r.Post("/", handlers.CreateKYCEntity)
+			r.Get("/", handlers.KYCEntitiesIndex)
+			r.Put("/{entity}", handlers.PatchKYCEntity)
+		})
+
+		// blobs
+		r.Route("/{address}/blobs", func(r chi.Router) {
+			r.Use(middlewares.Ctx(
+				handlers.CtxBlobQ(blobQ),
+			))
+			r.Post("/", handlers.CreateBlob)
+			r.Get("/", handlers.BlobIndex)
+			r.Get("/{blob}", handlers.GetBlob)
 		})
 	})
 

@@ -1,8 +1,10 @@
 package config
 
 import (
+	raven "github.com/getsentry/raven-go"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
+	"gitlab.com/distributed_lab/logan/v3"
 )
 
 type Config interface {
@@ -10,27 +12,14 @@ type Config interface {
 	API() API
 	HTTP() HTTP
 	Storage() Storage
-	Log() Log
+	Log() *logan.Entry
 	Notificator() Notificator
+	Sentry() *raven.Client
+	Get(string) map[string]interface{}
 }
 
 type ViperConfig struct {
 	*viper.Viper
-	//apiDatabaseURL string
-	//port           int
-	//
-	//LogLevel     logrus.Level
-	//ClientRouter *url.URL
-	//ClientDomain string
-	//// SkipCheck disables signature validation, for testing and development purpose
-	//SkipCheck     bool
-	//Notificator   Notificator
-	//TFA           TFA
-	//Core          Core
-	//Storage       Storage
-	//HorizonURL    string
-	//Deposit       Deposit
-	//NoEmailVerify bool
 }
 
 func NewViperConfig(fn string) Config {
@@ -46,4 +35,8 @@ func (c *ViperConfig) Init() error {
 		return errors.Wrap(err, "failed to read config file")
 	}
 	return nil
+}
+
+func (c *ViperConfig) Get(key string) map[string]interface{} {
+	return c.Viper.GetStringMap(key)
 }

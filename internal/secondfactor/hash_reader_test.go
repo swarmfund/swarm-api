@@ -2,10 +2,13 @@ package secondfactor
 
 import (
 	"bytes"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"gitlab.com/swarmfund/go/signcontrol"
 )
 
 func TestRequestHash(t *testing.T) {
@@ -104,6 +107,58 @@ func TestRequestHash(t *testing.T) {
 		response.Body.Close()
 
 		response, err = http.Post(ts.URL, "application/json", bytes.NewReader([]byte(`johndoe`)))
+		if err != nil {
+			t.Fatal(err)
+		}
+		response.Body.Close()
+
+		if hashes[0] != hashes[1] {
+			t.Fatal("hashes should match")
+		}
+
+		if hashes[1] == hashes[2] {
+			t.Fatal("hashes should be different")
+		}
+	})
+
+	t.Run("requests with signer", func(t *testing.T) {
+		hashes := []string{}
+		handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			_, err := ioutil.ReadAll(r.Body)
+			if err != nil {
+				t.Fatal(err)
+			}
+			hashes = append(hashes, RequestHash(r))
+		})
+
+		ts := server(handler)
+		defer ts.Close()
+
+		postWithSigner := func(url, contentType, signer string, body io.Reader) (resp *http.Response, err error) {
+			req, err := http.NewRequest("POST", url, body)
+			if err != nil {
+				return nil, err
+			}
+			req.Header.Set("Content-Type", contentType)
+			req.Header.Set(signcontrol.PublicKeyHeader, signer)
+			return http.DefaultClient.Do(req)
+		}
+
+		signer := "johnny b. goode"
+
+		response, err := postWithSigner(ts.URL, "application/json", signer, bytes.NewReader(body))
+		if err != nil {
+			t.Fatal(err)
+		}
+		response.Body.Close()
+
+		response, err = postWithSigner(ts.URL, "application/json", signer, bytes.NewReader(body))
+		if err != nil {
+			t.Fatal(err)
+		}
+		response.Body.Close()
+
+		response, err = postWithSigner(ts.URL, "application/json", "chattanooga", bytes.NewReader(body))
 		if err != nil {
 			t.Fatal(err)
 		}

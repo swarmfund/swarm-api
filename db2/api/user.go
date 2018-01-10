@@ -40,8 +40,9 @@ type User struct {
 // Details will throw panic aggressively instead of returning error
 // to allow chain calls.
 func (user *User) Details() UserDetails {
-	//entities := user.KYCEntities
 	switch user.UserType {
+	//case types.UserTypeNotVerified:
+
 	//case UserTypeIndividual:
 	//	details := IndividualDetails{}
 	//

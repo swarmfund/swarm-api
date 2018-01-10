@@ -46,6 +46,29 @@ func (_m *EmailTokensQ) Get(walletID string) (*data.EmailToken, error) {
 	return r0, r1
 }
 
+// GetUnconfirmed provides a mock function with given fields:
+func (_m *EmailTokensQ) GetUnconfirmed() ([]data.EmailToken, error) {
+	ret := _m.Called()
+
+	var r0 []data.EmailToken
+	if rf, ok := ret.Get(0).(func() []data.EmailToken); ok {
+		r0 = rf()
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]data.EmailToken)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func() error); ok {
+		r1 = rf()
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetUnsent provides a mock function with given fields:
 func (_m *EmailTokensQ) GetUnsent() ([]data.EmailToken, error) {
 	ret := _m.Called()

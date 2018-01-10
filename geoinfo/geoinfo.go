@@ -2,7 +2,6 @@ package geoinfo
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -30,7 +29,7 @@ func GetLocationInfo(ip string) (*LocationInfo, error) {
 		return nil, err
 	}
 	if resp.StatusCode != http.StatusOK {
-		return nil, errors.New(fmt.Sprintf("Request failed with status: %d", resp.StatusCode))
+		return nil, fmt.Errorf("request failed with status: %d", resp.StatusCode)
 	}
 	defer resp.Body.Close()
 

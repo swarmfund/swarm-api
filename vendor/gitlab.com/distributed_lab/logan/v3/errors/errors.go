@@ -3,6 +3,11 @@ package errors
 import (
 	"github.com/pkg/errors"
 	"gitlab.com/distributed_lab/logan/v3/fields"
+	"fmt"
+)
+
+const (
+	unknownStack = "unknown"
 )
 
 // FromPanic extracts the err from the result of a recover() call.
@@ -123,6 +128,71 @@ func GetFields(err error) map[string]interface{} {
 	}
 
 	return mergedResult
+}
+
+// GetStack returns the string representation of stacktrace of the
+// provided error (see getErrorStack func for stack retrieving details).
+//
+// If the provided error does not provide stack,
+// GetStack will try to retrieve stack from its causer,
+// then from causer of its cause, and so one.
+//
+// If no stack was provided by any of the causers,
+// the value of `unknownStack` const will be returned.
+func GetStack(err error) string {
+	type causer interface {
+		Cause() error
+	}
+
+	for err != nil {
+		stack := getErrorStack(err)
+		if stack != unknownStack {
+			return stack
+		}
+
+		cause, ok := err.(causer)
+		if !ok {
+			break
+		}
+		err = cause.Cause()
+	}
+
+	return unknownStack
+}
+
+// GetErrorStack returns the stack, as a string, if one can be extracted from `err`.
+// Currently 2 interfaces of stack providing are supported:
+//
+//		type stackTraceProvider interface {
+//			StackTrace() errors.StackTrace
+//		}
+//
+//		and
+//
+//		type stackProvider interface {
+//			Stack() []byte
+//		}
+//
+// The first one is implemented by errors from pkg/errors and
+// the second one - from go-errors.
+func getErrorStack(err error) string {
+	// pkg/errors
+	type stackTraceProvider interface {
+		StackTrace() errors.StackTrace
+	}
+	if s, ok := err.(stackTraceProvider); ok {
+		return fmt.Sprintf("%+v", s.StackTrace())
+	}
+
+	// go-errors
+	type stackProvider interface {
+		Stack() []byte
+	}
+	if s, ok := err.(stackProvider); ok {
+		return string(s.Stack())
+	}
+
+	return unknownStack
 }
 
 type withFields struct {
