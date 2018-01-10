@@ -20,6 +20,7 @@ import (
 	"gitlab.com/swarmfund/api/notificator"
 	"gitlab.com/swarmfund/api/pentxsub"
 	"gitlab.com/swarmfund/api/storage"
+	"gitlab.com/swarmfund/api/txwatcher"
 	"gitlab.com/swarmfund/go/doorman"
 	"gitlab.com/swarmfund/go/keypair"
 	"gitlab.com/swarmfund/horizon-connector"
@@ -42,6 +43,7 @@ type App struct {
 	storage          *storage.Connector
 	horizon          *horizon.Connector
 	pendingSubmitter *pentxsub.System
+	txWatcher        *txwatcher.Watcher
 }
 
 // NewApp constructs an new App instance from the provided config.
