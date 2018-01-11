@@ -64,6 +64,7 @@ test:
 deploy:dev:
   <<: *deploy
   only:
+    - staging
     - dev
 
 deploy:manual:
