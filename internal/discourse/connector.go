@@ -8,6 +8,8 @@ import (
 	"net/url"
 	"strings"
 
+	"io"
+
 	"github.com/pkg/errors"
 	"gitlab.com/swarmfund/api/internal/lorem"
 )
@@ -74,38 +76,82 @@ type apiResponse struct {
 }
 
 func (c *Connector) CreateUser(opts CreateUser) error {
-	opts.Prepare(c)
-
-	if err := opts.Validate(); err != nil {
-		return errors.Wrap(err, "options are not valid")
-	}
-
-	bytes, err := json.Marshal(&opts)
+	requestBody, err := c.prepareBody(&opts)
 	if err != nil {
-		return errors.Wrap(err, "failed to marshal options")
-	}
-
-	var dict map[string]string
-	if err := json.Unmarshal(bytes, &dict); err != nil {
-		return errors.Wrap(err, "failed to unmarshal options")
-	}
-
-	form := url.Values{}
-	for key, value := range dict {
-		form.Add(key, value)
+		return errors.Wrap(err, "failed to prepare options")
 	}
 
 	response, err := http.Post(
 		// TODO proper url build
 		fmt.Sprintf("%s/%s", c.endpoint.String(), "/users"),
 		"application/x-www-form-urlencoded",
-		strings.NewReader(form.Encode()),
+		requestBody,
 	)
 	if err != nil {
 		return errors.Wrap(err, "request failed")
 	}
 	defer response.Body.Close()
 
+	return c.handleResponse(response)
+}
+
+type CreateCategory struct {
+	AuthenticatedRequest
+	Name      string `json:"name"`
+	Color     string `json:"color"`
+	TextColor string `json:"text_color"`
+}
+
+func (r *CreateCategory) Prepare(c *Connector) {
+	// TODO random color
+	color := "49d9e9"
+	if r.Color == "" {
+		r.Color = color
+	}
+	if r.TextColor == "" {
+		r.TextColor = color
+	}
+	if r.APIKey == "" {
+		r.APIKey = c.key
+	}
+	if r.APIUsername == "" {
+		r.APIUsername = c.username
+	}
+}
+
+func (r *CreateCategory) Validate() error {
+	// TODO implement
+	return nil
+}
+func (c *Connector) CreateCategory(opts CreateCategory) error {
+	requestBody, err := c.prepareBody(&opts)
+	if err != nil {
+		return errors.Wrap(err, "failed to prepare options")
+	}
+
+	response, err := http.Post(
+		// TODO proper url build
+		fmt.Sprintf("%s/%s", c.endpoint.String(), "/categories.json"),
+		"application/x-www-form-urlencoded",
+		requestBody,
+	)
+	if err != nil {
+		return errors.Wrap(err, "request failed")
+	}
+	defer response.Body.Close()
+
+	return c.handleResponse(response)
+}
+
+type preparable interface {
+	Prepare(*Connector)
+}
+
+type validatable interface {
+	Validate() error
+}
+
+func (c *Connector) handleResponse(response *http.Response) error {
 	if response.StatusCode != 200 {
 		body, err := ioutil.ReadAll(response.Body)
 		if err != nil {
@@ -122,6 +168,34 @@ func (c *Connector) CreateUser(opts CreateUser) error {
 	if !resp.Success {
 		return errors.Wrap(errors.New("request failed"), resp.Message)
 	}
-
 	return nil
+}
+
+func (c *Connector) prepareBody(opts interface{}) (io.Reader, error) {
+	if v, ok := opts.(preparable); ok {
+		v.Prepare(c)
+	}
+
+	if v, ok := opts.(validatable); ok {
+		if err := v.Validate(); err != nil {
+			return nil, errors.Wrap(err, "options are not valid")
+		}
+	}
+
+	bytes, err := json.Marshal(&opts)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to marshal options")
+	}
+
+	var dict map[string]string
+	if err := json.Unmarshal(bytes, &dict); err != nil {
+		return nil, errors.Wrap(err, "failed to unmarshal options")
+	}
+
+	form := url.Values{}
+	for key, value := range dict {
+		form.Add(key, value)
+	}
+
+	return strings.NewReader(form.Encode()), nil
 }
