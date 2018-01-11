@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
+	"gitlab.com/swarmfund/api/internal/lorem"
 )
 
 type Connector struct {
@@ -39,7 +40,9 @@ type CreateUser struct {
 }
 
 func (r *CreateUser) Prepare(c *Connector) {
-	name := strings.Split(r.Email, "@")[0]
+	// TODO fix username limitation
+	//name := strings.Split(r.Email, "@")[0]
+	name := lorem.Token()
 	if r.Name == "" {
 		r.Name = name
 	}
@@ -47,7 +50,7 @@ func (r *CreateUser) Prepare(c *Connector) {
 		r.Username = name
 	}
 	if r.Password == "" {
-		r.Password = "sekrit"
+		r.Password = "supersekritp@ssw0rt"
 	}
 	if r.APIKey == "" {
 		r.APIKey = c.key
@@ -60,6 +63,14 @@ func (r *CreateUser) Prepare(c *Connector) {
 func (r *CreateUser) Validate() error {
 	// TODO implement
 	return nil
+}
+
+type apiResponse struct {
+	/*
+		{"success":false,"message":"Username must be no more than 20 characters\nPassword is too short (minimum is 10 characters)","errors":{"username":["must be no more than 20 characters"],"password":["is too short (minimum is 10 characters)"]},"values":{"name":"yr0a3ke29d78skm2030kep14i","username":"yr0a3ke29d78skm2030kep14i","email":"yr0a3ke29d78skm2030kep14i@test.com"},"is_developer":false}
+	*/
+	Success bool   `json:"success"`
+	Message string `json:"message"`
 }
 
 func (c *Connector) CreateUser(opts CreateUser) error {
@@ -103,7 +114,14 @@ func (c *Connector) CreateUser(opts CreateUser) error {
 		return errors.Wrap(errors.New("request failed"), string(body))
 	}
 
-	// TODO unmarshal json and check success code
+	var resp apiResponse
+	if err := json.NewDecoder(response.Body).Decode(&resp); err != nil {
+		return errors.Wrap(err, "failed to unmarshal body")
+	}
+
+	if !resp.Success {
+		return errors.Wrap(errors.New("request failed"), resp.Message)
+	}
 
 	return nil
 }
