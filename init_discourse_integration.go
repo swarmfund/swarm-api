@@ -2,6 +2,7 @@ package api
 
 import (
 	"gitlab.com/distributed_lab/logan/v3"
+	"gitlab.com/swarmfund/api/db2/api"
 	"gitlab.com/swarmfund/api/internal/discourse"
 	"gitlab.com/swarmfund/api/internal/hose"
 	"gitlab.com/swarmfund/go/xdr"
@@ -77,5 +78,26 @@ func init() {
 		//		}
 		//	}
 		//})
+
+		// ensure all existing users processed
+		func() {
+			var users []api.User
+			if err := app.APIQ().Users().Select(&users); err != nil {
+				log.WithError(err).Error("failed to create users")
+				return
+			}
+
+			for _, user := range users {
+				err := connector.CreateUser(discourse.CreateUser{
+					Email: user.Email,
+				})
+				entry := log.WithField("user", user.Address)
+				if err != nil {
+					entry.WithError(err).Error("failed to create discourse user")
+					return
+				}
+				log.Debug("discourse user created")
+			}
+		}()
 	})
 }
