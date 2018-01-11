@@ -8,6 +8,7 @@ import (
 	"gitlab.com/swarmfund/api/coreinfo"
 	"gitlab.com/swarmfund/api/db2/api"
 	"gitlab.com/swarmfund/api/internal/data"
+	"gitlab.com/swarmfund/api/internal/hose"
 	"gitlab.com/swarmfund/api/storage"
 	"gitlab.com/swarmfund/go/doorman"
 	"gitlab.com/swarmfund/go/keypair"
@@ -28,6 +29,7 @@ const (
 	storageCtxKey
 	coreInfoCtxKey
 	blobQCtxKey
+	userBusDispatchCtxKey
 )
 
 func CtxWalletQ(q api.WalletQI) func(context.Context) context.Context {
@@ -139,4 +141,15 @@ func CtxBlobQ(q data.Blobs) func(context.Context) context.Context {
 
 func BlobQ(r *http.Request) data.Blobs {
 	return r.Context().Value(blobQCtxKey).(data.Blobs)
+}
+
+func CtxUserBusDispatch(dispatch hose.UserDispatch) func(context.Context) context.Context {
+	return func(ctx context.Context) context.Context {
+		return context.WithValue(ctx, userBusDispatchCtxKey, dispatch)
+	}
+}
+
+func UserBusDispatch(r *http.Request, event hose.UserEvent) {
+	dispatch := r.Context().Value(userBusDispatchCtxKey).(hose.UserDispatch)
+	dispatch(event)
 }
