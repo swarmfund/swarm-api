@@ -59,8 +59,23 @@ func init() {
 		})
 
 		// investment listener
-		app.txBus.Subscribe(func(event hose.TransactionEvent) {
-
-		})
+		//app.txBus.Subscribe(func(event hose.TransactionEvent) {
+		//	if event.Transaction == nil {
+		//		return
+		//	}
+		//	for _, change := range event.Transaction.LedgerChanges() {
+		//		if change.Type != xdr.LedgerEntryChangeTypeUpdated {
+		//			return
+		//		}
+		//		if change.Updated.Data.Type == xdr.LedgerEntryTypeBalance {
+		//			return
+		//		}
+		//		data := change.Updated.Data.Balance
+		//		if data.Amount > 0 {
+		//			data.Asset
+		//			data.AccountId
+		//		}
+		//	}
+		//})
 	})
 }
