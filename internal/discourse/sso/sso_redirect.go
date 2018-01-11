@@ -19,10 +19,10 @@ import (
 
 type (
 	SSORedirectRequest struct {
-		Address   string
-		Nonce     string
-		Signature string
-		ReturnURL string
+		Address   string `json:"address"`
+		Nonce     string `json:"nonce"`
+		Signature string `json:"signature"`
+		ReturnURL string `json:"return"`
 	}
 	SSORedirectResponse struct {
 		Location string
@@ -30,14 +30,10 @@ type (
 )
 
 func NewSSORedirectRequest(r *http.Request) (SSORedirectRequest, error) {
-	values := r.URL.Query()
-	request := SSORedirectRequest{
-		Address:   values.Get("address"),
-		Nonce:     values.Get("nonce"),
-		ReturnURL: values.Get("return"),
-		Signature: values.Get("signature"),
+	var request SSORedirectRequest
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		return request, errors.Wrap(err, "failed to unmarshal")
 	}
-
 	return request, nil
 }
 
