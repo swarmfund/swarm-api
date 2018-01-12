@@ -10,6 +10,10 @@ const (
 	DocumentTypeFundLogo
 	DocumentTypeFundDocument
 	DocumentTypeNavReport
+	DocumentTypeAlpha
+	DocumentTypeBravo
+	DocumentTypeCharlie
+	DocumentTypeDelta
 )
 
 func IsPublicDocument(t DocumentType) bool {
