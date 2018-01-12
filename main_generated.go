@@ -38,22 +38,6 @@ func (action GetNotificationsAction) ServeHTTPC(c web.C, w http.ResponseWriter, 
 }
 
 // ServeHTTPC is a method for web.Handler
-func (action GetUserDocsAction) ServeHTTPC(c web.C, w http.ResponseWriter, r *http.Request) {
-	ap := &action.Action
-	ap.Prepare(c, w, r)
-	action.Log = action.Log.WithField("action", "GetUserDocsAction")
-	ap.Execute(&action)
-}
-
-// ServeHTTPC is a method for web.Handler
-func (action GetUserFileAction) ServeHTTPC(c web.C, w http.ResponseWriter, r *http.Request) {
-	ap := &action.Action
-	ap.Prepare(c, w, r)
-	action.Log = action.Log.WithField("action", "GetUserFileAction")
-	ap.Execute(&action)
-}
-
-// ServeHTTPC is a method for web.Handler
 func (action GetUserIdAction) ServeHTTPC(c web.C, w http.ResponseWriter, r *http.Request) {
 	ap := &action.Action
 	ap.Prepare(c, w, r)
@@ -122,14 +106,6 @@ func (action PendingTransactionShowAction) ServeHTTPC(c web.C, w http.ResponseWr
 	ap := &action.Action
 	ap.Prepare(c, w, r)
 	action.Log = action.Log.WithField("action", "PendingTransactionShowAction")
-	ap.Execute(&action)
-}
-
-// ServeHTTPC is a method for web.Handler
-func (action PutDocumentAction) ServeHTTPC(c web.C, w http.ResponseWriter, r *http.Request) {
-	ap := &action.Action
-	ap.Prepare(c, w, r)
-	action.Log = action.Log.WithField("action", "PutDocumentAction")
 	ap.Execute(&action)
 }
 

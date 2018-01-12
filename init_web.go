@@ -60,10 +60,6 @@ func initWebActions(app *App) {
 	r.Post("/details", &DetailsAction{})
 	r.Post("/participants", &ParticipantsAction{})
 
-	// documents
-	r.Get("/users/:id/documents", &GetUserDocsAction{})
-	r.Get("/users/:id/documents/:version", &GetUserFileAction{})
-	r.Post("/users/:id/documents", &PutDocumentAction{})
 	r.Get("/user_id", &GetUserIdAction{})
 
 	// limit review
