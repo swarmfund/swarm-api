@@ -171,11 +171,6 @@ func (c *Consumer) processObjectCreated(record Record) error {
 	}
 
 	switch {
-	case document.Type.IsRecovery():
-		err := c.ProcessRecoveryUpload(user, document)
-		if err != nil {
-			return err
-		}
 	case document.Type.IsKYC():
 		err := c.ProcessKYCUpload(user, document)
 		if err != nil {

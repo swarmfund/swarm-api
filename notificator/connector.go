@@ -16,7 +16,6 @@ const (
 	NotificatorTypeVerificationEmail     = 3
 	NotificatorTypeApprovalEmail         = 4
 	NotificatorTypeTFA                   = 5
-	NotificatorTypeRecoveryRequest       = 6
 	NotificatorTypeAdminNotification     = 7
 	NotificatorTypeKYCReviewPending      = 7
 	NotificatorTypeLoginNotification     = 6
@@ -129,35 +128,6 @@ func (c *Connector) sendKycNotification(email string, letter Letter) error {
 	//}
 
 	return nil
-}
-
-func (c *Connector) SendRecoveryRequest(email, token, rejectReason string) (*notificator.Response, error) {
-	//letter := Letter{
-	//	Header: "Swarm Fund wallet recovery",
-	//	Link: fmt.Sprintf("%s/wallets/recovery?token=%s",
-	//		c.conf.RecoveryRequest.RedirectURL, token),
-	//}
-	//
-	//if rejectReason != "" {
-	//	letter.Body = fmt.Sprintf(`Your request was rejected: "%s"`, rejectReason)
-	//}
-	//
-	//var buff bytes.Buffer
-	//err := c.conf.RecoveryRequest.Template.Execute(&buff, letter)
-	//if err != nil {
-	//	log.WithField("err", err.Error()).Error("failed to render template")
-	//	return nil, err
-	//}
-	//
-	//payload := &notificator.EmailRequestPayload{
-	//	Destination: email,
-	//	Subject:     letter.Header,
-	//	Message:     buff.String(),
-	//}
-	//
-	//response, err := c.notificator.Send(NotificatorTypeRecoveryRequest, email, payload)
-	//return response, err
-	return nil, nil
 }
 
 func (c *Connector) SendNewDeviceLogin(email string, device api.AuthorizedDevice) error {

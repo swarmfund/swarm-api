@@ -60,20 +60,7 @@ func initWebActions(app *App) {
 	r.Post("/details", &DetailsAction{})
 	r.Post("/participants", &ParticipantsAction{})
 
-	// documents
-	r.Get("/users/:id/documents", &GetUserDocsAction{})
-	r.Get("/users/:id/documents/:version", &GetUserFileAction{})
-	r.Post("/users/:id/documents", &PutDocumentAction{})
 	r.Get("/user_id", &GetUserIdAction{})
-
-	// wallet recovery
-	//   user endpoints
-	r.Post("/wallets/recovery", &CreateRecoveryRequestAction{})
-	r.Get("/wallets/recovery", &ApproveRecoveryRequestAction{})
-	//   admin endpoints
-	r.Get("/recoveries", &GetRecoveryRequestsAction{})
-	r.Get("/recoveries/:id", &GetRecoveryRequestAction{})
-	r.Post("/users/:id/recovery", &ResolveUserRecoveryRequestAction{})
 
 	// limit review
 	r.Get("/users/:id/poi", &UserProofOfIncomeIndexAction{})
