@@ -11,7 +11,6 @@ import (
 	"io"
 
 	"github.com/pkg/errors"
-	"gitlab.com/swarmfund/api/internal/lorem"
 )
 
 type Connector struct {
@@ -39,12 +38,12 @@ type CreateUser struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
 	Username string `json:"username"`
+	Active   bool   `json:"active"`
+	Approved bool   `json:"approved"`
 }
 
 func (r *CreateUser) Prepare(c *Connector) {
-	// TODO fix username limitation
-	//name := strings.Split(r.Email, "@")[0]
-	name := lorem.Token()
+	name := strings.Split(r.Email, "@")[0]
 	if r.Name == "" {
 		r.Name = name
 	}

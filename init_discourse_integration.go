@@ -20,7 +20,9 @@ func init() {
 				return
 			}
 			err := connector.CreateUser(discourse.CreateUser{
-				Email: event.User.Email,
+				Active:   true,
+				Approved: true,
+				Email:    event.User.Email,
 			})
 			entry := log.WithField("user", event.User.Address)
 			if err != nil {
@@ -89,7 +91,9 @@ func init() {
 
 			for _, user := range users {
 				err := connector.CreateUser(discourse.CreateUser{
-					Email: user.Email,
+					Active:   true,
+					Approved: true,
+					Email:    user.Email,
 				})
 				entry := log.WithField("user", user.Address)
 				if err != nil {
