@@ -323,18 +323,6 @@ var (
 		Detail: "Only pending operation can be deleted",
 	}
 
-	RecoveryRequestLimitExceeded = P{
-		Type:   "too_many_requests",
-		Title:  "Limit Exceeded",
-		Status: http.StatusTooManyRequests,
-	}
-
-	ForbiddenReasonRecovery = P{
-		Type:   "recovery",
-		Title:  "Forbidden",
-		Status: http.StatusForbidden,
-	}
-
 	TFARequired = func(token string, details map[string]interface{}) *P {
 		details["token"] = token
 		return &P{

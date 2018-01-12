@@ -76,33 +76,4 @@ func (action *GetUserFileAction) performRequest() {
 		action.Err = &problem.NotFound
 		return
 	}
-
-	// FIXME:
-	// only admin should be able to get recovery doc
-	// otherwise we leak recovery code
-	//if document.Type == api.DocumentTypeRecoveryPhoto {
-	//	recoveryRequest, err := action.APIQ().Recoveries().ByAccountID(action.Address)
-	//	if err != nil {
-	//		action.Log.WithError(err).Error("failed to get recovery request")
-	//		action.Err = &problem.ServerError
-	//		return
-	//	}
-	//
-	//	if recoveryRequest == nil || recoveryRequest.RecoveryWalletID == nil {
-	//		action.Err = &problem.NotFound
-	//		return
-	//	}
-	//
-	//	key = fmt.Sprintf("%s-%s", action.Type, *recoveryRequest.RecoveryWalletID)
-	//}
-
-	//url, err := action.App.Storage().DocumentURL(string(action.User.Address), document.Key)
-	//if err != nil {
-	//	action.Log.WithError(err).Error("failed to get document url")
-	//	action.Err = &problem.ServerError
-	//	return
-	//}
-	//action.Response = map[string]string{
-	//	"url": url.String(),
-	//}
 }

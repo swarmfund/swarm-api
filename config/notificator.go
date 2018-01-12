@@ -23,11 +23,6 @@ type Notificator struct {
 	ClientRouter string
 
 	EmailConfirmation *template.Template
-	//KYCApproval            KYCApproval
-	//RecoveryRequest        RecoveryRequest
-	//LoginNotification      LoginNotification
-	//OperationsNotification OperationsNotification
-	//KYCReviewNotification  KYCReviewNotification
 }
 
 func (c *ViperConfig) Notificator() Notificator {
@@ -51,7 +46,6 @@ func (c *ViperConfig) Notificator() Notificator {
 //	n.EmailConfirmation.DefineConfigStructure()
 //
 //	n.KYCApproval.Base = NewBase(n.Base, "kyc_approval")
-//	n.RecoveryRequest = NewRecoveryRequest(NewBase(n.Base, "recovery_request"))
 //	n.LoginNotification.Base = NewBase(n.Base, "login_notification")
 //
 //	n.OperationsNotification.Base = NewBase(n.Base, "op_notifications")
@@ -83,11 +77,6 @@ func (c *ViperConfig) Notificator() Notificator {
 //	}
 //
 //	err = n.KYCApproval.Init()
-//	if err != nil {
-//		return err
-//	}
-//
-//	err = n.RecoveryRequest.Init()
 //	if err != nil {
 //		return err
 //	}

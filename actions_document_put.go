@@ -10,7 +10,6 @@ import (
 	"gitlab.com/swarmfund/api/render/hal"
 	"gitlab.com/swarmfund/api/render/problem"
 	"gitlab.com/swarmfund/api/storage"
-	"gitlab.com/swarmfund/api/utils"
 )
 
 type PutDocumentRequest struct {
@@ -61,29 +60,10 @@ func (action *PutDocumentAction) checkAvailable() {
 func (action *PutDocumentAction) loadParams() {
 	action.UnmarshalBody(&action.Request)
 	action.AccountID = action.GetNonEmptyString("id")
-	if action.Request.DocumentType.IsRecovery() && action.Request.WalletID == "" {
-		action.SetInvalidField("wallet_id", errors.New("required for recovery doc"))
-		return
-	}
 }
 
 func (action *PutDocumentAction) checkAllowed() {
 	switch {
-	case action.Request.DocumentType.IsRecovery():
-		// we can't sign request properly during recovery request,
-		// so we are checking if wallet id is correct as auth measure
-		wallet, err := action.APIQ().Wallet().ByWalletID(action.Request.WalletID)
-		if err != nil {
-			action.Log.WithError(err).Error("failed to get wallet")
-			action.Err = &problem.ServerError
-			return
-		}
-
-		if wallet == nil {
-			action.checkSignerConstraints(
-				SignerOf(action.App.CoreInfo.MasterAccountID),
-			)
-		}
 	default:
 		action.checkSignerConstraints(
 			SignerOf(action.AccountID),
@@ -124,31 +104,6 @@ func (action *PutDocumentAction) performRequest() {
 	}
 
 	switch {
-	case action.Document.Type.IsRecovery():
-		recoveryRequest, err := action.APIQ().Recoveries().ByAccountID(action.AccountID)
-		if err != nil {
-			action.Log.WithError(err).Error("failed to get recovery request")
-			action.Err = &problem.ServerError
-			return
-		}
-
-		if recoveryRequest == nil || recoveryRequest.IsUploaded() {
-			action.Err = &problem.Forbidden
-			return
-		}
-
-		// to prevent concurrent writes of recovery document we are abusing
-		// version token it allows to prevent double-write and make sure
-		// first actual upload to come will count with persisted wallet ID.
-		// also wallet ID is base64 which storage layer does not like, so we
-		// re-encode it as hex
-		hexed, err := utils.Base64ToHex(action.Request.WalletID)
-		if err != nil {
-			action.Log.WithError(err).Error("failed to encode wallet id")
-			action.Err = &problem.ServerError
-			return
-		}
-		action.Document.Version = hexed
 	case action.Document.Type.IsKYC():
 	case action.Document.Type.IsProofOfIncome():
 	default:
