@@ -25,6 +25,10 @@ func init() {
 			interface{}(DocumentTypeFundLogo).(fmt.Stringer).String():     DocumentTypeFundLogo,
 			interface{}(DocumentTypeFundDocument).(fmt.Stringer).String(): DocumentTypeFundDocument,
 			interface{}(DocumentTypeNavReport).(fmt.Stringer).String():    DocumentTypeNavReport,
+			interface{}(DocumentTypeAlpha).(fmt.Stringer).String():        DocumentTypeAlpha,
+			interface{}(DocumentTypeBravo).(fmt.Stringer).String():        DocumentTypeBravo,
+			interface{}(DocumentTypeCharlie).(fmt.Stringer).String():      DocumentTypeCharlie,
+			interface{}(DocumentTypeDelta).(fmt.Stringer).String():        DocumentTypeDelta,
 		}
 	}
 }
@@ -34,6 +38,10 @@ var _DocumentTypeNameToValue = map[string]DocumentType{
 	"fund_logo":     DocumentTypeFundLogo,
 	"fund_document": DocumentTypeFundDocument,
 	"nav_report":    DocumentTypeNavReport,
+	"alpha":         DocumentTypeAlpha,
+	"bravo":         DocumentTypeBravo,
+	"charlie":       DocumentTypeCharlie,
+	"delta":         DocumentTypeDelta,
 }
 
 var _DocumentTypeValueToName = map[DocumentType]string{
@@ -41,6 +49,10 @@ var _DocumentTypeValueToName = map[DocumentType]string{
 	DocumentTypeFundLogo:     "fund_logo",
 	DocumentTypeFundDocument: "fund_document",
 	DocumentTypeNavReport:    "nav_report",
+	DocumentTypeAlpha:        "alpha",
+	DocumentTypeBravo:        "bravo",
+	DocumentTypeCharlie:      "charlie",
+	DocumentTypeDelta:        "delta",
 }
 
 // String is generated so DocumentType satisfies fmt.Stringer.
