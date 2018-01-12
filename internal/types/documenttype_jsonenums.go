@@ -29,6 +29,8 @@ func init() {
 			interface{}(DocumentTypeBravo).(fmt.Stringer).String():        DocumentTypeBravo,
 			interface{}(DocumentTypeCharlie).(fmt.Stringer).String():      DocumentTypeCharlie,
 			interface{}(DocumentTypeDelta).(fmt.Stringer).String():        DocumentTypeDelta,
+			interface{}(DocumentTypeTokenTerms).(fmt.Stringer).String():   DocumentTypeTokenTerms,
+			interface{}(DocumentTypeTokenMetrics).(fmt.Stringer).String(): DocumentTypeTokenMetrics,
 		}
 	}
 }
@@ -42,6 +44,8 @@ var _DocumentTypeNameToValue = map[string]DocumentType{
 	"bravo":         DocumentTypeBravo,
 	"charlie":       DocumentTypeCharlie,
 	"delta":         DocumentTypeDelta,
+	"token_terms":   DocumentTypeTokenTerms,
+	"token_metrics": DocumentTypeTokenMetrics,
 }
 
 var _DocumentTypeValueToName = map[DocumentType]string{
@@ -53,6 +57,8 @@ var _DocumentTypeValueToName = map[DocumentType]string{
 	DocumentTypeBravo:        "bravo",
 	DocumentTypeCharlie:      "charlie",
 	DocumentTypeDelta:        "delta",
+	DocumentTypeTokenTerms:   "token_terms",
+	DocumentTypeTokenMetrics: "token_metrics",
 }
 
 // String is generated so DocumentType satisfies fmt.Stringer.
