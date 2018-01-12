@@ -14,6 +14,8 @@ const (
 	DocumentTypeBravo
 	DocumentTypeCharlie
 	DocumentTypeDelta
+	DocumentTypeTokenTerms
+	DocumentTypeTokenMetrics
 )
 
 func IsPublicDocument(t DocumentType) bool {

@@ -13,4 +13,6 @@ const (
 	BlobTypeBravo
 	BlobTypeCharlie
 	BlobTypeDelta
+	BlobTypeTokenTerms
+	BlobTypeTokenMetrics
 )
