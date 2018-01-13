@@ -17,10 +17,6 @@ const (
 )
 
 func IsPublicDocument(t DocumentType) bool {
-	switch t {
-	case DocumentTypeAssetLogo, DocumentTypeFundLogo, DocumentTypeFundDocument, DocumentTypeNavReport, DocumentTypeTokenTerms, DocumentTypeTokenMetrics:
-		return true
-	default:
-		return false
-	}
+	// TODO revert once past demo
+	return true
 }
