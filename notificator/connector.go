@@ -3,11 +3,11 @@ package notificator
 import (
 	"bytes"
 	"fmt"
+	"html/template"
 	"net/url"
 
 	"github.com/pkg/errors"
 	"gitlab.com/distributed_lab/notificator"
-	"gitlab.com/swarmfund/api/config"
 	"gitlab.com/swarmfund/api/db2/api"
 	"gitlab.com/swarmfund/api/internal/clienturl"
 )
@@ -23,12 +23,22 @@ const (
 	NotificatorTypeOperationNotification = 9
 )
 
-type Connector struct {
-	notificator *notificator.Connector
-	conf        config.Notificator
+type Config struct {
+	Disabled     bool
+	Endpoint     string
+	Secret       string
+	Public       string
+	ClientRouter string
+
+	EmailConfirmation *template.Template
 }
 
-func NewConnector(conf config.Notificator) *Connector {
+type Connector struct {
+	notificator *notificator.Connector
+	conf        Config
+}
+
+func NewConnector(conf Config) *Connector {
 	// TODO move this to config
 	endpoint, err := url.Parse(conf.Endpoint)
 	if err != nil {
@@ -206,6 +216,11 @@ func (c *Connector) SendOperationNotice(opType int, letter TransferNoticeI) erro
 }
 
 func (c *Connector) send(requestType int, token string, payload notificator.Payload) error {
+	if c.conf.Disabled {
+		// TODO log warning
+		return nil
+	}
+
 	response, err := c.notificator.Send(requestType, token, payload)
 	if err != nil {
 		return err
