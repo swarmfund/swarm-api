@@ -1,8 +1,6 @@
 package resources
 
 import (
-	"fmt"
-
 	"github.com/go-ozzo/ozzo-validation"
 	"gitlab.com/swarmfund/api/db2/api"
 	"gitlab.com/swarmfund/api/internal/types"
@@ -35,9 +33,9 @@ func (r WalletData) Validate() error {
 }
 
 type WalletRelationships struct {
-	KDF         *KDFPlain    `json:"kdf,omitempty"`
-	Factor      *Wallet      `json:"factor,omitempty"`
-	Transaction *Transaction `json:"transaction,omitempty"`
+	KDF         *KDFPlain       `json:"kdf,omitempty"`
+	Factor      *PasswordFactor `json:"factor,omitempty"`
+	Transaction *Transaction    `json:"transaction,omitempty"`
 }
 
 func (r WalletRelationships) Validate() error {
@@ -45,6 +43,44 @@ func (r WalletRelationships) Validate() error {
 		validation.Field(&r.KDF),
 		validation.Field(&r.Factor),
 		validation.Field(&r.Transaction),
+	)
+}
+
+type PasswordFactor struct {
+	Data PasswordFactorData `json:"data"`
+}
+
+func (r PasswordFactor) Validate() error {
+	return validation.ValidateStruct(&r,
+		validation.Field(&r.Data, validation.Required),
+	)
+}
+
+type PasswordFactorData struct {
+	ID         string                   `json:"id"`
+	Type       string                   `json:"type"`
+	Attributes PasswordFactorAttributes `json:"attributes"`
+}
+
+func (r PasswordFactorData) Validate() error {
+	return validation.ValidateStruct(&r,
+		validation.Field(&r.Type, validation.Required, validation.In("password")),
+		validation.Field(&r.Attributes, validation.Required),
+	)
+}
+
+type PasswordFactorAttributes struct {
+	AccountID    types.Address `json:"account_id"`
+	KeychainData string        `json:"keychain_data"`
+	Verified     bool          `json:"verified"`
+	Salt         string        `json:"salt,omitempty"`
+}
+
+func (r PasswordFactorAttributes) Validate() error {
+	return validation.ValidateStruct(&r,
+		validation.Field(&r.AccountID, validation.Required),
+		validation.Field(&r.KeychainData, validation.Required),
+		validation.Field(&r.Salt, validation.Required),
 	)
 }
 
@@ -81,12 +117,11 @@ func NewWallet(w *api.Wallet) Wallet {
 	return r
 }
 
-func NewPasswordFactor(factor *tfa.Password) *Wallet {
-	return &Wallet{
-		Data: WalletData{
+func NewPasswordFactor(factor *tfa.Password) *PasswordFactor {
+	return &PasswordFactor{
+		Data: PasswordFactorData{
 			Type: "password",
-			ID:   fmt.Sprintf("%d", factor.ID()),
-			Attributes: WalletAttributes{
+			Attributes: PasswordFactorAttributes{
 				Salt:         factor.Details.Salt,
 				AccountID:    factor.Details.AccountID,
 				KeychainData: factor.Details.KeychainData,

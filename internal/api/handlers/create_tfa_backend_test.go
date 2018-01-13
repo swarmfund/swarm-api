@@ -160,7 +160,7 @@ func TestCreateTFABackend(t *testing.T) {
 	wallet := api.Wallet{
 		WalletId:  "foobar",
 		Username:  "fo@ob.ar",
-		AccountID: signer.Address(),
+		AccountID: types.Address(signer.Address()),
 	}
 
 	t.Run("not found", func(t *testing.T) {

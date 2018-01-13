@@ -3,9 +3,10 @@ package handlers
 import (
 	"net/http"
 
+	"encoding/json"
+
 	"github.com/go-chi/chi"
 	. "github.com/go-ozzo/ozzo-validation"
-	"github.com/google/jsonapi"
 	"github.com/pkg/errors"
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/ape/problems"
@@ -20,22 +21,26 @@ import (
 
 type (
 	ChangeWalletIDRequest struct {
-		WalletID        string                    `json:"wallet_id" jsonapi:"primary,wallet"`
-		CurrentWalletID string                    `json:"-"`
-		AccountID       string                    `json:"account_id" jsonapi:"attr,account_id"`
-		Salt            string                    `json:"salt" jsonapi:"attr,salt"`
-		KeychainData    string                    `json:"keychain_data" jsonapi:"attr,keychain_data"`
-		KDF             *resources.KDFVersion     `json:"kdf" jsonapi:"relation,kdf"`
-		PasswordFactor  *resources.PasswordFactor `json:"password_factor" jsonapi:"relation,factor"`
-		Transaction     *resources.Transaction    `json:"transaction" jsonapi:"relation,transaction"`
+		resources.Wallet
+		CurrentWalletID string `json:"-"`
 	}
+	//ChangeWalletIDRequest struct {
+	//	WalletID        string                     `json:"wallet_id" jsonapi:"primary,wallet"`
+	//	CurrentWalletID string                     `json:"-"`
+	//	AccountID       string                     `json:"account_id" jsonapi:"attr,account_id"`
+	//	Salt            string                     `json:"salt" jsonapi:"attr,salt"`
+	//	KeychainData    string                     `json:"keychain_data" jsonapi:"attr,keychain_data"`
+	//	KDF             *resources.KDFVersion      `json:"kdf" jsonapi:"relation,kdf"`
+	//	PasswordFactor  *resources.PasswordFactor  `json:"password_factor" jsonapi:"relation,factor"`
+	//	Transaction     *resources.TransactionData `json:"transaction" jsonapi:"relation,transaction"`
+	//}
 )
 
 func NewChangeWalletIDRequest(r *http.Request) (ChangeWalletIDRequest, error) {
 	request := ChangeWalletIDRequest{
 		CurrentWalletID: chi.URLParam(r, "wallet-id"),
 	}
-	if err := jsonapi.UnmarshalPayload(r.Body, &request); err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
 		return request, errors.Wrap(err, "failed to unmarshal")
 	}
 	return request, request.Validate()
@@ -43,15 +48,9 @@ func NewChangeWalletIDRequest(r *http.Request) (ChangeWalletIDRequest, error) {
 
 func (r ChangeWalletIDRequest) Validate() error {
 	return ValidateStruct(&r,
-		Field(&r.CurrentWalletID, Required),
-		Field(&r.WalletID, Required),
-		// TODO validate address
-		Field(&r.AccountID, Required),
-		Field(&r.Salt, Required),
-		Field(&r.KeychainData, Required),
-		Field(&r.KDF, Required),
-		Field(&r.PasswordFactor, Required),
-		Field(&r.Transaction, Required),
+		// TODO test url param
+		//Field(&r.CurrentWalletID, Required),
+		Field(&r.Wallet, Required),
 	)
 }
 
@@ -76,7 +75,7 @@ func ChangeWalletID(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// check allowed
-	if err := Doorman(r, doorman.SignerOf(wallet.CurrentAccountID)); err != nil {
+	if err := Doorman(r, doorman.SignerOf(string(wallet.CurrentAccountID))); err != nil {
 		movetoape.RenderDoormanErr(w, err)
 		return
 	}
@@ -94,17 +93,17 @@ func ChangeWalletID(w http.ResponseWriter, r *http.Request) {
 	}
 
 	factor := tfa.NewPasswordBackend(tfa.PasswordDetails{
-		Salt:         request.PasswordFactor.Salt,
-		AccountID:    request.PasswordFactor.AccountID,
-		KeychainData: request.PasswordFactor.KeychainData,
+		Salt:         request.Data.Relationships.Factor.Data.Attributes.Salt,
+		AccountID:    types.Address(request.Data.Relationships.Factor.Data.Attributes.AccountID),
+		KeychainData: request.Data.Relationships.Factor.Data.Attributes.KeychainData,
 	})
 
 	// update wallet
-	wallet.WalletId = request.WalletID
-	wallet.Salt = request.Salt
-	wallet.KeychainData = request.KeychainData
-	wallet.CurrentAccountID = request.AccountID
-	wallet.KDF = request.KDF.Version
+	wallet.WalletId = request.Data.ID
+	wallet.Salt = request.Data.Attributes.Salt
+	wallet.KeychainData = request.Data.Attributes.KeychainData
+	wallet.CurrentAccountID = types.Address(request.Data.Attributes.AccountID)
+	wallet.KDF = request.Data.Relationships.KDF.Data.ID
 	err = WalletQ(r).Transaction(func(q api.WalletQI) error {
 		// update wallet
 		if err = WalletQ(r).Update(wallet); err != nil {
@@ -120,7 +119,7 @@ func ChangeWalletID(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// submit transaction
-		if err = Horizon(r).SubmitTX(request.Transaction.Envelope); err != nil {
+		if err = Horizon(r).SubmitTX(request.Data.Relationships.Transaction.Data.Attributes.Envelope); err != nil {
 			return errors.Wrap(err, "failed to submit transaction")
 		}
 
@@ -151,5 +150,10 @@ func ChangeWalletID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ape.Render(w, resources.NewWallet(wallet, factor))
+	// render response
+	{
+		resource := resources.NewWallet(wallet)
+		resource.Data.Relationships.Factor = resources.NewPasswordFactor(factor)
+		json.NewEncoder(w).Encode(&resource)
+	}
 }
