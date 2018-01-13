@@ -76,9 +76,6 @@ func initWebActions(app *App) {
 	r.Patch("/transactions/:tx_hash", &PendingTransactionRejectAction{})
 	r.Delete("/transactions/:tx_hash", &PendingTransactionDeleteAction{})
 
-	r.Get("/notifications/:id", &GetNotificationsAction{})
-	r.Patch("/notifications/:id", &PatchNotificationsAction{})
-
 	r.NotFound(&NotFoundAction{})
 }
 
@@ -86,7 +83,7 @@ func init() {
 	appInit.Add(
 		"web.init",
 		initWeb,
-		"app-context", "stellarCoreInfo", "api-db", "memory_cache",
+		"app-context", "api-db",
 	)
 
 	appInit.Add(

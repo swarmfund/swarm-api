@@ -16,10 +16,6 @@ type QInterface interface {
 	PendingTransactionByHash(hash string) (*PendingTransaction, error)
 	PendingTransactionSigners() PendingTransactionSignersQI
 	PenTXSub() PenTXSubQI
-
-	//KYCTracker() KYCTrackerQI
-
-	Notifications() NotificationsQI
 }
 
 // Q is a helper struct on which to hang common queries against a history

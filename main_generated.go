@@ -1,17 +1,10 @@
 package api
 
 import (
-	"github.com/zenazn/goji/web"
 	"net/http"
-)
 
-// ServeHTTPC is a method for web.Handler
-func (action DeleteContactShareAction) ServeHTTPC(c web.C, w http.ResponseWriter, r *http.Request) {
-	ap := &action.Action
-	ap.Prepare(c, w, r)
-	action.Log = action.Log.WithField("action", "DeleteContactShareAction")
-	ap.Execute(&action)
-}
+	"github.com/zenazn/goji/web"
+)
 
 // ServeHTTPC is a method for web.Handler
 func (action DetailsAction) ServeHTTPC(c web.C, w http.ResponseWriter, r *http.Request) {
@@ -26,14 +19,6 @@ func (action GetEnumsAction) ServeHTTPC(c web.C, w http.ResponseWriter, r *http.
 	ap := &action.Action
 	ap.Prepare(c, w, r)
 	action.Log = action.Log.WithField("action", "GetEnumsAction")
-	ap.Execute(&action)
-}
-
-// ServeHTTPC is a method for web.Handler
-func (action GetNotificationsAction) ServeHTTPC(c web.C, w http.ResponseWriter, r *http.Request) {
-	ap := &action.Action
-	ap.Prepare(c, w, r)
-	action.Log = action.Log.WithField("action", "GetNotificationsAction")
 	ap.Execute(&action)
 }
 
@@ -58,14 +43,6 @@ func (action ParticipantsAction) ServeHTTPC(c web.C, w http.ResponseWriter, r *h
 	ap := &action.Action
 	ap.Prepare(c, w, r)
 	action.Log = action.Log.WithField("action", "ParticipantsAction")
-	ap.Execute(&action)
-}
-
-// ServeHTTPC is a method for web.Handler
-func (action PatchNotificationsAction) ServeHTTPC(c web.C, w http.ResponseWriter, r *http.Request) {
-	ap := &action.Action
-	ap.Prepare(c, w, r)
-	action.Log = action.Log.WithField("action", "PatchNotificationsAction")
 	ap.Execute(&action)
 }
 
