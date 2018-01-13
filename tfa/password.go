@@ -11,10 +11,10 @@ import (
 )
 
 type PasswordDetails struct {
-	WalletID     string `json:"wallet_id"`
-	Salt         string `json:"salt"`
-	AccountID    string `json:"account_id"`
-	KeychainData string `json:"keychain_data"`
+	WalletID     string        `json:"wallet_id"`
+	Salt         string        `json:"salt"`
+	AccountID    types.Address `json:"account_id"`
+	KeychainData string        `json:"keychain_data"`
 }
 
 type Password struct {
@@ -54,7 +54,7 @@ func (p Password) Meta() map[string]interface{} {
 }
 
 func (p Password) Verify(code string, token string) (bool, error) {
-	kp, err := keypair.Parse(p.Details.AccountID)
+	kp, err := keypair.Parse(string(p.Details.AccountID))
 	if err != nil {
 		return false, errors.Wrap(err, "failed to parse keypair")
 	}

@@ -13,6 +13,9 @@ func init() {
 		log := app.Config().Log().WithField("service", "user-create-listener")
 
 		connector := app.Config().Discourse()
+		if connector.Disabled {
+			return
+		}
 
 		// create user listener
 		app.userBus.Subscribe(func(event hose.UserEvent) {

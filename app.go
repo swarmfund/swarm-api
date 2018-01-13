@@ -18,7 +18,6 @@ import (
 	"gitlab.com/swarmfund/api/internal/data/postgres"
 	"gitlab.com/swarmfund/api/internal/hose"
 	"gitlab.com/swarmfund/api/log"
-	"gitlab.com/swarmfund/api/notificator"
 	"gitlab.com/swarmfund/api/pentxsub"
 	"gitlab.com/swarmfund/api/storage"
 	"gitlab.com/swarmfund/api/txwatcher"
@@ -71,10 +70,6 @@ func (a *App) Config() config.Config {
 
 func (a *App) AccountManagerKP() keypair.KP {
 	return a.Config().API().AccountManager
-}
-
-func (a *App) Notificator() *notificator.Connector {
-	return notificator.NewConnector(a.Config().Notificator())
 }
 
 func (a *App) MasterKP() keypair.KP {
@@ -159,10 +154,6 @@ func (a *App) APIQ() api.QInterface {
 // returned repo is bound to `ctx`.
 func (a *App) APIRepo(ctx context.Context) *db2.Repo {
 	return &db2.Repo{DB: a.apiQ.GetRepo().DB, Ctx: ctx}
-}
-
-func (action *Action) Notificator() *notificator.Connector {
-	return action.App.Notificator()
 }
 
 func (a *App) Storage() *storage.Connector {
