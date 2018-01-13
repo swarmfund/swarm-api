@@ -45,5 +45,4 @@ func GetWallet(w http.ResponseWriter, r *http.Request) {
 		resource := resources.NewWallet(wallet)
 		json.NewEncoder(w).Encode(&resource)
 	}
-
 }

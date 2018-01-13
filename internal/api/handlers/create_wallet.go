@@ -16,11 +16,7 @@ import (
 
 type (
 	CreateWalletRequest struct {
-		Data resources.WalletData `json:"data"`
-	}
-	CreateWalletRequestRelationships struct {
-		KDF    resources.KDFPlain `json:"kdf"`
-		Factor resources.Wallet   `json:"factor"`
+		resources.Wallet
 	}
 )
 
@@ -34,9 +30,10 @@ func NewCreateWalletRequest(r *http.Request) (CreateWalletRequest, error) {
 
 func (r *CreateWalletRequest) Validate() error {
 	return Errors{
-		"/data/":                     Validate(r.Data, Required),
-		"/data/relationships/kdf":    Validate(r.Data.Relationships.KDF, Required),
-		"/data/relationships/factor": Validate(r.Data.Relationships.Factor, Required),
+		"/data/":                       Validate(r.Data, Required),
+		"/data/relationships/kdf":      Validate(r.Data.Relationships.KDF, Required),
+		"/data/relationships/factor":   Validate(r.Data.Relationships.Factor, Required),
+		"/data/relationships/recovery": Validate(r.Data.Relationships.Recovery, Required),
 	}.Filter()
 }
 
@@ -81,6 +78,15 @@ func CreateWallet(w http.ResponseWriter, r *http.Request) {
 			return errors.Wrap(err, "failed to create password factor")
 		}
 
+		if err = q.CreateRecovery(api.RecoveryKeychain{
+			Email:    request.Data.Attributes.Email,
+			Salt:     request.Data.Relationships.Recovery.Data.Attributes.Salt,
+			Keychain: request.Data.Relationships.Recovery.Data.Attributes.KeychainData,
+			WalletID: request.Data.Relationships.Recovery.Data.ID,
+		}); err != nil {
+			return errors.Wrap(err, "failed to create recovery")
+		}
+
 		return nil
 	})
 	if err != nil {
@@ -110,7 +116,6 @@ func CreateWallet(w http.ResponseWriter, r *http.Request) {
 
 	{
 		resource := resources.NewWallet(wallet)
-		resource.Data.Relationships.Factor = resources.NewPasswordFactor(factor)
 		w.WriteHeader(http.StatusCreated)
 		json.NewEncoder(w).Encode(&resource)
 	}

@@ -24,16 +24,6 @@ type (
 		resources.Wallet
 		CurrentWalletID string `json:"-"`
 	}
-	//ChangeWalletIDRequest struct {
-	//	WalletID        string                     `json:"wallet_id" jsonapi:"primary,wallet"`
-	//	CurrentWalletID string                     `json:"-"`
-	//	AccountID       string                     `json:"account_id" jsonapi:"attr,account_id"`
-	//	Salt            string                     `json:"salt" jsonapi:"attr,salt"`
-	//	KeychainData    string                     `json:"keychain_data" jsonapi:"attr,keychain_data"`
-	//	KDF             *resources.KDFVersion      `json:"kdf" jsonapi:"relation,kdf"`
-	//	PasswordFactor  *resources.PasswordFactor  `json:"password_factor" jsonapi:"relation,factor"`
-	//	Transaction     *resources.TransactionData `json:"transaction" jsonapi:"relation,transaction"`
-	//}
 )
 
 func NewChangeWalletIDRequest(r *http.Request) (ChangeWalletIDRequest, error) {

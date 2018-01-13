@@ -18,6 +18,7 @@ var walletSelect = sq.Select(
 	"w.*",
 	"et.confirmed as verified").
 	From("wallets w").
+	Join("recoveries r on w.email = r.wallet").
 	Join("email_tokens et on w.wallet_id = et.wallet_id")
 
 var walletInsert = sq.Insert("wallets")
@@ -25,6 +26,7 @@ var walletUpdate = sq.Update("wallets")
 
 const (
 	tableWallets                 = "wallets"
+	tableRecoveries              = "recoveries"
 	tableWalletsLimit            = 10
 	walletsKDFFkeyConstraint     = `wallets_kdf_fkey`
 	walletsWalletIDKeyConstraint = `wallets_wallet_id_key`
@@ -36,6 +38,13 @@ var (
 	ErrWalletsConflict         = errors.New("wallet already exists")
 )
 
+type RecoveryKeychain struct {
+	Email    string `db:"email"`
+	Salt     string `db:"salt"`
+	Keychain string `db:"keychain"`
+	WalletID string `db:"wallet_id"`
+}
+
 //go:generate mockery -case underscore -name WalletQI
 type WalletQI interface {
 	New() WalletQI
@@ -46,6 +55,8 @@ type WalletQI interface {
 	CreatePasswordFactor(walletID string, factor *tfa.Password) error
 	// DeletePasswordFactor assumes there is single password factor per wallet
 	DeletePasswordFactor(walletID string) error
+	// TODO also belongs somewhere else, here for same reasons
+	CreateRecovery(RecoveryKeychain) error
 
 	// Create expected to set wallet.ID on successful create
 	// May throw:
@@ -55,6 +66,7 @@ type WalletQI interface {
 
 	// LoadWallet
 	ByEmail(username string) (*Wallet, error)
+	// ByWalletID lookups both primary and recovery wallet ids
 	ByWalletID(walletId string) (*Wallet, error)
 	DeleteWallets(walletIDs []string) error
 
@@ -88,6 +100,18 @@ func (q *WalletQ) Transaction(fn func(q WalletQI) error) (err error) {
 	return q.parent.Transaction(func() error {
 		return fn(q)
 	})
+}
+
+func (q *WalletQ) CreateRecovery(recovery RecoveryKeychain) error {
+	stmt := sq.Insert(tableRecoveries).
+		SetMap(map[string]interface{}{
+			"wallet":        recovery.Email,
+			"salt":          recovery.Salt,
+			"keychain_data": recovery.Keychain,
+			"wallet_id":     recovery.WalletID,
+		})
+	_, err := q.parent.Exec(stmt)
+	return err
 }
 
 func (q *WalletQ) CreatePasswordFactor(walletID string, factor *tfa.Password) error {
@@ -207,9 +231,9 @@ func (q *WalletQ) ByAccountID(address types.Address) (*Wallet, error) {
 	return result, err
 }
 
-func (q *WalletQ) ByWalletID(walletId string) (*Wallet, error) {
+func (q *WalletQ) ByWalletID(walletID string) (*Wallet, error) {
 	var result Wallet
-	stmt := walletSelect.Where("w.wallet_id = ?", walletId)
+	stmt := walletSelect.Where("w.wallet_id = ? or r.wallet_id", walletID, walletID)
 
 	err := q.parent.Get(&result, stmt)
 	if err == sql.ErrNoRows {

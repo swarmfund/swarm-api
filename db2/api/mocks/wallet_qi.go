@@ -147,6 +147,20 @@ func (_m *WalletQI) CreatePasswordFactor(walletID string, factor *tfa.Password) 
 	return r0
 }
 
+// CreateRecovery provides a mock function with given fields: _a0
+func (_m *WalletQI) CreateRecovery(_a0 api.RecoveryKeychain) error {
+	ret := _m.Called(_a0)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(api.RecoveryKeychain) error); ok {
+		r0 = rf(_a0)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // DeletePasswordFactor provides a mock function with given fields: walletID
 func (_m *WalletQI) DeletePasswordFactor(walletID string) error {
 	ret := _m.Called(walletID)
