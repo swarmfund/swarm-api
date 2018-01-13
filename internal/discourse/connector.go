@@ -14,13 +14,16 @@ import (
 )
 
 type Connector struct {
+	// TODO move to separate integrations config
+	Disabled bool
 	endpoint *url.URL
 	username string
 	key      string
 }
 
-func NewConnector(endpoint *url.URL, username, key string) *Connector {
+func NewConnector(endpoint *url.URL, username, key string, disabled bool) *Connector {
 	return &Connector{
+		Disabled: disabled,
 		endpoint: endpoint,
 		username: username,
 		key:      key,
