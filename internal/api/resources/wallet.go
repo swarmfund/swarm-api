@@ -36,6 +36,7 @@ type WalletRelationships struct {
 	KDF         *KDFPlain       `json:"kdf,omitempty"`
 	Factor      *PasswordFactor `json:"factor,omitempty"`
 	Transaction *Transaction    `json:"transaction,omitempty"`
+	Recovery    *PasswordFactor `json:"recovery,omitempty"`
 }
 
 func (r WalletRelationships) Validate() error {
@@ -64,7 +65,7 @@ type PasswordFactorData struct {
 
 func (r PasswordFactorData) Validate() error {
 	return validation.ValidateStruct(&r,
-		validation.Field(&r.Type, validation.Required, validation.In("password")),
+		validation.Field(&r.Type, validation.Required, validation.In("password", "recovery")),
 		validation.Field(&r.Attributes, validation.Required),
 	)
 }
@@ -72,13 +73,11 @@ func (r PasswordFactorData) Validate() error {
 type PasswordFactorAttributes struct {
 	AccountID    types.Address `json:"account_id"`
 	KeychainData string        `json:"keychain_data"`
-	Verified     bool          `json:"verified"`
 	Salt         string        `json:"salt,omitempty"`
 }
 
 func (r PasswordFactorAttributes) Validate() error {
 	return validation.ValidateStruct(&r,
-		validation.Field(&r.AccountID, validation.Required),
 		validation.Field(&r.KeychainData, validation.Required),
 		validation.Field(&r.Salt, validation.Required),
 	)

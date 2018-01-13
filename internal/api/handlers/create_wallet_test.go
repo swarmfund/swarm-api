@@ -35,6 +35,16 @@ func TestNewCreateWalletRequest(t *testing.T) {
 								"id": "1"
 							}
 						},
+						"recovery": {
+							"data": {
+								"type": "recovery",
+								"id": "recoverywalletid",
+								"attributes": {
+									"keychain_data": "recoverykeychaindata",
+									"salt": "recoverysalt=="
+								}
+							}
+						},
 						"factor": {
 							"data": {
 								"type": "password",
@@ -50,29 +60,41 @@ func TestNewCreateWalletRequest(t *testing.T) {
 			}`,
 			false,
 			CreateWalletRequest{
-				Data: resources.WalletData{
-					Type: "wallet",
-					ID:   "388108095960430b80554ac3efb6807a9f286854033aca47f6f466094ab50876",
-					Attributes: resources.WalletAttributes{
-						AccountID:    "GD6PPS6VCAN5AN52N2BSUJQTKW2T22AERA6HHI33VBW67T5GCDFWTVET",
-						Email:        "fo@ob.ar",
-						Salt:         "wAWBYjv5eSDVZsjY1suFFA==",
-						KeychainData: "eyJJViI6IjN...I6ImdjbSJ9",
-					},
-					Relationships: resources.WalletRelationships{
-						KDF: &resources.KDFPlain{
-							Data: resources.KDFPlainData{
-								Type: "kdf",
-								ID:   1,
-							},
+				Wallet: resources.Wallet{
+					Data: resources.WalletData{
+						Type: "wallet",
+						ID:   "388108095960430b80554ac3efb6807a9f286854033aca47f6f466094ab50876",
+						Attributes: resources.WalletAttributes{
+							AccountID:    "GD6PPS6VCAN5AN52N2BSUJQTKW2T22AERA6HHI33VBW67T5GCDFWTVET",
+							Email:        "fo@ob.ar",
+							Salt:         "wAWBYjv5eSDVZsjY1suFFA==",
+							KeychainData: "eyJJViI6IjN...I6ImdjbSJ9",
 						},
-						Factor: &resources.PasswordFactor{
-							Data: resources.PasswordFactorData{
-								Type: "password",
-								Attributes: resources.PasswordFactorAttributes{
-									AccountID:    "GDI54FYDBF2S6GEQJHBLS3HMIEYYKDLVT7YCCI33K5J6B4JTGNP77DEK",
-									Salt:         "salt",
-									KeychainData: "foo..bar",
+						Relationships: resources.WalletRelationships{
+							Recovery: &resources.PasswordFactor{
+								Data: resources.PasswordFactorData{
+									Type: "recovery",
+									ID:   "recoverywalletid",
+									Attributes: resources.PasswordFactorAttributes{
+										KeychainData: "recoverykeychaindata",
+										Salt:         "recoverysalt==",
+									},
+								},
+							},
+							KDF: &resources.KDFPlain{
+								Data: resources.KDFPlainData{
+									Type: "kdf",
+									ID:   1,
+								},
+							},
+							Factor: &resources.PasswordFactor{
+								Data: resources.PasswordFactorData{
+									Type: "password",
+									Attributes: resources.PasswordFactorAttributes{
+										AccountID:    "GDI54FYDBF2S6GEQJHBLS3HMIEYYKDLVT7YCCI33K5J6B4JTGNP77DEK",
+										Salt:         "salt",
+										KeychainData: "foo..bar",
+									},
 								},
 							},
 						},
