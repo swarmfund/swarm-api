@@ -1,11 +1,10 @@
 package handlers
 
 import (
+	"encoding/json"
 	"net/http"
 
 	. "github.com/go-ozzo/ozzo-validation"
-	"github.com/go-ozzo/ozzo-validation/is"
-	"github.com/google/jsonapi"
 	"github.com/pkg/errors"
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/ape/problems"
@@ -15,35 +14,30 @@ import (
 	"gitlab.com/swarmfund/api/tfa"
 )
 
-type CreateWalletRequest struct {
-	WalletID       string                    `json:"wallet_id" jsonapi:"primary,wallet"`
-	Email          string                    `json:"email" jsonapi:"attr,email"`
-	AccountID      string                    `json:"account_id" jsonapi:"attr,account_id"`
-	Salt           string                    `json:"salt" jsonapi:"attr,salt"`
-	KeychainData   string                    `json:"keychain_data" jsonapi:"attr,keychain_data"`
-	KDF            *resources.KDFVersion     `json:"kdf" jsonapi:"relation,kdf"`
-	PasswordFactor *resources.PasswordFactor `json:"factor" jsonapi:"relation,factor"`
-}
+type (
+	CreateWalletRequest struct {
+		Data resources.WalletData `json:"data"`
+	}
+	CreateWalletRequestRelationships struct {
+		KDF    resources.KDFPlain `json:"kdf"`
+		Factor resources.Wallet   `json:"factor"`
+	}
+)
 
 func NewCreateWalletRequest(r *http.Request) (CreateWalletRequest, error) {
 	request := CreateWalletRequest{}
-	if err := jsonapi.UnmarshalPayload(r.Body, &request); err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
 		return request, errors.Wrap(err, "failed to unmarshal")
 	}
 	return request, request.Validate()
 }
 
 func (r *CreateWalletRequest) Validate() error {
-	return ValidateStruct(r,
-		Field(&r.Email, Required, is.Email),
-		// TODO account id validation
-		Field(&r.AccountID, Required),
-		Field(&r.WalletID, Required),
-		Field(&r.Salt, Required),
-		Field(&r.KeychainData, Required),
-		Field(&r.KDF, Required),
-		Field(&r.PasswordFactor, Required),
-	)
+	return Errors{
+		"/data/":                     Validate(r.Data, Required),
+		"/data/relationships/kdf":    Validate(r.Data.Relationships.KDF, Required),
+		"/data/relationships/factor": Validate(r.Data.Relationships.Factor, Required),
+	}.Filter()
 }
 
 func CreateWallet(w http.ResponseWriter, r *http.Request) {
@@ -54,19 +48,19 @@ func CreateWallet(w http.ResponseWriter, r *http.Request) {
 	}
 
 	wallet := &api.Wallet{
-		Username:         request.Email,
-		AccountID:        request.AccountID,
-		CurrentAccountID: request.AccountID,
-		WalletId:         request.WalletID,
-		Salt:             request.Salt,
-		KDF:              request.KDF.Version,
-		KeychainData:     request.KeychainData,
+		Username:         request.Data.Attributes.Email,
+		AccountID:        request.Data.Attributes.AccountID,
+		CurrentAccountID: request.Data.Attributes.AccountID,
+		WalletId:         request.Data.ID,
+		Salt:             request.Data.Attributes.Salt,
+		KDF:              request.Data.Relationships.KDF.Data.ID,
+		KeychainData:     request.Data.Attributes.KeychainData,
 	}
 
 	factor := tfa.NewPasswordBackend(tfa.PasswordDetails{
-		Salt:         request.PasswordFactor.Salt,
-		AccountID:    request.PasswordFactor.AccountID,
-		KeychainData: request.PasswordFactor.KeychainData,
+		Salt:         request.Data.Relationships.Factor.Data.Attributes.Salt,
+		AccountID:    request.Data.Relationships.Factor.Data.Attributes.AccountID,
+		KeychainData: request.Data.Relationships.Factor.Data.Attributes.KeychainData,
 	})
 
 	err = WalletQ(r).Transaction(func(q api.WalletQI) error {
@@ -114,10 +108,16 @@ func CreateWallet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	{
+		resource := resources.NewWallet(wallet)
+		resource.Data.Relationships.Factor = resources.NewPasswordFactor(factor)
+		w.WriteHeader(http.StatusCreated)
+		json.NewEncoder(w).Encode(&resource)
+	}
+
 	// wallet has been saved, so technically request has succeeded
 	// no errors should be rendered from now on
-	ape.Render(w, resources.NewWallet(wallet, factor))
-
+	// TODO move token create to transaction
 	if err := EmailTokensQ(r).Create(wallet.WalletId, lorem.Token()); err != nil {
 		Log(r).WithError(err).Error("failed to save token")
 		return
