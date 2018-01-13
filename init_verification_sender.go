@@ -17,7 +17,7 @@ func initVerificationSender(app *App) {
 			}
 			for _, token := range tokens {
 				payload := clienturl.EmailVerification(token.WalletID, token.Token)
-				err = app.Notificator().SendVerificationLink(token.Email, payload)
+				err = app.Config().Notificator().SendVerificationLink(token.Email, payload)
 				if err != nil {
 					panic(err)
 				}
