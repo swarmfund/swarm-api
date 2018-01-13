@@ -9,7 +9,6 @@ import (
 type ActionType string
 
 var (
-	ActionRecoveryRequest      ActionType = "recovery_request"
 	ActionSignup               ActionType = "signup"
 	ActionSkrillDepositSuccess ActionType = "skrill_deposit_success"
 	ActionSkrillDepositCancel  ActionType = "skrill_deposit_cancel"
@@ -32,28 +31,6 @@ var (
 
 	Unavailable = Payload{
 		Status: http.StatusServiceUnavailable,
-	}
-
-	// recovery request
-
-	RecoveryRequestAlreadyUploaded = Payload{
-		Status: http.StatusBadGateway,
-		Action: ActionRecoveryRequest,
-		Data: map[string]interface{}{
-			"reason": "already uploaded",
-		},
-	}
-
-	RecoveryRequestShowCode = func(username, code string, isFulfilled bool) *Payload {
-		return &Payload{
-			Status: http.StatusOK,
-			Action: ActionRecoveryRequest,
-			Data: map[string]interface{}{
-				"username":     username,
-				"code":         code,
-				"is_fulfilled": isFulfilled,
-			},
-		}
 	}
 
 	// skrill deposit

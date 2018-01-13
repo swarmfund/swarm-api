@@ -61,9 +61,6 @@ type WalletQI interface {
 	ByWalletID(walletId string) (*Wallet, error)
 	DeleteWallets(walletIDs []string) error
 
-	// it's all S3 fault
-	RecoveryWallet(lowercaseWalletID, username string) (*Wallet, error)
-
 	ByID(id int64) (*Wallet, error)
 	ByCurrentAccountID(accountID string) (*Wallet, error)
 	ByAccountID(address types.Address) (*Wallet, error)
@@ -253,17 +250,6 @@ func (q *WalletQ) ByID(id int64) (*Wallet, error) {
 	result := &Wallet{}
 	stmt := walletSelect.Where("w.id = ?", id)
 	err := q.parent.Get(result, stmt)
-	return result, err
-}
-
-func (q *WalletQ) RecoveryWallet(lowercaseWalletID, username string) (*Wallet, error) {
-	result := &Wallet{}
-	stmt := walletSelect.Where("lower(w.wallet_id) = lower(?) and w.username = ?", lowercaseWalletID, username)
-	err := q.parent.Get(result, stmt)
-	if err == sql.ErrNoRows {
-		return nil, nil
-	}
-
 	return result, err
 }
 
