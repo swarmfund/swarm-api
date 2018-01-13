@@ -176,7 +176,7 @@ func TestCreateTFABackend(t *testing.T) {
 
 	t.Run("check not allowed", func(t *testing.T) {
 		walletQ.On("ByWalletID", wallet.WalletId).Return(&wallet, nil).Once()
-		accountQ.On("Signers", wallet.AccountID).Return(nil, nil).Once()
+		accountQ.On("Signers", string(wallet.AccountID)).Return(nil, nil).Once()
 		defer walletQ.AssertExpectations(t)
 		resp := Client(t, ts).RandomSigner().Post(wallet.WalletId, `{
 			"data": {

@@ -111,7 +111,7 @@ func TestWalletRelationships_Validate(t *testing.T) {
 			"invalid factor",
 			false,
 			WalletRelationships{
-				Factor: &Wallet{},
+				Factor: &PasswordFactor{},
 			},
 		},
 	}

@@ -62,7 +62,8 @@ func TestNewCreateWalletRequest(t *testing.T) {
 					Relationships: resources.WalletRelationships{
 						KDF: &resources.KDFPlain{
 							Data: resources.KDFPlainData{
-								ID: 1,
+								Type: "kdf",
+								ID:   1,
 							},
 						},
 						Factor: &resources.PasswordFactor{
