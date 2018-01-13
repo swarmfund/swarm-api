@@ -26,6 +26,12 @@ func init() {
 			interface{}(BlobTypeFundUpdate).(fmt.Stringer).String():       BlobTypeFundUpdate,
 			interface{}(BlobTypeNavUpdate).(fmt.Stringer).String():        BlobTypeNavUpdate,
 			interface{}(BlobTypeFundDocument).(fmt.Stringer).String():     BlobTypeFundDocument,
+			interface{}(BlobTypeAlpha).(fmt.Stringer).String():            BlobTypeAlpha,
+			interface{}(BlobTypeBravo).(fmt.Stringer).String():            BlobTypeBravo,
+			interface{}(BlobTypeCharlie).(fmt.Stringer).String():          BlobTypeCharlie,
+			interface{}(BlobTypeDelta).(fmt.Stringer).String():            BlobTypeDelta,
+			interface{}(BlobTypeTokenTerms).(fmt.Stringer).String():       BlobTypeTokenTerms,
+			interface{}(BlobTypeTokenMetrics).(fmt.Stringer).String():     BlobTypeTokenMetrics,
 		}
 	}
 }
@@ -36,6 +42,12 @@ var _BlobTypeNameToValue = map[string]BlobType{
 	"fund_update":       BlobTypeFundUpdate,
 	"nav_update":        BlobTypeNavUpdate,
 	"fund_document":     BlobTypeFundDocument,
+	"alpha":             BlobTypeAlpha,
+	"bravo":             BlobTypeBravo,
+	"charlie":           BlobTypeCharlie,
+	"delta":             BlobTypeDelta,
+	"token_terms":       BlobTypeTokenTerms,
+	"token_metrics":     BlobTypeTokenMetrics,
 }
 
 var _BlobTypeValueToName = map[BlobType]string{
@@ -44,6 +56,12 @@ var _BlobTypeValueToName = map[BlobType]string{
 	BlobTypeFundUpdate:       "fund_update",
 	BlobTypeNavUpdate:        "nav_update",
 	BlobTypeFundDocument:     "fund_document",
+	BlobTypeAlpha:            "alpha",
+	BlobTypeBravo:            "bravo",
+	BlobTypeCharlie:          "charlie",
+	BlobTypeDelta:            "delta",
+	BlobTypeTokenTerms:       "token_terms",
+	BlobTypeTokenMetrics:     "token_metrics",
 }
 
 // String is generated so BlobType satisfies fmt.Stringer.

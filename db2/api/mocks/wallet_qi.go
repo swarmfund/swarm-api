@@ -279,29 +279,6 @@ func (_m *WalletQI) Page(_a0 uint64) api.WalletQI {
 	return r0
 }
 
-// RecoveryWallet provides a mock function with given fields: lowercaseWalletID, username
-func (_m *WalletQI) RecoveryWallet(lowercaseWalletID string, username string) (*api.Wallet, error) {
-	ret := _m.Called(lowercaseWalletID, username)
-
-	var r0 *api.Wallet
-	if rf, ok := ret.Get(0).(func(string, string) *api.Wallet); ok {
-		r0 = rf(lowercaseWalletID, username)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*api.Wallet)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(string, string) error); ok {
-		r1 = rf(lowercaseWalletID, username)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // Select provides a mock function with given fields:
 func (_m *WalletQI) Select() ([]api.Wallet, error) {
 	ret := _m.Called()

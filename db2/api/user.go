@@ -23,7 +23,6 @@ type User struct {
 	State             types.UserState      `db:"state"`
 	Documents         Documents            `db:"documents"`
 	DocumentsVersion  int64                `db:"documents_version"`
-	RecoveryState     UserRecoveryState    `db:"recovery_state"`
 	LimitReviewStatue UserLimitReviewState `db:"limit_review_state"`
 	CreatedAt         string               `db:"created_at"`
 	UpdatedAt         string               `db:"updated_at"`

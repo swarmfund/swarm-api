@@ -21,7 +21,7 @@ const (
 	DocumentTypePhoneProof
 	DocumentTypeAudit
 	DocumentTypeSignedForm
-	DocumentTypeRecoveryPhoto
+	_
 	DocumentTypeProofOfIncome // 15
 	//
 	DocumentTypeAssetLogo
@@ -42,10 +42,6 @@ var (
 		DocumentTypePhoneProof:               true,
 		DocumentTypeAudit:                    true,
 		DocumentTypeSignedForm:               true,
-	}
-
-	recoveryDocs = map[DocumentType]bool{
-		DocumentTypeRecoveryPhoto: true,
 	}
 
 	proofOfIncomeDocs = map[DocumentType]bool{
@@ -79,12 +75,6 @@ func (t *DocumentType) UnmarshalJSON(bytes []byte) error {
 // IsKYC return true if document is used for KYC flow
 func (t DocumentType) IsKYC() bool {
 	_, ok := kycDocs[t]
-	return ok
-}
-
-// IsRecovery return true if document is used for recovery flow
-func (t DocumentType) IsRecovery() bool {
-	_, ok := recoveryDocs[t]
 	return ok
 }
 

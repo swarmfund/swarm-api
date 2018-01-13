@@ -16,10 +16,12 @@ import (
 	"gitlab.com/swarmfund/api/internal/data"
 	horizon2 "gitlab.com/swarmfund/api/internal/data/horizon"
 	"gitlab.com/swarmfund/api/internal/data/postgres"
+	"gitlab.com/swarmfund/api/internal/hose"
 	"gitlab.com/swarmfund/api/log"
 	"gitlab.com/swarmfund/api/notificator"
 	"gitlab.com/swarmfund/api/pentxsub"
 	"gitlab.com/swarmfund/api/storage"
+	"gitlab.com/swarmfund/api/txwatcher"
 	"gitlab.com/swarmfund/go/doorman"
 	"gitlab.com/swarmfund/go/keypair"
 	"gitlab.com/swarmfund/horizon-connector"
@@ -42,6 +44,9 @@ type App struct {
 	storage          *storage.Connector
 	horizon          *horizon.Connector
 	pendingSubmitter *pentxsub.System
+	txWatcher        *txwatcher.Watcher
+	txBus            *hose.TransactionBus
+	userBus          *hose.UserBus
 }
 
 // NewApp constructs an new App instance from the provided config.
@@ -104,6 +109,7 @@ func (a *App) Serve() {
 		a.CoreInfoConn(),
 		a.Blobs(),
 		a.Config().Sentry(),
+		a.userBus.Dispatch,
 	)
 	r.Mount("/", a.web.router)
 	http.Handle("/", r)

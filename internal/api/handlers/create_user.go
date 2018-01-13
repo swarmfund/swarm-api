@@ -10,6 +10,7 @@ import (
 	"gitlab.com/distributed_lab/ape/problems"
 	"gitlab.com/swarmfund/api/db2/api"
 	"gitlab.com/swarmfund/api/internal/api/movetoape"
+	"gitlab.com/swarmfund/api/internal/hose"
 	"gitlab.com/swarmfund/api/internal/types"
 	"gitlab.com/swarmfund/go/doorman"
 	"gitlab.com/swarmfund/go/xdr"
@@ -79,6 +80,14 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 			return errors.Wrap(err, "failed to submit tx")
 		}
 
+		// dispatch user create event
+		UserBusDispatch(r, hose.UserEvent{
+			Type: hose.UserEventTypeCreated,
+			User: hose.User{
+				Email:   wallet.Username,
+				Address: request.Address,
+			},
+		})
 		return nil
 	})
 	if err != nil {

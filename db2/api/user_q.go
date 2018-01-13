@@ -13,7 +13,7 @@ import (
 
 const (
 	tableUser      = "users"
-	tableUserLimit = 20
+	tableUserLimit = 5
 )
 
 var (
@@ -52,7 +52,6 @@ type UsersQI interface {
 	EmailMatches(string) UsersQI
 	AddressMatches(string) UsersQI
 
-	RecoveryPending() UsersQI
 	LimitReviewRequests() UsersQI
 
 	ByAddress(address string) (*User, error)
@@ -73,7 +72,6 @@ type UsersQI interface {
 	LimitReviewState(address string, state UserLimitReviewState) error
 
 	// Update methods
-	SetRecoveryState(address string, state UserRecoveryState) error
 	SetEmail(address, email string) error
 
 	WithAddress(addresses ...string) UsersQI
@@ -141,11 +139,6 @@ func (q *UsersQ) AddressMatches(str string) UsersQI {
 	return q
 }
 
-func (q *UsersQ) RecoveryPending() UsersQI {
-	q.sql = q.sql.Where("recovery_state = ?", UserRecoveryStatePending)
-	return q
-}
-
 func (q *UsersQ) LimitReviewRequests() UsersQI {
 	if q.Err != nil {
 		return q
@@ -161,13 +154,6 @@ func (q *UsersQ) Update(user *User) error {
 			"state": user.State,
 		})
 	_, err := q.parent.Exec(stmt)
-	return err
-}
-
-func (q *UsersQ) SetRecoveryState(address string, state UserRecoveryState) error {
-	sql := updateUser(address).
-		Set("recovery_state", state)
-	_, err := q.parent.Exec(sql)
 	return err
 }
 

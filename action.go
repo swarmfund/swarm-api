@@ -1,7 +1,6 @@
 package api
 
 import (
-	"errors"
 	"net/http"
 	"net/url"
 
@@ -14,7 +13,6 @@ import (
 	"gitlab.com/swarmfund/api/render/problem"
 	"gitlab.com/swarmfund/api/tfa"
 	"gitlab.com/swarmfund/go/xdr"
-	horizon "gitlab.com/swarmfund/horizon-connector"
 )
 
 // Action is the "base type" for all actions in horizon.  It provides
@@ -221,54 +219,4 @@ func (action *Action) consumeTFA(wallet *api.Wallet, tfaAction string) {
 	//	return
 	//}
 	//action.Err = problem.TFARequired(otp.Token, details)
-}
-
-func (action *Action) recoveryApprove(recoveryRequest *api.RecoveryRequest, initialWallet, recoveryWallet *api.Wallet, tx string) error {
-	account, err := action.App.horizon.AccountSigned(action.App.AccountManagerKP(), recoveryRequest.AccountID)
-	if err != nil {
-		return err
-	}
-
-	if account == nil {
-		return errors.New("core account does not exists")
-	}
-
-	if tx == "" {
-		err = action.App.horizon.Transaction(&horizon.TransactionBuilder{Source: action.App.MasterKP()}).
-			Op(&horizon.RecoverOp{
-				AccountID: initialWallet.AccountID,
-				OldSigner: initialWallet.CurrentAccountID,
-				NewSigner: recoveryWallet.CurrentAccountID,
-			}).Sign(action.App.AccountManagerKP()).Submit()
-	} else {
-		err = action.App.horizon.SubmitTX(tx)
-	}
-	if err != nil {
-		if serr, ok := err.(horizon.SubmitError); ok {
-			action.Log.
-				WithField("tx code", serr.TransactionCode()).
-				WithField("op codes", serr.OperationCodes())
-		}
-		return err
-	}
-
-	// remove all wallets except one created during recovery flow
-	err = action.APIQ().Wallet().SetActive(recoveryRequest.AccountID, recoveryWallet.WalletId)
-	if err != nil {
-		return err
-	}
-
-	// update user state
-	err = action.APIQ().Users().SetRecoveryState(recoveryRequest.AccountID, api.UserRecoveryStateNil)
-	if err != nil {
-		return err
-	}
-
-	// should go last, so if something above fails admin can re-run it
-	err = action.APIQ().Recoveries().Delete(recoveryRequest.AccountID)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }

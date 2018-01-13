@@ -9,4 +9,10 @@ const (
 	BlobTypeFundUpdate
 	BlobTypeNavUpdate
 	BlobTypeFundDocument
+	BlobTypeAlpha
+	BlobTypeBravo
+	BlobTypeCharlie
+	BlobTypeDelta
+	BlobTypeTokenTerms
+	BlobTypeTokenMetrics
 )

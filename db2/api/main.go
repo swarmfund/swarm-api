@@ -6,7 +6,6 @@ type QInterface interface {
 	GetRepo() *db2.Repo
 
 	Users() UsersQI
-	Recoveries() RecoveryQI
 	HMAC() HMACQI
 	AuthorizedDevice() AuthorizedDeviceQI
 	TFA() TFAQI

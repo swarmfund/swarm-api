@@ -2,7 +2,6 @@ package api
 
 const (
 	TFAActionLogin                   = "login"
-	TFAActionRecovery                = "recovery"
 	TFAActionUpdateGoogleTOTPBackend = "update_google_totp_backend"
 )
 
