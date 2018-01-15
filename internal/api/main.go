@@ -21,14 +21,14 @@ import (
 	"gitlab.com/swarmfund/api/internal/secondfactor"
 	"gitlab.com/swarmfund/api/storage"
 	"gitlab.com/swarmfund/go/doorman"
-	"gitlab.com/swarmfund/go/keypair"
 	"gitlab.com/swarmfund/horizon-connector"
+	"gitlab.com/tokend/keypair"
 )
 
 func Router(
 	entry *logan.Entry, walletQ api.WalletQI, tokensQ data.EmailTokensQ,
 	usersQ api.UsersQI, doorman doorman.Doorman, horizon *horizon.Connector,
-	accountManager keypair.KP, tfaQ api.TFAQI, storage *storage.Connector,
+	tfaQ api.TFAQI, storage *storage.Connector, master keypair.Address, signer keypair.Full,
 	coreConn *coreinfo.Connector, blobQ data.Blobs, sentry *raven.Client,
 	userDispatch hose.UserDispatch,
 ) chi.Router {
@@ -45,7 +45,7 @@ func Router(
 			handlers.CtxEmailTokensQ(tokensQ),
 			handlers.CtxUsersQ(usersQ),
 			handlers.CtxHorizon(horizon),
-			handlers.CtxAccountManagerKP(accountManager),
+			handlers.CtxTransaction(master, signer),
 			handlers.CtxTFAQ(tfaQ),
 			handlers.CtxDoorman(doorman),
 			handlers.CtxStorage(storage),

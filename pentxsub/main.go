@@ -5,10 +5,11 @@ import (
 
 	"github.com/pkg/errors"
 	"gitlab.com/swarmfund/api/db2/api"
-	"gitlab.com/swarmfund/go/keypair"
+	depkeypair "gitlab.com/swarmfund/go/keypair"
 	"gitlab.com/swarmfund/go/network"
 	"gitlab.com/swarmfund/go/xdr"
 	horizon "gitlab.com/swarmfund/horizon-connector"
+	"gitlab.com/tokend/keypair"
 )
 
 const (
@@ -22,10 +23,10 @@ var (
 type System struct {
 	q       api.PenTXSubQI
 	horizon *horizon.Connector
-	signer  keypair.KP
+	signer  keypair.Full
 }
 
-func New(q api.PenTXSubQI, horizon *horizon.Connector, signer keypair.KP) *System {
+func New(q api.PenTXSubQI, horizon *horizon.Connector, signer keypair.Full) *System {
 	return &System{
 		q:       q,
 		horizon: horizon,
@@ -90,7 +91,8 @@ func (s *submission) Process() ([]byte, error) {
 	}
 
 	// submit received tx as-is
-	body, err := s.system.horizon.SubmitTXSignedVerbose(s.envelope, s.system.signer)
+	// TODO move submitter to proper keypair
+	body, err := s.system.horizon.SubmitTXSignedVerbose(s.envelope, depkeypair.MustParse(s.system.signer.Seed()))
 	if err == nil {
 		// submit was successful, cleaning up transaction
 		err := s.system.q.DeleteTransaction(s.hashHex)
@@ -191,7 +193,7 @@ SIGNERS:
 				continue SIGNERS
 			}
 		}
-		signerKP := keypair.MustParse(signer.AccountID)
+		signerKP := keypair.MustParseAddress(signer.AccountID)
 		for _, signature := range s.transaction.Signatures {
 			err = signerKP.Verify(s.hashRaw, signature.Signature)
 			if err == nil {

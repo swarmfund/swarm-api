@@ -14,7 +14,7 @@ import (
 	"gitlab.com/swarmfund/api/internal/types"
 	"gitlab.com/swarmfund/go/doorman"
 	"gitlab.com/swarmfund/go/xdr"
-	"gitlab.com/swarmfund/horizon-connector"
+	"gitlab.com/swarmfund/go/xdrbuild"
 )
 
 type CreateUserRequest struct {
@@ -71,12 +71,15 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 			return errors.Wrap(err, "failed to insert user")
 		}
 
-		err = Horizon(r).Transaction(&horizon.TransactionBuilder{Source: AccountManagerKP(r)}).
-			Op(&horizon.CreateAccountOp{
-				AccountID:   string(request.Address),
+		envelope, err := Transaction(r).
+			Op(xdrbuild.CreateAccountOp{
+				Address:     string(request.Address),
 				AccountType: xdr.AccountTypeNotVerified,
-			}).Sign(AccountManagerKP(r)).Submit()
+			}).Marshal()
 		if err != nil {
+			return errors.Wrap(err, "failed to build tx envelope")
+		}
+		if err := Horizon(r).SubmitTX(envelope); err != nil {
 			return errors.Wrap(err, "failed to submit tx")
 		}
 

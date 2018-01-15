@@ -22,8 +22,8 @@ import (
 	"gitlab.com/swarmfund/api/storage"
 	"gitlab.com/swarmfund/api/txwatcher"
 	"gitlab.com/swarmfund/go/doorman"
-	"gitlab.com/swarmfund/go/keypair"
 	"gitlab.com/swarmfund/horizon-connector"
+	"gitlab.com/tokend/keypair"
 	"golang.org/x/net/context"
 	"golang.org/x/net/http2"
 	"gopkg.in/tylerb/graceful.v1"
@@ -61,6 +61,7 @@ func NewApp(config config.Config) (*App, error) {
 	}
 	result.ticks = time.NewTicker(10 * time.Second)
 	result.init()
+	result.UpdateStellarCoreInfo()
 	return result, nil
 }
 
@@ -68,12 +69,12 @@ func (a *App) Config() config.Config {
 	return a.config
 }
 
-func (a *App) AccountManagerKP() keypair.KP {
+func (a *App) MasterSignerKP() keypair.Full {
 	return a.Config().API().AccountManager
 }
 
-func (a *App) MasterKP() keypair.KP {
-	return keypair.MustParse(a.CoreInfo.MasterAccountID)
+func (a *App) MasterKP() keypair.Address {
+	return keypair.MustParseAddress(a.CoreInfo.MasterAccountID)
 }
 
 func (a *App) EmailTokensQ() data.EmailTokensQ {
@@ -98,9 +99,10 @@ func (a *App) Serve() {
 			horizon2.NewAccountQ(horizon2.New(a.Config().API().HorizonURL)),
 		),
 		a.horizon,
-		a.AccountManagerKP(),
 		a.APIQ().TFA(),
 		a.Storage(),
+		a.MasterKP(),
+		a.MasterSignerKP(),
 		a.CoreInfoConn(),
 		a.Blobs(),
 		a.Config().Sentry(),
