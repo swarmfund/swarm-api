@@ -28,6 +28,7 @@ type Info struct {
 	OperationalAccountID string `json:"operational_account_id"`
 	MasterAccountID      string `json:"master_account_id"`
 	MasterExchangeName   string `json:"master_exchange_name"`
+	TxExpirePeriod       int64  `json:"tx_expiration_period"`
 }
 
 var coreInfo *Info
@@ -63,6 +64,14 @@ func (c *Connector) Info() Info {
 // method for implementing the data.CoreInfoI.
 func (c *Connector) GetMasterAccountID() string {
 	return c.Info().MasterAccountID
+}
+
+func (c *Connector) Passphrase() string {
+	return c.Info().NetworkPassphrase
+}
+
+func (c *Connector) TXExpire() int64 {
+	return c.Info().TxExpirePeriod
 }
 
 // runUpdater starts an infinite loop in which it updates coreInfo every hour.
