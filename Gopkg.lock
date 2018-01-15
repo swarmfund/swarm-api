@@ -10,7 +10,10 @@
 [[projects]]
   branch = "master"
   name = "github.com/agl/ed25519"
-  packages = [".","edwards25519"]
+  packages = [
+    ".",
+    "edwards25519"
+  ]
   revision = "5312a61534124124185d41f09206b9fef1d88403"
 
 [[projects]]
@@ -21,7 +24,11 @@
 
 [[projects]]
   name = "github.com/boombuler/barcode"
-  packages = [".","qr","utils"]
+  packages = [
+    ".",
+    "qr",
+    "utils"
+  ]
   revision = "3cfea5ab600ae37946be2b763b8ec2c1cf2d272d"
   version = "v1.0.0"
 
@@ -63,7 +70,10 @@
 
 [[projects]]
   name = "github.com/go-chi/chi"
-  packages = [".","middleware"]
+  packages = [
+    ".",
+    "middleware"
+  ]
   revision = "687d2792aedd8e8ac3bbd8592cf55b91d7ea8ce9"
   version = "v3.3.1"
 
@@ -81,7 +91,10 @@
 
 [[projects]]
   name = "github.com/go-ozzo/ozzo-validation"
-  packages = [".","is"]
+  packages = [
+    ".",
+    "is"
+  ]
   revision = "85dcd8368eba387e65a03488b003e233994e87e9"
   version = "v3.3"
 
@@ -106,7 +119,17 @@
 [[projects]]
   branch = "master"
   name = "github.com/hashicorp/hcl"
-  packages = [".","hcl/ast","hcl/parser","hcl/scanner","hcl/strconv","hcl/token","json/parser","json/scanner","json/token"]
+  packages = [
+    ".",
+    "hcl/ast",
+    "hcl/parser",
+    "hcl/scanner",
+    "hcl/strconv",
+    "hcl/token",
+    "json/parser",
+    "json/scanner",
+    "json/token"
+  ]
   revision = "23c074d0eceb2b8a5bfdbb271ab780cde70f05a8"
 
 [[projects]]
@@ -118,7 +141,10 @@
 [[projects]]
   branch = "master"
   name = "github.com/jmoiron/sqlx"
-  packages = [".","reflectx"]
+  packages = [
+    ".",
+    "reflectx"
+  ]
   revision = "99f3ad6d85ae53d0fecf788ab62d0e9734b3c117"
 
 [[projects]]
@@ -142,12 +168,18 @@
 [[projects]]
   branch = "master"
   name = "github.com/lib/pq"
-  packages = [".","oid"]
+  packages = [
+    ".",
+    "oid"
+  ]
   revision = "83612a56d3dd153a94a629cd64925371c9adad78"
 
 [[projects]]
   name = "github.com/magiconair/properties"
-  packages = [".","assert"]
+  packages = [
+    ".",
+    "assert"
+  ]
   revision = "be5ece7dd465ab0765a9682137865547526d1dfb"
   version = "v1.7.3"
 
@@ -159,7 +191,15 @@
 
 [[projects]]
   name = "github.com/minio/minio-go"
-  packages = [".","pkg/credentials","pkg/encrypt","pkg/policy","pkg/s3signer","pkg/s3utils","pkg/set"]
+  packages = [
+    ".",
+    "pkg/credentials",
+    "pkg/encrypt",
+    "pkg/policy",
+    "pkg/s3signer",
+    "pkg/s3utils",
+    "pkg/set"
+  ]
   revision = "4e0f567303d4cc90ceb055a451959fb9fc391fb9"
   version = "3.0.3"
 
@@ -213,7 +253,11 @@
 
 [[projects]]
   name = "github.com/pquerna/otp"
-  packages = [".","hotp","totp"]
+  packages = [
+    ".",
+    "hotp",
+    "totp"
+  ]
   revision = "b7b89250c468c06871d3837bee02e2d5c155ae19"
   version = "v1.0.0"
 
@@ -226,7 +270,10 @@
 [[projects]]
   branch = "master"
   name = "github.com/rubenv/sql-migrate"
-  packages = [".","sqlparse"]
+  packages = [
+    ".",
+    "sqlparse"
+  ]
   revision = "6edbfbd6a369ee82463312ec67b2c92f97a1d4dc"
 
 [[projects]]
@@ -237,7 +284,10 @@
 
 [[projects]]
   name = "github.com/spf13/afero"
-  packages = [".","mem"]
+  packages = [
+    ".",
+    "mem"
+  ]
   revision = "8d919cbe7e2627e417f3e45c3c0e489a5b7e2536"
   version = "v1.0.0"
 
@@ -285,19 +335,29 @@
 
 [[projects]]
   name = "github.com/stretchr/testify"
-  packages = ["assert","mock"]
+  packages = [
+    "assert",
+    "mock"
+  ]
   revision = "69483b4bd14f5845b5a1e55bca19e954e827f1d0"
   version = "v1.1.4"
 
 [[projects]]
   name = "github.com/zenazn/goji"
-  packages = ["web","web/middleware","web/mutil"]
+  packages = [
+    "web",
+    "web/middleware",
+    "web/mutil"
+  ]
   revision = "64eb34159fe53473206c2b3e70fe396a639452f2"
   version = "v1.0"
 
 [[projects]]
   name = "gitlab.com/distributed_lab/ape"
-  packages = [".","problems"]
+  packages = [
+    ".",
+    "problems"
+  ]
   revision = "d91553d505e0ffb7bcc38d75271338ef3f5c3e0b"
   version = "v0.2"
 
@@ -309,7 +369,12 @@
 
 [[projects]]
   name = "gitlab.com/distributed_lab/logan"
-  packages = [".","v3","v3/errors","v3/fields"]
+  packages = [
+    ".",
+    "v3",
+    "v3/errors",
+    "v3/fields"
+  ]
   revision = "0f4dfbd71ca22492150c91510966d936f434a3eb"
   version = "v3.3.1"
 
@@ -322,43 +387,104 @@
 [[projects]]
   branch = "master"
   name = "gitlab.com/swarmfund/go"
-  packages = ["amount","crc16","doorman","doorman/data","hash","keypair","network","resources","signcontrol","strkey","xdr"]
-  revision = "2c5f6e04420d02ddea8888e1eff47fc9a470121f"
+  packages = [
+    "amount",
+    "crc16",
+    "doorman",
+    "doorman/data",
+    "hash",
+    "keypair",
+    "network",
+    "resources",
+    "signcontrol",
+    "strkey",
+    "xdr",
+    "xdrbuild",
+    "xdrbuild/internal"
+  ]
+  revision = "5c40585edc970b3e7674dc978ecbf269b087d8e0"
 
 [[projects]]
   branch = "feature/v2"
   name = "gitlab.com/swarmfund/horizon-connector"
-  packages = [".","internal/resources","v2","v2/internal","v2/internal/account","v2/internal/asset","v2/internal/listener","v2/internal/operation","v2/internal/resources","v2/internal/responses","v2/internal/transaction","v2/types"]
-  revision = "ddba080306809280f3038a485edd88044a3881ba"
+  packages = [
+    ".",
+    "internal/resources",
+    "v2",
+    "v2/internal",
+    "v2/internal/account",
+    "v2/internal/asset",
+    "v2/internal/errors",
+    "v2/internal/listener",
+    "v2/internal/operation",
+    "v2/internal/resources",
+    "v2/internal/responses",
+    "v2/internal/transaction",
+    "v2/types"
+  ]
+  revision = "b7c2235a2eed38b056c7ab3414c6fa12c397c48d"
 
 [[projects]]
   branch = "master"
   name = "gitlab.com/tokend/keypair"
-  packages = [".","internal","internal/crc16","internal/strkey"]
+  packages = [
+    ".",
+    "internal",
+    "internal/crc16",
+    "internal/strkey"
+  ]
   revision = "c148f15306edac6a1ad994d8b218e8ae61a0b2c1"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/crypto"
-  packages = ["ed25519","ed25519/internal/edwards25519","ssh/terminal"]
+  packages = [
+    "ed25519",
+    "ed25519/internal/edwards25519",
+    "ssh/terminal"
+  ]
   revision = "94eea52f7b742c7cbe0b03b22f0c4c8631ece122"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/net"
-  packages = ["context","http2","http2/hpack","idna","lex/httplex"]
+  packages = [
+    "context",
+    "http2",
+    "http2/hpack",
+    "idna",
+    "lex/httplex"
+  ]
   revision = "a8b9294777976932365dabb6640cf1468d95c70f"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/sys"
-  packages = ["unix","windows"]
+  packages = [
+    "unix",
+    "windows"
+  ]
   revision = "8b4580aae2a0dd0c231a45d3ccb8434ff533b840"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/text"
-  packages = ["collate","collate/build","internal/colltab","internal/gen","internal/tag","internal/triegen","internal/ucd","language","secure/bidirule","transform","unicode/bidi","unicode/cldr","unicode/norm","unicode/rangetable"]
+  packages = [
+    "collate",
+    "collate/build",
+    "internal/colltab",
+    "internal/gen",
+    "internal/tag",
+    "internal/triegen",
+    "internal/ucd",
+    "language",
+    "secure/bidirule",
+    "transform",
+    "unicode/bidi",
+    "unicode/cldr",
+    "unicode/norm",
+    "unicode/rangetable"
+  ]
   revision = "556d234e9c5239918de4d1fe247d1fe004e71764"
 
 [[projects]]
@@ -382,6 +508,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "50ce480c6a8b906ca0239f4343685afe362dbac7f594d16cc0989fc09fba97a0"
+  inputs-digest = "7de1d68264dcdc1462c74c0fe1e04c68fc7e4f03cc44bcbf9fba2d5a8bca86d5"
   solver-name = "gps-cdcl"
   solver-version = 1
