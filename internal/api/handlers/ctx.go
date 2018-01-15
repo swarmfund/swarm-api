@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"gitlab.com/distributed_lab/logan/v3"
-	"gitlab.com/swarmfund/api/coreinfo"
 	"gitlab.com/swarmfund/api/db2/api"
 	"gitlab.com/swarmfund/api/internal/data"
 	"gitlab.com/swarmfund/api/internal/hose"
@@ -115,7 +114,7 @@ func Storage(r *http.Request) *storage.Connector {
 	return r.Context().Value(storageCtxKey).(*storage.Connector)
 }
 
-func CtxCoreInfo(s *coreinfo.Connector) func(context.Context) context.Context {
+func CtxCoreInfo(s data.CoreInfoI) func(context.Context) context.Context {
 	return func(ctx context.Context) context.Context {
 		return context.WithValue(ctx, coreInfoCtxKey, s)
 	}
