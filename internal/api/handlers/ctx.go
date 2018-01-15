@@ -11,8 +11,9 @@ import (
 	"gitlab.com/swarmfund/api/internal/hose"
 	"gitlab.com/swarmfund/api/storage"
 	"gitlab.com/swarmfund/go/doorman"
-	"gitlab.com/swarmfund/go/keypair"
+	"gitlab.com/swarmfund/go/xdrbuild"
 	"gitlab.com/swarmfund/horizon-connector"
+	"gitlab.com/tokend/keypair"
 )
 
 type ctxKey int
@@ -23,7 +24,8 @@ const (
 	emailTokensQCtxKey
 	usersQCtxKey
 	horizonConnectorCtxKey
-	accountManagerKPCtxKey
+	txSignerCtxKey
+	txSourceCtxKey
 	tfaQCtxKey
 	doormanCtxKey
 	storageCtxKey
@@ -80,16 +82,6 @@ func CtxHorizon(q *horizon.Connector) func(context.Context) context.Context {
 
 func Horizon(r *http.Request) *horizon.Connector {
 	return r.Context().Value(horizonConnectorCtxKey).(*horizon.Connector)
-}
-
-func CtxAccountManagerKP(kp keypair.KP) func(context.Context) context.Context {
-	return func(ctx context.Context) context.Context {
-		return context.WithValue(ctx, accountManagerKPCtxKey, kp)
-	}
-}
-
-func AccountManagerKP(r *http.Request) keypair.KP {
-	return r.Context().Value(accountManagerKPCtxKey).(keypair.KP)
 }
 
 func CtxTFAQ(q api.TFAQI) func(context.Context) context.Context {
@@ -152,4 +144,22 @@ func CtxUserBusDispatch(dispatch hose.UserDispatch) func(context.Context) contex
 func UserBusDispatch(r *http.Request, event hose.UserEvent) {
 	dispatch := r.Context().Value(userBusDispatchCtxKey).(hose.UserDispatch)
 	dispatch(event)
+}
+
+func CtxTransaction(source keypair.Address, signer keypair.Full) func(context.Context) context.Context {
+	return func(ctx context.Context) context.Context {
+		ctx = context.WithValue(ctx, txSourceCtxKey, source)
+		ctx = context.WithValue(ctx, txSignerCtxKey, signer)
+		return ctx
+	}
+}
+
+func Transaction(r *http.Request) *xdrbuild.Transaction {
+	info := CoreInfo(r)
+	source := r.Context().Value(txSourceCtxKey).(keypair.Address)
+	signer := r.Context().Value(txSourceCtxKey).(keypair.Full)
+	return xdrbuild.
+		NewBuilder(info.Passphrase(), info.TXExpire()).
+		Transaction(source).
+		Sign(signer)
 }
