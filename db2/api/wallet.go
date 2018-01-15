@@ -16,4 +16,6 @@ type Wallet struct {
 	Verified bool `db:"verified"`
 	// RecoveryAddress account recovery key, comes from join on recoveries
 	RecoveryAddress types.Address `db:"recovery_address"`
+	// RecoveryWalletID comes from join on recoveries
+	RecoveryWalletID string `db:"recovery_wallet_id"`
 }

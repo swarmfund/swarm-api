@@ -17,7 +17,8 @@ import (
 var walletSelect = sq.Select(
 	"w.*",
 	"et.confirmed as verified",
-	"r.address as recovery_address").
+	"r.address as recovery_address",
+	"r.wallet_id as recovery_wallet_id").
 	From("wallets w").
 	Join("recoveries r on w.email = r.wallet").
 	Join("email_tokens et on w.wallet_id = et.wallet_id")
