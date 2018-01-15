@@ -44,6 +44,7 @@ func (r WalletRelationships) Validate() error {
 		validation.Field(&r.KDF),
 		validation.Field(&r.Factor),
 		validation.Field(&r.Transaction),
+		validation.Field(&r.Recovery),
 	)
 }
 
