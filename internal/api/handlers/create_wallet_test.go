@@ -40,6 +40,7 @@ func TestNewCreateWalletRequest(t *testing.T) {
 								"type": "recovery",
 								"id": "recoverywalletid",
 								"attributes": {
+									"account_id": "GD6PPS6VCAN5AN52N2BSUJQTKW2T22AERA6HHI33VBW67T5GCDFWTVET",
 									"keychain_data": "recoverykeychaindata",
 									"salt": "recoverysalt=="
 								}
@@ -76,6 +77,7 @@ func TestNewCreateWalletRequest(t *testing.T) {
 									Type: "recovery",
 									ID:   "recoverywalletid",
 									Attributes: resources.PasswordFactorAttributes{
+										AccountID:    "GD6PPS6VCAN5AN52N2BSUJQTKW2T22AERA6HHI33VBW67T5GCDFWTVET",
 										KeychainData: "recoverykeychaindata",
 										Salt:         "recoverysalt==",
 									},
@@ -101,6 +103,51 @@ func TestNewCreateWalletRequest(t *testing.T) {
 					},
 				},
 			},
+		},
+		{
+			"missing recovery account id",
+			`{
+				"data": {
+					"type": "wallet",
+					"id": "388108095960430b80554ac3efb6807a9f286854033aca47f6f466094ab50876",
+					"attributes": {
+						"account_id": "GD6PPS6VCAN5AN52N2BSUJQTKW2T22AERA6HHI33VBW67T5GCDFWTVET",
+						"email": "fo@ob.ar",
+						"salt": "wAWBYjv5eSDVZsjY1suFFA==",
+						"keychain_data": "eyJJViI6IjN...I6ImdjbSJ9"
+					},
+					"relationships": {
+						"kdf": {
+							"data": {
+								"type": "kdf",
+								"id": "1"
+							}
+						},
+						"recovery": {
+							"data": {
+								"type": "recovery",
+								"id": "recoverywalletid",
+								"attributes": {
+									"keychain_data": "recoverykeychaindata",
+									"salt": "recoverysalt=="
+								}
+							}
+						},
+						"factor": {
+							"data": {
+								"type": "password",
+								"attributes": {
+									"account_id": "GDI54FYDBF2S6GEQJHBLS3HMIEYYKDLVT7YCCI33K5J6B4JTGNP77DEK",
+									"keychain_data": "foo..bar",
+									"salt": "salt"
+								}
+							}
+						}
+					}
+				}
+			}`,
+			true,
+			CreateWalletRequest{},
 		},
 		{
 			"missing kdf",
