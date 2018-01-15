@@ -156,7 +156,7 @@ func CtxTransaction(source keypair.Address, signer keypair.Full) func(context.Co
 func Transaction(r *http.Request) *xdrbuild.Transaction {
 	info := CoreInfo(r)
 	source := r.Context().Value(txSourceCtxKey).(keypair.Address)
-	signer := r.Context().Value(txSourceCtxKey).(keypair.Full)
+	signer := r.Context().Value(txSignerCtxKey).(keypair.Full)
 	return xdrbuild.
 		NewBuilder(info.Passphrase(), info.TXExpire()).
 		Transaction(source).
