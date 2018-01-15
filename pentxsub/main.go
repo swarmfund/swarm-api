@@ -1,11 +1,15 @@
 package pentxsub
 
 import (
+	"fmt"
+
+	"github.com/pkg/errors"
 	"gitlab.com/swarmfund/api/db2/api"
-	"gitlab.com/swarmfund/go/keypair"
+	depkeypair "gitlab.com/swarmfund/go/keypair"
+	"gitlab.com/swarmfund/go/network"
 	"gitlab.com/swarmfund/go/xdr"
 	horizon "gitlab.com/swarmfund/horizon-connector"
-	"github.com/pkg/errors"
+	"gitlab.com/tokend/keypair"
 )
 
 const (
@@ -19,10 +23,10 @@ var (
 type System struct {
 	q       api.PenTXSubQI
 	horizon *horizon.Connector
-	signer  keypair.KP
+	signer  keypair.Full
 }
 
-func New(q api.PenTXSubQI, horizon *horizon.Connector, signer keypair.KP) *System {
+func New(q api.PenTXSubQI, horizon *horizon.Connector, signer keypair.Full) *System {
 	return &System{
 		q:       q,
 		horizon: horizon,
@@ -50,25 +54,29 @@ type submission struct {
 
 	envelope    string
 	pendingTX   *api.PendingTransaction
-	transaction *horizon.TransactionBuilder
-	hash        *horizon.Hash
+	transaction *xdr.TransactionEnvelope
+	hashRaw     []byte
+	hashHex     string
 	err         error
 }
 
 func (s submission) Init() *submission {
-	var err error
 	// crafting helper struct to abstract XDR
-	s.transaction = s.system.horizon.Transaction(&horizon.TransactionBuilder{
-		Envelope: s.envelope,
-	})
+	if err := xdr.SafeUnmarshalBase64(s.envelope, &s.transaction); err != nil {
+		s.err = errors.Wrap(err, "failed to unmarshal tx")
+		return &s
+	}
 
-	s.hash, err = s.transaction.Hash()
+	// TODO pass proper passphrase
+	rawhash, err := network.HashTransaction(&s.transaction.Tx, "passphrase")
 	if err != nil {
 		s.err = errors.Wrap(err, "failed to hash tx")
 		return &s
 	}
+	s.hashHex = fmt.Sprintf("%x", rawhash)
+	s.hashRaw = rawhash[:]
 
-	s.pendingTX, err = s.system.q.TransactionByHash(s.hash.Hex())
+	s.pendingTX, err = s.system.q.TransactionByHash(s.hashHex)
 	if err != nil {
 		s.err = errors.Wrap(err, "failed to get pending tx")
 		return &s
@@ -83,10 +91,11 @@ func (s *submission) Process() ([]byte, error) {
 	}
 
 	// submit received tx as-is
-	body, err := s.system.horizon.SubmitTXSignedVerbose(s.envelope, s.system.signer)
+	// TODO move submitter to proper keypair
+	body, err := s.system.horizon.SubmitTXSignedVerbose(s.envelope, depkeypair.MustParse(s.system.signer.Seed()))
 	if err == nil {
 		// submit was successful, cleaning up transaction
-		err := s.system.q.DeleteTransaction(s.hash.Hex())
+		err := s.system.q.DeleteTransaction(s.hashHex)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to delete transaction")
 		}
@@ -149,11 +158,11 @@ func (s *submission) ensureTXSaved() (*api.PendingTransaction, error) {
 	if s.pendingTX == nil {
 		// transaction not yet in database, let's fix that
 		// first we need to determine op type, checking ops length just in case
-		if len(s.transaction.Operations) < 1 {
+		if len(s.transaction.Tx.Operations) < 1 {
 			return nil, errors.New("expected at least one op")
 		}
-		opType := s.transaction.Operations[0].Body.Type
-		s.pendingTX = api.NewPendingTransaction(int32(opType), s.transaction.Envelope, s.hash.Hex(), s.transaction.Source.Address())
+		opType := s.transaction.Tx.Operations[0].Body.Type
+		s.pendingTX = api.NewPendingTransaction(int32(opType), s.envelope, s.hashHex, s.transaction.Tx.SourceAccount.Address())
 		id, err := s.system.q.CreateTransaction(s.pendingTX)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to create tx")
@@ -164,7 +173,7 @@ func (s *submission) ensureTXSaved() (*api.PendingTransaction, error) {
 }
 
 func (s *submission) FindSigner() (*horizon.Signer, error) {
-	signers, err := s.system.horizon.Signers(s.transaction.Source.Address())
+	signers, err := s.system.horizon.Signers(s.transaction.Tx.SourceAccount.Address())
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get source signers")
 	}
@@ -184,15 +193,9 @@ SIGNERS:
 				continue SIGNERS
 			}
 		}
-		signerKP := keypair.MustParse(signer.AccountID)
-		for _, encoded := range s.transaction.Signatures {
-			signature := xdr.DecoratedSignature{}
-			err := xdr.SafeUnmarshalBase64(encoded, &signature)
-			if err != nil {
-				return nil, errors.Wrap(err, "failed to unmarshal signature")
-			}
-
-			err = signerKP.Verify(s.hash.Slice(), signature.Signature)
+		signerKP := keypair.MustParseAddress(signer.AccountID)
+		for _, signature := range s.transaction.Signatures {
+			err = signerKP.Verify(s.hashRaw, signature.Signature)
 			if err == nil {
 				return &signer, nil
 			}

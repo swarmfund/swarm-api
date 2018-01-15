@@ -5,6 +5,7 @@ import (
 
 	"github.com/pkg/errors"
 	"gitlab.com/swarmfund/api/render/problem"
+	"gitlab.com/swarmfund/go/keypair"
 	"gitlab.com/swarmfund/go/signcontrol"
 	"gitlab.com/swarmfund/go/xdr"
 	"gitlab.com/swarmfund/horizon-connector"
@@ -94,7 +95,8 @@ func (action *Action) checkSignerConstraints(constraints ...SignerConstraint) {
 		var err error
 		account, ok := accounts[address]
 		if !ok {
-			account, err = action.App.horizon.AccountSigned(action.App.AccountManagerKP(), address)
+			// FIXME move connector to proper keypair
+			account, err = action.App.horizon.AccountSigned(keypair.MustParse(action.App.MasterSignerKP().Seed()), address)
 			if err != nil {
 				return nil, err
 			}
