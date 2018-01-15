@@ -14,4 +14,6 @@ type Wallet struct {
 	VerificationToken string        `db:"verification_token"`
 	// Verified comes from join on email_tokens and shows if wallet email was confirmed
 	Verified bool `db:"verified"`
+	// RecoveryAddress account recovery key, comes from join on recoveries
+	RecoveryAddress types.Address `db:"recovery_address"`
 }
