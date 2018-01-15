@@ -11,7 +11,6 @@ import (
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/ape/problems"
 	"gitlab.com/distributed_lab/logan/v3"
-	"gitlab.com/swarmfund/api/coreinfo"
 	"gitlab.com/swarmfund/api/db2/api"
 	"gitlab.com/swarmfund/api/internal/api/handlers"
 	"gitlab.com/swarmfund/api/internal/api/middlewares"
@@ -29,7 +28,7 @@ func Router(
 	entry *logan.Entry, walletQ api.WalletQI, tokensQ data.EmailTokensQ,
 	usersQ api.UsersQI, doorman doorman.Doorman, horizon *horizon.Connector,
 	tfaQ api.TFAQI, storage *storage.Connector, master keypair.Address, signer keypair.Full,
-	coreConn *coreinfo.Connector, blobQ data.Blobs, sentry *raven.Client,
+	coreInfo data.CoreInfoI, blobQ data.Blobs, sentry *raven.Client,
 	userDispatch hose.UserDispatch,
 ) chi.Router {
 	r := chi.NewRouter()
@@ -49,7 +48,7 @@ func Router(
 			handlers.CtxTFAQ(tfaQ),
 			handlers.CtxDoorman(doorman),
 			handlers.CtxStorage(storage),
-			handlers.CtxCoreInfo(coreConn),
+			handlers.CtxCoreInfo(coreInfo),
 			handlers.CtxUserBusDispatch(userDispatch),
 		),
 	)

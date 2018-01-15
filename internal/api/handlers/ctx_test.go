@@ -8,7 +8,6 @@ import (
 	"gitlab.com/distributed_lab/logan/v3"
 	"gitlab.com/swarmfund/api/db2/api"
 	"gitlab.com/swarmfund/api/internal/data"
-	"gitlab.com/swarmfund/go/keypair"
 	"gitlab.com/swarmfund/horizon-connector"
 )
 
@@ -31,17 +30,6 @@ func TestCtxWalletQ(t *testing.T) {
 	got := WalletQ(request)
 	if _, ok := got.(api.WalletQI); !ok {
 		t.Fatalf("expected %T got %T", q, got)
-	}
-}
-
-func TestCtxAccountManagerKP(t *testing.T) {
-	expected, _ := keypair.Random()
-	ctx := context.Background()
-	request := &http.Request{}
-	request = request.WithContext(CtxAccountManagerKP(expected)(ctx))
-	got := AccountManagerKP(request)
-	if got != expected {
-		t.Fatalf("expected %#v got %#v", expected, got)
 	}
 }
 
