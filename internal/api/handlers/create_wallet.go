@@ -29,12 +29,17 @@ func NewCreateWalletRequest(r *http.Request) (CreateWalletRequest, error) {
 }
 
 func (r *CreateWalletRequest) Validate() error {
-	return Errors{
+	errs := Errors{
 		"/data/":                       Validate(r.Data, Required),
 		"/data/relationships/kdf":      Validate(r.Data.Relationships.KDF, Required),
 		"/data/relationships/factor":   Validate(r.Data.Relationships.Factor, Required),
 		"/data/relationships/recovery": Validate(r.Data.Relationships.Recovery, Required),
-	}.Filter()
+	}
+	if r.Data.Relationships.Recovery != nil {
+		errs["/data/relationships/recovery/account_id"] = Validate(
+			r.Data.Relationships.Recovery.Data.Attributes.AccountID, Required)
+	}
+	return errs.Filter()
 }
 
 func CreateWallet(w http.ResponseWriter, r *http.Request) {
@@ -83,6 +88,7 @@ func CreateWallet(w http.ResponseWriter, r *http.Request) {
 			Salt:     request.Data.Relationships.Recovery.Data.Attributes.Salt,
 			Keychain: request.Data.Relationships.Recovery.Data.Attributes.KeychainData,
 			WalletID: request.Data.Relationships.Recovery.Data.ID,
+			Address:  request.Data.Relationships.Recovery.Data.Attributes.AccountID,
 		}); err != nil {
 			return errors.Wrap(err, "failed to create recovery")
 		}
@@ -92,12 +98,7 @@ func CreateWallet(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		cause := errors.Cause(err)
 
-		if cause == api.ErrWalletsConflict {
-			ape.RenderErr(w, problems.Conflict())
-			return
-		}
-
-		if cause == api.ErrWalletsWalletIDViolated {
+		if cause == api.ErrWalletsConflict || cause == api.ErrWalletsWalletIDViolated || cause == api.ErrRecoveriesConflict {
 			ape.RenderErr(w, problems.Conflict())
 			return
 		}

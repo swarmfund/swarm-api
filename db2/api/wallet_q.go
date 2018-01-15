@@ -16,7 +16,8 @@ import (
 
 var walletSelect = sq.Select(
 	"w.*",
-	"et.confirmed as verified").
+	"et.confirmed as verified",
+	"r.address as recovery_address").
 	From("wallets w").
 	Join("recoveries r on w.email = r.wallet").
 	Join("email_tokens et on w.wallet_id = et.wallet_id")
@@ -25,24 +26,27 @@ var walletInsert = sq.Insert("wallets")
 var walletUpdate = sq.Update("wallets")
 
 const (
-	tableWallets                 = "wallets"
-	tableRecoveries              = "recoveries"
-	tableWalletsLimit            = 10
-	walletsKDFFkeyConstraint     = `wallets_kdf_fkey`
-	walletsWalletIDKeyConstraint = `wallets_wallet_id_key`
+	tableWallets                    = "wallets"
+	tableRecoveries                 = "recoveries"
+	tableWalletsLimit               = 10
+	walletsKDFFkeyConstraint        = `wallets_kdf_fkey`
+	walletsWalletIDKeyConstraint    = `wallets_wallet_id_key`
+	recoveriesWalletIDKeyConstraint = `recoveries_wallet_id_unique_constraint`
 )
 
 var (
 	ErrWalletsKDFViolated      = errors.New("wallets_kdf_fkey violated")
 	ErrWalletsWalletIDViolated = errors.New("wallets_wallet_id_key violated")
 	ErrWalletsConflict         = errors.New("wallet already exists")
+	ErrRecoveriesConflict      = errors.New("recovery already exists")
 )
 
 type RecoveryKeychain struct {
-	Email    string `db:"email"`
-	Salt     string `db:"salt"`
-	Keychain string `db:"keychain"`
-	WalletID string `db:"wallet_id"`
+	Email    string        `db:"email"`
+	Salt     string        `db:"salt"`
+	Keychain string        `db:"keychain"`
+	Address  types.Address `db:"address"`
+	WalletID string        `db:"wallet_id"`
 }
 
 //go:generate mockery -case underscore -name WalletQI
@@ -109,8 +113,17 @@ func (q *WalletQ) CreateRecovery(recovery RecoveryKeychain) error {
 			"salt":          recovery.Salt,
 			"keychain_data": recovery.Keychain,
 			"wallet_id":     recovery.WalletID,
+			"address":       recovery.Address,
 		})
 	_, err := q.parent.Exec(stmt)
+	if err != nil {
+		pqerr, ok := errors.Cause(err).(*pq.Error)
+		if ok {
+			if pqerr.Constraint == recoveriesWalletIDKeyConstraint {
+				return ErrRecoveriesConflict
+			}
+		}
+	}
 	return err
 }
 
