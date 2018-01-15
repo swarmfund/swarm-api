@@ -59,13 +59,7 @@ func initWebActions(app *App) {
 	// participants
 	r.Post("/details", &DetailsAction{})
 	r.Post("/participants", &ParticipantsAction{})
-
 	r.Get("/user_id", &GetUserIdAction{})
-
-	// limit review
-	r.Get("/users/:id/poi", &UserProofOfIncomeIndexAction{})
-	r.Post("/users/:id/poi/:version", &UserProofOfIncomeApproveAction{})
-
 	r.Get("/data/enums", &GetEnumsAction{})
 
 	// transaction submission
