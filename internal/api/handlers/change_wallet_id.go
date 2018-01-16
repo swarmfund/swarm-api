@@ -112,8 +112,9 @@ func ChangeWalletID(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// submit transaction
-		if err = Horizon(r).SubmitTX(request.Data.Relationships.Transaction.Data.Attributes.Envelope); err != nil {
-			return errors.Wrap(err, "failed to submit transaction")
+		if result := Horizon(r).Submitter().Submit(r.Context(), request.Data.Relationships.Transaction.Data.Attributes.Envelope); result.Err != nil {
+			// TODO assert fail reasons
+			return errors.Wrap(result.Err, "failed to submit transaction")
 		}
 
 		return nil

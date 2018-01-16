@@ -422,7 +422,7 @@
     "v2/internal/transaction",
     "v2/types"
   ]
-  revision = "b7c2235a2eed38b056c7ab3414c6fa12c397c48d"
+  revision = "d3e09dc650b4cc5ac74a34aa2936b2b4bb78f75c"
 
 [[projects]]
   branch = "master"

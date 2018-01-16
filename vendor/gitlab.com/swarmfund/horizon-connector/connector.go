@@ -19,24 +19,13 @@ import (
 type Connector struct {
 	baseURL string
 	client  *http.Client
-	info    *Info
 }
 
 func NewConnector(endpoint string) (*Connector, error) {
-	info, err := NewInfo(endpoint)
-	if err != nil {
-		return nil, err
-	}
-
 	return &Connector{
 		baseURL: strings.TrimRight(endpoint, "/"),
 		client:  &http.Client{},
-		info:    info,
 	}, nil
-}
-
-func (c *Connector) Info() (*Info, error) {
-	return NewInfo(c.baseURL)
 }
 
 func (c *Connector) doSigned(kp keypair.KP, method, path string) (*http.Response, error) {

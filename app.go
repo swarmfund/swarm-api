@@ -21,7 +21,7 @@ import (
 	"gitlab.com/swarmfund/api/storage"
 	"gitlab.com/swarmfund/api/txwatcher"
 	"gitlab.com/swarmfund/go/doorman"
-	"gitlab.com/swarmfund/horizon-connector"
+	"gitlab.com/swarmfund/horizon-connector/v2"
 	"gitlab.com/tokend/keypair"
 	"golang.org/x/net/context"
 	"golang.org/x/net/http2"
@@ -30,32 +30,30 @@ import (
 
 // App represents the root of the state of a horizon instance.
 type App struct {
-	config           config.Config
-	web              *Web
-	apiQ             api.QInterface
-	ctx              context.Context
-	cancel           func()
-	ticks            *time.Ticker
-	CoreInfo         *horizon.Info
-	horizonVersion   string
-	memoryCache      *cache.Cache
-	storage          *storage.Connector
-	horizon          *horizon.Connector
-	txWatcher        *txwatcher.Watcher
-	txBus            *hose.TransactionBus
-	userBus          *hose.UserBus
+	// DEPRECATED
+	CoreInfo *horizon.Info
+
+	config         config.Config
+	web            *Web
+	apiQ           api.QInterface
+	ctx            context.Context
+	cancel         func()
+	ticks          *time.Ticker
+	horizonVersion string
+	memoryCache    *cache.Cache
+	storage        *storage.Connector
+	// DEPRECATED
+	horizon   *horizon.Connector
+	txWatcher *txwatcher.Watcher
+	txBus     *hose.TransactionBus
+	userBus   *hose.UserBus
 }
 
 // NewApp constructs an new App instance from the provided config.
 func NewApp(config config.Config) (*App, error) {
-	u := config.API().HorizonURL
-	horizon, err := horizon.NewConnector(u.String())
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to init horizon connector")
-	}
 	result := &App{
 		config:  config,
-		horizon: horizon,
+		horizon: config.Horizon(),
 	}
 	result.ticks = time.NewTicker(10 * time.Second)
 	result.init()
