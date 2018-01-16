@@ -18,7 +18,6 @@ import (
 	"gitlab.com/swarmfund/api/internal/data/postgres"
 	"gitlab.com/swarmfund/api/internal/hose"
 	"gitlab.com/swarmfund/api/log"
-	"gitlab.com/swarmfund/api/pentxsub"
 	"gitlab.com/swarmfund/api/storage"
 	"gitlab.com/swarmfund/api/txwatcher"
 	"gitlab.com/swarmfund/go/doorman"
@@ -42,7 +41,6 @@ type App struct {
 	memoryCache      *cache.Cache
 	storage          *storage.Connector
 	horizon          *horizon.Connector
-	pendingSubmitter *pentxsub.System
 	txWatcher        *txwatcher.Watcher
 	txBus            *hose.TransactionBus
 	userBus          *hose.UserBus

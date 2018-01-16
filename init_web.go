@@ -62,14 +62,6 @@ func initWebActions(app *App) {
 	r.Get("/user_id", &GetUserIdAction{})
 	r.Get("/data/enums", &GetEnumsAction{})
 
-	// transaction submission
-	r.Post("/transactions", &PendingTransactionCreateAction{})
-
-	// pending transactions
-	r.Get("/accounts/:id/transactions", &PendingTransactionIndexAction{})
-	r.Patch("/transactions/:tx_hash", &PendingTransactionRejectAction{})
-	r.Delete("/transactions/:tx_hash", &PendingTransactionDeleteAction{})
-
 	r.NotFound(&NotFoundAction{})
 }
 
