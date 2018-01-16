@@ -42,6 +42,14 @@ delivery:
     - staging
     - dev
 
+delivery:prod:
+  stage: delivery
+  script:
+    - rsync bin/api ubuntu@$HOST_DEV:artifacts/api/${CI_COMMIT_SHA:0:8}/
+    - ssh ubuntu@$HOST_DEV "artifacts/update.sh api prod ${CI_COMMIT_SHA:0:8}"
+  only:
+    - prod
+
 test:
   stage: test
   variables:
