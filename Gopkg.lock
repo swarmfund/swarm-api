@@ -370,7 +370,6 @@
 [[projects]]
   name = "gitlab.com/distributed_lab/logan"
   packages = [
-    ".",
     "v3",
     "v3/errors",
     "v3/fields"
@@ -408,8 +407,6 @@
   branch = "feature/v2"
   name = "gitlab.com/swarmfund/horizon-connector"
   packages = [
-    ".",
-    "internal/resources",
     "v2",
     "v2/internal",
     "v2/internal/account",
@@ -508,6 +505,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "7de1d68264dcdc1462c74c0fe1e04c68fc7e4f03cc44bcbf9fba2d5a8bca86d5"
+  inputs-digest = "73b0989066dc93ca2d54aae84e8032956c25859b10ef6aaf4def67f000408866"
   solver-name = "gps-cdcl"
   solver-version = 1
