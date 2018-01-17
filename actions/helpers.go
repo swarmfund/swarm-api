@@ -10,8 +10,6 @@ import (
 	"strings"
 
 	"gitlab.com/swarmfund/api/db2"
-	"gitlab.com/swarmfund/api/db2/api"
-	"gitlab.com/swarmfund/api/geoinfo"
 	"gitlab.com/swarmfund/api/render/problem"
 	"gitlab.com/swarmfund/api/utils"
 	"gitlab.com/swarmfund/go/amount"
@@ -413,31 +411,4 @@ func (base *Base) ParseResponse(response *http.Response) (p *problem.P) {
 		}
 	}
 	return p
-}
-
-func (base *Base) GetSenderDeviceInfo(userIdentifier, domain string) (*api.DeviceInfo, error) {
-	var deviceInfo api.DeviceInfo
-	err := deviceInfo.InitFormRequest(base.R)
-	if err != nil {
-		return nil, err
-	}
-
-	cookie, err := base.R.Cookie(utils.DeviceUIDCookieName(userIdentifier))
-	if err != nil {
-		cookie = utils.DeviceUIDCookie(userIdentifier, domain)
-	} else {
-		utils.UpdateCookieExpires(cookie)
-	}
-
-	http.SetCookie(base.W, cookie)
-	deviceInfo.DeviceUID = cookie.Value
-
-	locationInfo, err := geoinfo.GetLocationInfo(deviceInfo.IP)
-	if err != nil {
-		deviceInfo.Location = "Unknown"
-	} else {
-		deviceInfo.Location = locationInfo.FullRegion()
-	}
-
-	return &deviceInfo, nil
 }

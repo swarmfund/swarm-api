@@ -14,6 +14,7 @@ var authorizedDeviceInsert = sq.Insert(tableAuthorizedDevice)
 var authorizedDeviceUpdate = sq.Update(tableAuthorizedDevice)
 
 type AuthorizedDeviceQI interface {
+	New() AuthorizedDeviceQI
 	Create(device *AuthorizedDevice) error
 	ByWalletID(dest []*AuthorizedDevice, walletId int64) (err error)
 	ByFingerprint(fingerprint string) (result *AuthorizedDevice, err error)
@@ -28,6 +29,13 @@ type AuthorizedDeviceQ struct {
 func (q *Q) AuthorizedDevice() AuthorizedDeviceQI {
 	return &AuthorizedDeviceQ{
 		parent: q,
+		sql:    authorizedDeviceSelect,
+	}
+}
+
+func (q *AuthorizedDeviceQ) New() AuthorizedDeviceQI {
+	return &AuthorizedDeviceQ{
+		parent: q.parent,
 		sql:    authorizedDeviceSelect,
 	}
 }

@@ -19,6 +19,7 @@ import (
 	"gitlab.com/swarmfund/api/internal/discourse/sso"
 	"gitlab.com/swarmfund/api/internal/hose"
 	"gitlab.com/swarmfund/api/internal/secondfactor"
+	"gitlab.com/swarmfund/api/notificator"
 	"gitlab.com/swarmfund/api/storage"
 	"gitlab.com/swarmfund/go/doorman"
 	"gitlab.com/swarmfund/go/keypair"
@@ -30,7 +31,8 @@ func Router(
 	usersQ api.UsersQI, doorman doorman.Doorman, horizon *horizon.Connector,
 	accountManager keypair.KP, tfaQ api.TFAQI, storage *storage.Connector,
 	coreConn *coreinfo.Connector, blobQ data.Blobs, sentry *raven.Client,
-	userDispatch hose.UserDispatch,
+	userDispatch hose.UserDispatch, authorizedDeviceQ api.AuthorizedDeviceQI,
+	notificatorConn notificator.ConnectorI,
 ) chi.Router {
 	r := chi.NewRouter()
 
@@ -51,6 +53,8 @@ func Router(
 			handlers.CtxStorage(storage),
 			handlers.CtxCoreInfo(coreConn),
 			handlers.CtxUserBusDispatch(userDispatch),
+			handlers.CtxAuthorizedDeviceQ(authorizedDeviceQ),
+			handlers.CtxNotificator(notificatorConn),
 		),
 	)
 

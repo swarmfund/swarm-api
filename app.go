@@ -73,7 +73,7 @@ func (a *App) AccountManagerKP() keypair.KP {
 	return a.Config().API().AccountManager
 }
 
-func (a *App) Notificator() *notificator.Connector {
+func (a *App) Notificator() notificator.ConnectorI {
 	return notificator.NewConnector(a.Config().Notificator())
 }
 
@@ -93,6 +93,7 @@ func (a *App) Blobs() data.Blobs {
 // the shutdown signals.
 func (a *App) Serve() {
 	a.web.router.Compile()
+
 	r := api2.Router(
 		a.Config().Log().WithField("service", "api"),
 		a.APIQ().Wallet(),
@@ -110,6 +111,8 @@ func (a *App) Serve() {
 		a.Blobs(),
 		a.Config().Sentry(),
 		a.userBus.Dispatch,
+		a.APIQ().AuthorizedDevice(),
+		a.Notificator(),
 	)
 	r.Mount("/", a.web.router)
 	http.Handle("/", r)
@@ -161,7 +164,7 @@ func (a *App) APIRepo(ctx context.Context) *db2.Repo {
 	return &db2.Repo{DB: a.apiQ.GetRepo().DB, Ctx: ctx}
 }
 
-func (action *Action) Notificator() *notificator.Connector {
+func (action *Action) Notificator() notificator.ConnectorI {
 	return action.App.Notificator()
 }
 

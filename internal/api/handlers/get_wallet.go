@@ -39,5 +39,19 @@ func GetWallet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	deviceInfo, err := GetSenderDeviceInfo(w, r, wallet.Username)
+	if err != nil {
+		Log(r).WithError(err).Error("Unable to get sender device info")
+		ape.RenderErr(w, problems.InternalError())
+		return
+	}
+
+	err = CheckIsAuthorizedDevice(r, deviceInfo, wallet.Username, wallet.Id)
+	if err != nil {
+		Log(r).WithError(err).Error("Unable to check sender device info")
+		ape.RenderErr(w, problems.InternalError())
+		return
+	}
+
 	ape.Render(w, resources.NewWallet(wallet, nil))
 }

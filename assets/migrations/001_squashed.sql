@@ -5,8 +5,8 @@ CREATE TABLE authorized_device (
     wallet_id integer,
     fingerprint varchar(64) NOT NULL,
     details jsonb DEFAULT '{}'::jsonb NOT NULL,
-    created_at timestamp without time zone DEFAULT '2017-11-13 10:46:58.626967'::timestamp without time zone,
-    last_login_at timestamp without time zone DEFAULT '2017-11-13 10:46:58.626967'::timestamp without time zone
+    created_at timestamp without time zone DEFAULT timezone('utc'::text, now()),
+    last_login_at timestamp without time zone DEFAULT timezone('utc'::text, now())
 );
 
 CREATE TABLE hmac_keys (

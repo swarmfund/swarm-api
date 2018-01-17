@@ -46,74 +46,74 @@ func (di *DeviceInfo) Fingerprint() (fingerprint string, err error) {
 	return fingerprint, nil
 }
 
-func (d DeviceInfo) Value() (driver.Value, error) {
-	return json.Marshal(d)
+func (di DeviceInfo) Value() (driver.Value, error) {
+	return json.Marshal(di)
 }
 
-func (d *DeviceInfo) Scan(src interface{}) error {
+func (di *DeviceInfo) Scan(src interface{}) error {
 	v := reflect.ValueOf(src)
 	if !v.IsValid() {
 		return nil
 	}
 	if data, ok := src.([]byte); ok {
-		err := json.Unmarshal(data, d)
+		err := json.Unmarshal(data, di)
 		return err
 	}
-	return fmt.Errorf("could not not decode type %T -> %T", src, d)
+	return fmt.Errorf("could not not decode type %T -> %T", src, di)
 }
 
-const AppUAId = "BLCAPP"
+const AppUAId = "SWARM_APP"
 
-func (d *DeviceInfo) InitFormRequest(r *http.Request) error {
+func (di *DeviceInfo) InitFormRequest(r *http.Request) error {
 	var err error
-	d.IP, _, err = net.SplitHostPort(r.RemoteAddr)
+	di.IP, _, err = net.SplitHostPort(r.RemoteAddr)
 	if err != nil {
 		return err
 	}
 
 	uaStr := r.Header.Get("User-Agent")
 	if strings.Contains(uaStr, AppUAId) {
-		d.parseBlcAppUA(uaStr)
+		di.parseSwarmAppUA(uaStr)
 	} else {
-		d.parseUA(uaStr)
+		di.parseUA(uaStr)
 	}
 
-	if d.Browser == "" {
-		d.Browser = "Unknown"
+	if di.Browser == "" {
+		di.Browser = "Unknown"
 	}
-	if d.BrowserFull == "" {
-		d.BrowserFull = "Unknown"
+	if di.BrowserFull == "" {
+		di.BrowserFull = "Unknown"
 	}
-	if d.OS == "" {
-		d.OS = "Unknown"
+	if di.OS == "" {
+		di.OS = "Unknown"
 	}
-	if d.OSFull == "" {
-		d.OSFull = "Unknown"
+	if di.OSFull == "" {
+		di.OSFull = "Unknown"
 	}
 
 	return nil
 }
 
-func (d *DeviceInfo) parseBlcAppUA(uaStr string) {
+func (di *DeviceInfo) parseSwarmAppUA(uaStr string) {
 	// schema of custom UA from ours apps
-	// BLCAPP|<app_name>|<app_version>|<device_name>|<device_os>
+	// SWARM_APP|<app_name>|<app_version>|<device_name>|<device_os>
 	separated := strings.Split(uaStr, "|")
 	if len(separated) != 5 {
 		return
 	}
-	d.Browser = separated[1]
-	d.BrowserFull = separated[1] + " " + separated[2]
-	d.OS = separated[3]
-	d.OSFull = separated[3] + " " + separated[4]
+	di.Browser = separated[1]
+	di.BrowserFull = separated[1] + " " + separated[2]
+	di.OS = separated[3]
+	di.OSFull = separated[3] + " " + separated[4]
 }
 
-func (d *DeviceInfo) parseUA(uaStr string) {
+func (di *DeviceInfo) parseUA(uaStr string) {
 	ua := user_agent.New(uaStr)
 	osInfo := ua.OS()
 	name, version := ua.Browser()
 
-	d.Browser = name
-	d.BrowserFull = name + " " + version
-	d.OS = osInfo
-	d.OSFull = strings.Replace(osInfo, "_", ".", -1)
+	di.Browser = name
+	di.BrowserFull = name + " " + version
+	di.OS = osInfo
+	di.OSFull = strings.Replace(osInfo, "_", ".", -1)
 }

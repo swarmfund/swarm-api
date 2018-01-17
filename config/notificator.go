@@ -21,8 +21,10 @@ type Notificator struct {
 	Secret       string
 	Public       string
 	ClientRouter string
+	ClientDomain string
 
 	EmailConfirmation *template.Template
+	LoginNotification *template.Template
 }
 
 func (c *ViperConfig) Notificator() Notificator {
@@ -33,6 +35,7 @@ func (c *ViperConfig) Notificator() Notificator {
 			panic(errors.Wrap(err, "failed to figure out notificator"))
 		}
 		notificatorConfig.EmailConfirmation = assets.Templates.Lookup("email_confirm")
+		notificatorConfig.LoginNotification = assets.Templates.Lookup("login_notification")
 	}
 	return *notificatorConfig
 }
