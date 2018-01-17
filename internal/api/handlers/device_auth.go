@@ -5,8 +5,8 @@ import (
 
 	"gitlab.com/distributed_lab/logan/v3/errors"
 	"gitlab.com/swarmfund/api/db2/api"
+	"gitlab.com/swarmfund/api/geoinfo"
 	"gitlab.com/swarmfund/api/utils"
-	"gitlab.com/tokend/api/geoinfo"
 )
 
 func CheckIsAuthorizedDevice(r *http.Request, deviceInfo *api.DeviceInfo, email string, walletID int64) error {
