@@ -11,7 +11,7 @@ horizon:
 notificator:
   client_router: http://localhost:8888/hredir
   endpoint: http://localhost:9009
-  webapp_domain: staging.app.sun.swarm.fund
+  client_domain: staging.app.sun.swarm.fund
   #secret: foo
   #public: bar
 

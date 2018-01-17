@@ -52,7 +52,7 @@ func CtxAuthorizedDeviceQ(q api.AuthorizedDeviceQI) func(context.Context) contex
 }
 
 func AuthorizedDeviceQ(r *http.Request) api.AuthorizedDeviceQI {
-	return r.Context().Value(walletCtxKey).(api.AuthorizedDeviceQI).New()
+	return r.Context().Value(authorizedDeviceCtxKey).(api.AuthorizedDeviceQI).New()
 }
 
 func CtxLog(entry *logan.Entry) func(context.Context) context.Context {
