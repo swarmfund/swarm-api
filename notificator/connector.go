@@ -5,12 +5,40 @@ import (
 	"fmt"
 	"html/template"
 	"net/url"
+	"sync"
+	"time"
 
-	"github.com/pkg/errors"
+	"gitlab.com/distributed_lab/logan/v3"
+	"gitlab.com/distributed_lab/logan/v3/errors"
 	"gitlab.com/distributed_lab/notificator"
 	"gitlab.com/swarmfund/api/db2/api"
 	"gitlab.com/swarmfund/api/internal/clienturl"
+	"gitlab.com/swarmfund/api/log"
 )
+
+type ConnectorI interface {
+	ClientDomain() string
+	SendVerificationLink(email string, payload clienturl.Payload) error
+	SendNewDeviceLogin(email string, device api.AuthorizedDevice) error
+	SetConfig(conf Config) error
+}
+
+type Config struct {
+	Disabled     bool
+	Endpoint     string
+	Secret       string
+	Public       string
+	ClientRouter string
+	ClientDomain string
+
+	EmailConfirmation *template.Template
+	LoginNotification *template.Template
+}
+
+type Connector struct {
+	*notificator.Connector
+	*sync.RWMutex
+}
 
 const (
 	NotificatorTypeVerificationEmail     = 3
@@ -23,35 +51,33 @@ const (
 	NotificatorTypeOperationNotification = 9
 )
 
-type Config struct {
-	Disabled     bool
-	Endpoint     string
-	Secret       string
-	Public       string
-	ClientRouter string
+var cfg Config
 
-	EmailConfirmation *template.Template
+func NewConnector(conf Config) (ConnectorI, error) {
+	conn := &Connector{}
+	err := conn.SetConfig(conf)
+	return conn, err
 }
 
-type Connector struct {
-	notificator *notificator.Connector
-	conf        Config
+func (c *Connector) ClientDomain() string {
+	return cfg.ClientDomain
 }
 
-func NewConnector(conf Config) *Connector {
-	// TODO move this to config
+func (c *Connector) SetConfig(conf Config) error {
+	c.Lock()
+	defer c.Unlock()
+	cfg = conf
 	endpoint, err := url.Parse(conf.Endpoint)
 	if err != nil {
-		panic(err)
+		return errors.Wrap(err,
+			"failed to parse notificator endpoint",
+			logan.F{"endpoint": conf.Endpoint})
 	}
 
-	return &Connector{
-		notificator: notificator.NewConnector(
-			notificator.Pair{Secret: conf.Secret, Public: conf.Public},
-			*endpoint,
-		),
-		conf: conf,
-	}
+	c.Connector = notificator.NewConnector(
+		notificator.Pair{Secret: conf.Secret, Public: conf.Public},
+		*endpoint)
+	return nil
 }
 
 func (c *Connector) SendVerificationLink(email string, payload clienturl.Payload) error {
@@ -61,11 +87,11 @@ func (c *Connector) SendVerificationLink(email string, payload clienturl.Payload
 	}
 	letter := &Letter{
 		Header: "Swarm Fund Email Verification",
-		Link:   fmt.Sprintf("%s/%s", c.conf.ClientRouter, encoded),
+		Link:   fmt.Sprintf("%s/%s", cfg.ClientRouter, encoded),
 	}
 
 	var buff bytes.Buffer
-	err = c.conf.EmailConfirmation.Execute(&buff, letter)
+	err = cfg.EmailConfirmation.Execute(&buff, letter)
 	if err != nil {
 		return errors.Wrap(err, "Error while populating template for notify approval")
 	}
@@ -141,87 +167,40 @@ func (c *Connector) sendKycNotification(email string, letter Letter) error {
 }
 
 func (c *Connector) SendNewDeviceLogin(email string, device api.AuthorizedDevice) error {
-	//letter := LoginNoticeLetter{
-	//	Header:       "Swarm Fund",
-	//	BrowserFull:  device.Details.BrowserFull,
-	//	BrowserShort: device.Details.Browser,
-	//	Date:         time.Now().Format("Mon Jan _2 15:04:05 2006"),
-	//	DeviceFull:   device.Details.OSFull,
-	//	DeviceShort:  device.Details.OS,
-	//	Ip:           device.Details.IP,
-	//	Location:     device.Details.Location,
-	//}
-	//
-	//var buff bytes.Buffer
-	//err := c.conf.LoginNotification.Template.Execute(&buff, letter)
-	//if err != nil {
-	//	log.WithField("err", err.Error()).Error("failed to render template")
-	//	return err
-	//}
-	//
-	//payload := &notificator.EmailRequestPayload{
-	//	Destination: email,
-	//	Subject:     letter.Header,
-	//	Message:     buff.String(),
-	//}
-	//
-	//_, err = c.notificator.Send(NotificatorTypeLoginNotification, email, payload)
-	//return err
-	return nil
-}
+	letter := LoginNoticeLetter{
+		Header:       "Swarm Fund",
+		BrowserFull:  device.Details.BrowserFull,
+		BrowserShort: device.Details.Browser,
+		Date:         time.Now().Format("Mon Jan _2 15:04:05 2006"),
+		DeviceFull:   device.Details.OSFull,
+		DeviceShort:  device.Details.OS,
+		Ip:           device.Details.IP,
+		Location:     device.Details.Location,
+	}
 
-func (c *Connector) SendOperationNotice(opType int, letter TransferNoticeI) error {
-	//if letter.GetEmail() == "" {
-	//	// for case when participants is not present is api db
-	//	return nil
-	//}
-	//
-	//var buff bytes.Buffer
-	//err := letter.AddLoginLink(c.conf.EmailConfirmation.ClientURL)
-	//if err != nil {
-	//	return err
-	//}
-	//
-	//switch opType {
-	//case PAYMENT:
-	//	err = c.conf.OperationsNotification.Payment.Execute(&buff, letter)
-	//case DEMURRAGE:
-	//	err = c.conf.OperationsNotification.Demurrage.Execute(&buff, letter)
-	//case DEPOSIT:
-	//	err = c.conf.OperationsNotification.CoinsEmission.Execute(&buff, letter)
-	//case OFFER:
-	//	err = c.conf.OperationsNotification.Offer.Execute(&buff, letter)
-	//case FORFEIT:
-	//	err = c.conf.OperationsNotification.Forfeit.Execute(&buff, letter)
-	//case INVOICE:
-	//	err = c.conf.OperationsNotification.Invoice.Execute(&buff, letter)
-	//default:
-	//	err = errors.New("Unknown operation notification type")
-	//}
-	//
-	//if err != nil {
-	//	log.WithField("err", err.Error()).Error("failed to render payment notice template")
-	//	return err
-	//}
-	//
-	//payload := &notificator.EmailRequestPayload{
-	//	Destination: letter.GetEmail(),
-	//	Subject:     letter.GetHeader(),
-	//	Message:     buff.String(),
-	//}
-	//// c.log.WithField("destination", payload.Destination).WithField("Subject", payload.Subject).Info("Try to send")
-	//_, err = c.notificator.Send(NotificatorTypeOperationNotification, letter.GetToken(), payload)
-	//return err
-	return nil
+	var buff bytes.Buffer
+	err := cfg.LoginNotification.Execute(&buff, letter)
+	if err != nil {
+		log.WithField("error", err.Error()).Error("failed to render template")
+		return err
+	}
+
+	payload := &notificator.EmailRequestPayload{
+		Destination: email,
+		Subject:     letter.Header,
+		Message:     buff.String(),
+	}
+
+	return c.send(NotificatorTypeLoginNotification, email, payload)
 }
 
 func (c *Connector) send(requestType int, token string, payload notificator.Payload) error {
-	if c.conf.Disabled {
+	if cfg.Disabled {
 		// TODO log warning
 		return nil
 	}
 
-	response, err := c.notificator.Send(requestType, token, payload)
+	response, err := c.Send(requestType, token, payload)
 	if err != nil {
 		return err
 	}

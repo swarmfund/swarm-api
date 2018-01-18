@@ -11,7 +11,7 @@ const (
 	notificatorConfigKey = "notificator"
 )
 
-func (c *ViperConfig) Notificator() *notificator.Connector {
+func (c *ViperConfig) Notificator() notificator.ConnectorI {
 	c.Lock()
 	defer c.Unlock()
 
@@ -25,7 +25,12 @@ func (c *ViperConfig) Notificator() *notificator.Connector {
 			panic(errors.Wrap(err, "failed to figure out notificator"))
 		}
 		config.EmailConfirmation = assets.Templates.Lookup("email_confirm")
-		c.notificator = notificator.NewConnector(config)
+		config.LoginNotification = assets.Templates.Lookup("login_notification")
+
+		c.notificator, err = notificator.NewConnector(config)
+		if err != nil {
+			panic(errors.Wrap(err, "failed to init notificator connector"))
+		}
 	}
 
 	return c.notificator

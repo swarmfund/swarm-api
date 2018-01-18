@@ -89,6 +89,7 @@ func (a *App) Blobs() data.Blobs {
 // the shutdown signals.
 func (a *App) Serve() {
 	a.web.router.Compile()
+
 	r := api2.Router(
 		a.Config().Log().WithField("service", "api"),
 		a.APIQ().Wallet(),
@@ -107,6 +108,8 @@ func (a *App) Serve() {
 		a.Blobs(),
 		a.Config().Sentry(),
 		a.userBus.Dispatch,
+		a.APIQ().AuthorizedDevice(),
+		a.Config().Notificator(),
 	)
 	r.Mount("/", a.web.router)
 	http.Handle("/", r)

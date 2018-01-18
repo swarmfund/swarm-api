@@ -19,7 +19,7 @@ type Config interface {
 	Storage() Storage
 	Log() *logan.Entry
 
-	Notificator() *notificator.Connector
+	Notificator() notificator.ConnectorI
 	Sentry() *raven.Client
 	Horizon() *horizon.Connector
 	Discourse() *discourse.Connector
@@ -33,7 +33,7 @@ type ViperConfig struct {
 	// runtime-initialized instances
 	horizon     *horizon.Connector
 	discourse   *discourse.Connector
-	notificator *notificator.Connector
+	notificator notificator.ConnectorI
 }
 
 func NewViperConfig(fn string) Config {
