@@ -174,7 +174,8 @@ func PatchUser(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if tx := request.Data.Relationships.Transaction.Data.Attributes.Envelope; tx != "" {
-			if err := Horizon(r).SubmitTX(tx); err != nil {
+			if result := Horizon(r).Submitter().Submit(r.Context(), tx); result.Err != nil {
+				// TODO assert fail reasons
 				return errors.Wrap(err, "failed to submit transaction")
 			}
 		}
