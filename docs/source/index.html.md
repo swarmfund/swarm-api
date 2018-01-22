@@ -110,6 +110,17 @@ Content-Type: application/vnd.api+json
                     "id": "1"
                 }
             },
+            "recovery": {
+            	"data": {
+            		"type": "recovery",
+            		"id": "recoverywalletid",
+            		"attributes": {
+            			"account_id": "GAREIRQC7NORMOJUKAPMDMEUWJRG6J4C2ELCAPE5P3OYWPVH7E7C6TJ3",
+            			"keychain_data": "recoverykeychaindata",
+            			"salt": "recoverysalt=="
+            		}
+            	}	
+            },
           	"factor": {
             	"data": {
             		"type": "password",
@@ -135,26 +146,7 @@ Content-Type: application/vnd.api+json
         "attributes": {
             "verified": false
         },
-        "relationships": {
-            "factor": {
-                "data": {
-                    "type": "password",
-                    "id": "43"
-                }
-            }
-        }
-    },
-    "included": [
-        {
-            "type": "password",
-            "id": "43",
-            "attributes": {
-                "account_id": "GDI54FYDBF2S6GEQJHBLS3HMIEYYKDLVT7YCCI33K5J6B4JTGNP77DEK",
-                "keychain_data": "foo...bar",
-                "salt": "salt"
-            }
-        }
-    ]
+        "relationships": {}
 }
 ```
 
@@ -180,9 +172,13 @@ Create wallet requests should contain following resources:
 
 Second wallet with different seed encrypted by same email/password used as second factor to confirm password possession during [wallet update](#update-wallet) flow. 
 
+#### Recovery
+
+Keychain encrypted with email and recovery seed used to recover access to account if password were lost.
+
 ### Response
 
-Succeeded request will have response with current wallet state as well related factor `id`.
+Succeeded request will have response with current wallet state.
 
 ## Email verification
 
@@ -297,6 +293,8 @@ HTTP/1.1 204
 ```
 
 <aside class="notice">Previously known as <code>POST /wallets/update</code></aside>
+
+Same request is used for wallet recovery but instead of primary wallet id request should be to recovery one and signed with recovery signer.
 
 ## Index
 

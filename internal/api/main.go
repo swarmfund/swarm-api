@@ -20,7 +20,7 @@ import (
 	"gitlab.com/swarmfund/api/internal/secondfactor"
 	"gitlab.com/swarmfund/api/storage"
 	"gitlab.com/swarmfund/go/doorman"
-	"gitlab.com/swarmfund/horizon-connector"
+	"gitlab.com/swarmfund/horizon-connector/v2"
 	"gitlab.com/tokend/keypair"
 )
 

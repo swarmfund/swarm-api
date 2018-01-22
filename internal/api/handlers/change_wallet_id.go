@@ -38,8 +38,7 @@ func NewChangeWalletIDRequest(r *http.Request) (ChangeWalletIDRequest, error) {
 
 func (r ChangeWalletIDRequest) Validate() error {
 	return ValidateStruct(&r,
-		// TODO test url param
-		//Field(&r.CurrentWalletID, Required),
+		Field(&r.CurrentWalletID, Required),
 		Field(&r.Wallet, Required),
 	)
 }
@@ -70,16 +69,20 @@ func ChangeWalletID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// check if user knows password
-	if err := secondfactor.NewConsumer(TFAQ(r)).WithTokenMixin("pwd-check").WithBackendType(types.WalletFactorPassword).Consume(r, wallet); err != nil {
-		RenderFactorConsumeError(w, r, err)
-		return
-	}
+	// we are not forcing any 2fa checks if request is for recovery wallet
+	// TODO better check for request signer
+	if request.CurrentWalletID != wallet.RecoveryWalletID {
+		// check if user knows password
+		if err := secondfactor.NewConsumer(TFAQ(r)).WithTokenMixin("pwd-check").WithBackendType(types.WalletFactorPassword).Consume(r, wallet); err != nil {
+			RenderFactorConsumeError(w, r, err)
+			return
+		}
 
-	// ask for TOTP token if enabled
-	if err := secondfactor.NewConsumer(TFAQ(r)).WithTokenMixin("totp-check").WithBackendType(types.WalletFactorTOTP).Consume(r, wallet); err != nil {
-		RenderFactorConsumeError(w, r, err)
-		return
+		// ask for TOTP token if enabled
+		if err := secondfactor.NewConsumer(TFAQ(r)).WithTokenMixin("totp-check").WithBackendType(types.WalletFactorTOTP).Consume(r, wallet); err != nil {
+			RenderFactorConsumeError(w, r, err)
+			return
+		}
 	}
 
 	factor := tfa.NewPasswordBackend(tfa.PasswordDetails{
@@ -109,8 +112,9 @@ func ChangeWalletID(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// submit transaction
-		if err = Horizon(r).SubmitTX(request.Data.Relationships.Transaction.Data.Attributes.Envelope); err != nil {
-			return errors.Wrap(err, "failed to submit transaction")
+		if result := Horizon(r).Submitter().Submit(r.Context(), request.Data.Relationships.Transaction.Data.Attributes.Envelope); result.Err != nil {
+			// TODO assert fail reasons
+			return errors.Wrap(result.Err, "failed to submit transaction")
 		}
 
 		return nil

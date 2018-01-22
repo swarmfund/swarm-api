@@ -80,8 +80,9 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			return errors.Wrap(err, "failed to build tx envelope")
 		}
-		if err := Horizon(r).SubmitTX(envelope); err != nil {
-			return errors.Wrap(err, "failed to submit tx")
+		if result := Horizon(r).Submitter().Submit(r.Context(), envelope); result.Err != nil {
+			// TODO assert fail reasons
+			return errors.Wrap(result.Err, "failed to submit tx")
 		}
 
 		// dispatch user create event

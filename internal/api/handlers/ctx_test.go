@@ -8,7 +8,7 @@ import (
 	"gitlab.com/distributed_lab/logan/v3"
 	"gitlab.com/swarmfund/api/db2/api"
 	"gitlab.com/swarmfund/api/internal/data"
-	"gitlab.com/swarmfund/horizon-connector"
+	"gitlab.com/swarmfund/horizon-connector/v2"
 )
 
 func TestCtxLog(t *testing.T) {

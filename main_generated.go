@@ -6,14 +6,6 @@ import (
 )
 
 // ServeHTTPC is a method for web.Handler
-func (action DeleteContactShareAction) ServeHTTPC(c web.C, w http.ResponseWriter, r *http.Request) {
-	ap := &action.Action
-	ap.Prepare(c, w, r)
-	action.Log = action.Log.WithField("action", "DeleteContactShareAction")
-	ap.Execute(&action)
-}
-
-// ServeHTTPC is a method for web.Handler
 func (action DetailsAction) ServeHTTPC(c web.C, w http.ResponseWriter, r *http.Request) {
 	ap := &action.Action
 	ap.Prepare(c, w, r)
@@ -26,14 +18,6 @@ func (action GetEnumsAction) ServeHTTPC(c web.C, w http.ResponseWriter, r *http.
 	ap := &action.Action
 	ap.Prepare(c, w, r)
 	action.Log = action.Log.WithField("action", "GetEnumsAction")
-	ap.Execute(&action)
-}
-
-// ServeHTTPC is a method for web.Handler
-func (action GetNotificationsAction) ServeHTTPC(c web.C, w http.ResponseWriter, r *http.Request) {
-	ap := &action.Action
-	ap.Prepare(c, w, r)
-	action.Log = action.Log.WithField("action", "GetNotificationsAction")
 	ap.Execute(&action)
 }
 
@@ -58,69 +42,5 @@ func (action ParticipantsAction) ServeHTTPC(c web.C, w http.ResponseWriter, r *h
 	ap := &action.Action
 	ap.Prepare(c, w, r)
 	action.Log = action.Log.WithField("action", "ParticipantsAction")
-	ap.Execute(&action)
-}
-
-// ServeHTTPC is a method for web.Handler
-func (action PatchNotificationsAction) ServeHTTPC(c web.C, w http.ResponseWriter, r *http.Request) {
-	ap := &action.Action
-	ap.Prepare(c, w, r)
-	action.Log = action.Log.WithField("action", "PatchNotificationsAction")
-	ap.Execute(&action)
-}
-
-// ServeHTTPC is a method for web.Handler
-func (action PendingTransactionCreateAction) ServeHTTPC(c web.C, w http.ResponseWriter, r *http.Request) {
-	ap := &action.Action
-	ap.Prepare(c, w, r)
-	action.Log = action.Log.WithField("action", "PendingTransactionCreateAction")
-	ap.Execute(&action)
-}
-
-// ServeHTTPC is a method for web.Handler
-func (action PendingTransactionDeleteAction) ServeHTTPC(c web.C, w http.ResponseWriter, r *http.Request) {
-	ap := &action.Action
-	ap.Prepare(c, w, r)
-	action.Log = action.Log.WithField("action", "PendingTransactionDeleteAction")
-	ap.Execute(&action)
-}
-
-// ServeHTTPC is a method for web.Handler
-func (action PendingTransactionIndexAction) ServeHTTPC(c web.C, w http.ResponseWriter, r *http.Request) {
-	ap := &action.Action
-	ap.Prepare(c, w, r)
-	action.Log = action.Log.WithField("action", "PendingTransactionIndexAction")
-	ap.Execute(&action)
-}
-
-// ServeHTTPC is a method for web.Handler
-func (action PendingTransactionRejectAction) ServeHTTPC(c web.C, w http.ResponseWriter, r *http.Request) {
-	ap := &action.Action
-	ap.Prepare(c, w, r)
-	action.Log = action.Log.WithField("action", "PendingTransactionRejectAction")
-	ap.Execute(&action)
-}
-
-// ServeHTTPC is a method for web.Handler
-func (action PendingTransactionShowAction) ServeHTTPC(c web.C, w http.ResponseWriter, r *http.Request) {
-	ap := &action.Action
-	ap.Prepare(c, w, r)
-	action.Log = action.Log.WithField("action", "PendingTransactionShowAction")
-	ap.Execute(&action)
-}
-
-// ServeHTTPC is a method for web.Handler
-func (action UserProofOfIncomeApproveAction) ServeHTTPC(c web.C, w http.ResponseWriter, r *http.Request) {
-	ap := &action.Action
-	ap.Prepare(c, w, r)
-	action.Log = action.Log.WithField("action", "UserProofOfIncomeApproveAction")
-	ap.Execute(&action)
-}
-
-// ServeHTTPC is a method for web.Handler
-func (action UserProofOfIncomeIndexAction) ServeHTTPC(c web.C, w http.ResponseWriter, r *http.Request) {
-	ap := &action.Action
-	ap.Prepare(c, w, r)
-	action.Log = action.Log.WithField("action", "UserProofOfIncomeIndexAction")
 	ap.Execute(&action)
 }
