@@ -123,5 +123,7 @@ func Router(
 		r.Post("/discourse-sso", sso.SSORedirect)
 	})
 
+		r.Get("/data/enums", handlers.GetDataEnums)
+	//})
 	return r
 }
