@@ -3,6 +3,8 @@ package handlers
 import (
 	"net/http"
 
+	"encoding/json"
+
 	"github.com/go-chi/chi"
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/ape/problems"
@@ -39,5 +41,8 @@ func GetWallet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ape.Render(w, resources.NewWallet(wallet, nil))
+	{
+		resource := resources.NewWallet(wallet)
+		json.NewEncoder(w).Encode(&resource)
+	}
 }

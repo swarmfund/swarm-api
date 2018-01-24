@@ -5,14 +5,14 @@ import (
 	"net/http"
 
 	"gitlab.com/distributed_lab/logan/v3"
-	"gitlab.com/swarmfund/api/coreinfo"
 	"gitlab.com/swarmfund/api/db2/api"
 	"gitlab.com/swarmfund/api/internal/data"
 	"gitlab.com/swarmfund/api/internal/hose"
 	"gitlab.com/swarmfund/api/storage"
 	"gitlab.com/swarmfund/go/doorman"
-	"gitlab.com/swarmfund/go/keypair"
-	"gitlab.com/swarmfund/horizon-connector"
+	"gitlab.com/swarmfund/go/xdrbuild"
+	"gitlab.com/swarmfund/horizon-connector/v2"
+	"gitlab.com/tokend/keypair"
 )
 
 type ctxKey int
@@ -23,7 +23,8 @@ const (
 	emailTokensQCtxKey
 	usersQCtxKey
 	horizonConnectorCtxKey
-	accountManagerKPCtxKey
+	txSignerCtxKey
+	txSourceCtxKey
 	tfaQCtxKey
 	doormanCtxKey
 	storageCtxKey
@@ -82,16 +83,6 @@ func Horizon(r *http.Request) *horizon.Connector {
 	return r.Context().Value(horizonConnectorCtxKey).(*horizon.Connector)
 }
 
-func CtxAccountManagerKP(kp keypair.KP) func(context.Context) context.Context {
-	return func(ctx context.Context) context.Context {
-		return context.WithValue(ctx, accountManagerKPCtxKey, kp)
-	}
-}
-
-func AccountManagerKP(r *http.Request) keypair.KP {
-	return r.Context().Value(accountManagerKPCtxKey).(keypair.KP)
-}
-
 func CtxTFAQ(q api.TFAQI) func(context.Context) context.Context {
 	return func(ctx context.Context) context.Context {
 		return context.WithValue(ctx, tfaQCtxKey, q)
@@ -123,7 +114,7 @@ func Storage(r *http.Request) *storage.Connector {
 	return r.Context().Value(storageCtxKey).(*storage.Connector)
 }
 
-func CtxCoreInfo(s *coreinfo.Connector) func(context.Context) context.Context {
+func CtxCoreInfo(s data.CoreInfoI) func(context.Context) context.Context {
 	return func(ctx context.Context) context.Context {
 		return context.WithValue(ctx, coreInfoCtxKey, s)
 	}
@@ -152,4 +143,22 @@ func CtxUserBusDispatch(dispatch hose.UserDispatch) func(context.Context) contex
 func UserBusDispatch(r *http.Request, event hose.UserEvent) {
 	dispatch := r.Context().Value(userBusDispatchCtxKey).(hose.UserDispatch)
 	dispatch(event)
+}
+
+func CtxTransaction(source keypair.Address, signer keypair.Full) func(context.Context) context.Context {
+	return func(ctx context.Context) context.Context {
+		ctx = context.WithValue(ctx, txSourceCtxKey, source)
+		ctx = context.WithValue(ctx, txSignerCtxKey, signer)
+		return ctx
+	}
+}
+
+func Transaction(r *http.Request) *xdrbuild.Transaction {
+	info := CoreInfo(r)
+	source := r.Context().Value(txSourceCtxKey).(keypair.Address)
+	signer := r.Context().Value(txSignerCtxKey).(keypair.Full)
+	return xdrbuild.
+		NewBuilder(info.Passphrase(), info.TXExpire()).
+		Transaction(source).
+		Sign(signer)
 }

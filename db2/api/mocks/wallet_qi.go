@@ -80,29 +80,6 @@ func (_m *WalletQI) ByEmail(username string) (*api.Wallet, error) {
 	return r0, r1
 }
 
-// ByID provides a mock function with given fields: id
-func (_m *WalletQI) ByID(id int64) (*api.Wallet, error) {
-	ret := _m.Called(id)
-
-	var r0 *api.Wallet
-	if rf, ok := ret.Get(0).(func(int64) *api.Wallet); ok {
-		r0 = rf(id)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*api.Wallet)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(int64) error); ok {
-		r1 = rf(id)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // ByState provides a mock function with given fields: _a0
 func (_m *WalletQI) ByState(_a0 uint64) api.WalletQI {
 	ret := _m.Called(_a0)
@@ -156,20 +133,6 @@ func (_m *WalletQI) Create(wallet *api.Wallet) error {
 	return r0
 }
 
-// CreateOrganizationAttachment provides a mock function with given fields: wid
-func (_m *WalletQI) CreateOrganizationAttachment(wid int64) error {
-	ret := _m.Called(wid)
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(int64) error); ok {
-		r0 = rf(wid)
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
-}
-
 // CreatePasswordFactor provides a mock function with given fields: walletID, factor
 func (_m *WalletQI) CreatePasswordFactor(walletID string, factor *tfa.Password) error {
 	ret := _m.Called(walletID, factor)
@@ -184,13 +147,13 @@ func (_m *WalletQI) CreatePasswordFactor(walletID string, factor *tfa.Password) 
 	return r0
 }
 
-// Delete provides a mock function with given fields: id
-func (_m *WalletQI) Delete(id int64) error {
-	ret := _m.Called(id)
+// CreateRecovery provides a mock function with given fields: _a0
+func (_m *WalletQI) CreateRecovery(_a0 api.RecoveryKeychain) error {
+	ret := _m.Called(_a0)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(int64) error); ok {
-		r0 = rf(id)
+	if rf, ok := ret.Get(0).(func(api.RecoveryKeychain) error); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -242,27 +205,6 @@ func (_m *WalletQI) New() api.WalletQI {
 	return r0
 }
 
-// OrganizationWatcherCursor provides a mock function with given fields:
-func (_m *WalletQI) OrganizationWatcherCursor() (string, error) {
-	ret := _m.Called()
-
-	var r0 string
-	if rf, ok := ret.Get(0).(func() string); ok {
-		r0 = rf()
-	} else {
-		r0 = ret.Get(0).(string)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func() error); ok {
-		r1 = rf()
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // Page provides a mock function with given fields: _a0
 func (_m *WalletQI) Page(_a0 uint64) api.WalletQI {
 	ret := _m.Called(_a0)
@@ -302,20 +244,6 @@ func (_m *WalletQI) Select() ([]api.Wallet, error) {
 	return r0, r1
 }
 
-// SetActive provides a mock function with given fields: accountID, walletID
-func (_m *WalletQI) SetActive(accountID string, walletID string) error {
-	ret := _m.Called(accountID, walletID)
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(string, string) error); ok {
-		r0 = rf(accountID, walletID)
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
-}
-
 // Transaction provides a mock function with given fields: _a0
 func (_m *WalletQI) Transaction(_a0 func(api.WalletQI) error) error {
 	ret := _m.Called(_a0)
@@ -337,34 +265,6 @@ func (_m *WalletQI) Update(w *api.Wallet) error {
 	var r0 error
 	if rf, ok := ret.Get(0).(func(*api.Wallet) error); ok {
 		r0 = rf(w)
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
-}
-
-// UpdateOrganizationAttachment provides a mock function with given fields: wid, address, operation
-func (_m *WalletQI) UpdateOrganizationAttachment(wid int64, address string, operation string) error {
-	ret := _m.Called(wid, address, operation)
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(int64, string, string) error); ok {
-		r0 = rf(wid, address, operation)
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
-}
-
-// Verify provides a mock function with given fields: id
-func (_m *WalletQI) Verify(id int64) error {
-	ret := _m.Called(id)
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(int64) error); ok {
-		r0 = rf(id)
 	} else {
 		r0 = ret.Error(0)
 	}

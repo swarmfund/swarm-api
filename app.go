@@ -18,13 +18,11 @@ import (
 	"gitlab.com/swarmfund/api/internal/data/postgres"
 	"gitlab.com/swarmfund/api/internal/hose"
 	"gitlab.com/swarmfund/api/log"
-	"gitlab.com/swarmfund/api/notificator"
-	"gitlab.com/swarmfund/api/pentxsub"
 	"gitlab.com/swarmfund/api/storage"
 	"gitlab.com/swarmfund/api/txwatcher"
 	"gitlab.com/swarmfund/go/doorman"
-	"gitlab.com/swarmfund/go/keypair"
-	"gitlab.com/swarmfund/horizon-connector"
+	"gitlab.com/swarmfund/horizon-connector/v2"
+	"gitlab.com/tokend/keypair"
 	"golang.org/x/net/context"
 	"golang.org/x/net/http2"
 	"gopkg.in/tylerb/graceful.v1"
@@ -32,36 +30,34 @@ import (
 
 // App represents the root of the state of a horizon instance.
 type App struct {
-	config           config.Config
-	web              *Web
-	apiQ             api.QInterface
-	ctx              context.Context
-	cancel           func()
-	ticks            *time.Ticker
-	CoreInfo         *horizon.Info
-	horizonVersion   string
-	memoryCache      *cache.Cache
-	storage          *storage.Connector
-	horizon          *horizon.Connector
-	pendingSubmitter *pentxsub.System
-	txWatcher        *txwatcher.Watcher
-	txBus            *hose.TransactionBus
-	userBus          *hose.UserBus
+	// DEPRECATED
+	CoreInfo *horizon.Info
+
+	config         config.Config
+	web            *Web
+	apiQ           api.QInterface
+	ctx            context.Context
+	cancel         func()
+	ticks          *time.Ticker
+	horizonVersion string
+	memoryCache    *cache.Cache
+	storage        *storage.Connector
+	// DEPRECATED
+	horizon   *horizon.Connector
+	txWatcher *txwatcher.Watcher
+	txBus     *hose.TransactionBus
+	userBus   *hose.UserBus
 }
 
 // NewApp constructs an new App instance from the provided config.
 func NewApp(config config.Config) (*App, error) {
-	u := config.API().HorizonURL
-	horizon, err := horizon.NewConnector(u.String())
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to init horizon connector")
-	}
 	result := &App{
 		config:  config,
-		horizon: horizon,
+		horizon: config.Horizon(),
 	}
 	result.ticks = time.NewTicker(10 * time.Second)
 	result.init()
+	result.UpdateStellarCoreInfo()
 	return result, nil
 }
 
@@ -69,16 +65,12 @@ func (a *App) Config() config.Config {
 	return a.config
 }
 
-func (a *App) AccountManagerKP() keypair.KP {
+func (a *App) MasterSignerKP() keypair.Full {
 	return a.Config().API().AccountManager
 }
 
-func (a *App) Notificator() *notificator.Connector {
-	return notificator.NewConnector(a.Config().Notificator())
-}
-
-func (a *App) MasterKP() keypair.KP {
-	return keypair.MustParse(a.CoreInfo.MasterAccountID)
+func (a *App) MasterKP() keypair.Address {
+	return keypair.MustParseAddress(a.CoreInfo.MasterAccountID)
 }
 
 func (a *App) EmailTokensQ() data.EmailTokensQ {
@@ -103,9 +95,10 @@ func (a *App) Serve() {
 			horizon2.NewAccountQ(horizon2.New(a.Config().API().HorizonURL)),
 		),
 		a.horizon,
-		a.AccountManagerKP(),
 		a.APIQ().TFA(),
 		a.Storage(),
+		a.MasterKP(),
+		a.MasterSignerKP(),
 		a.CoreInfoConn(),
 		a.Blobs(),
 		a.Config().Sentry(),
@@ -159,10 +152,6 @@ func (a *App) APIQ() api.QInterface {
 // returned repo is bound to `ctx`.
 func (a *App) APIRepo(ctx context.Context) *db2.Repo {
 	return &db2.Repo{DB: a.apiQ.GetRepo().DB, Ctx: ctx}
-}
-
-func (action *Action) Notificator() *notificator.Connector {
-	return action.App.Notificator()
 }
 
 func (a *App) Storage() *storage.Connector {

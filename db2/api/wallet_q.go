@@ -16,25 +16,39 @@ import (
 
 var walletSelect = sq.Select(
 	"w.*",
-	"et.confirmed as verified").
+	"et.confirmed as verified",
+	"r.address as recovery_address",
+	"r.wallet_id as recovery_wallet_id").
 	From("wallets w").
+	Join("recoveries r on w.email = r.wallet").
 	Join("email_tokens et on w.wallet_id = et.wallet_id")
 
 var walletInsert = sq.Insert("wallets")
 var walletUpdate = sq.Update("wallets")
 
 const (
-	tableWallets                 = "wallets"
-	tableWalletsLimit            = 10
-	walletsKDFFkeyConstraint     = `wallets_kdf_fkey`
-	walletsWalletIDKeyConstraint = `wallets_wallet_id_key`
+	tableWallets                    = "wallets"
+	tableRecoveries                 = "recoveries"
+	tableWalletsLimit               = 10
+	walletsKDFFkeyConstraint        = `wallets_kdf_fkey`
+	walletsWalletIDKeyConstraint    = `wallets_wallet_id_key`
+	recoveriesWalletIDKeyConstraint = `recoveries_wallet_id_unique_constraint`
 )
 
 var (
 	ErrWalletsKDFViolated      = errors.New("wallets_kdf_fkey violated")
 	ErrWalletsWalletIDViolated = errors.New("wallets_wallet_id_key violated")
 	ErrWalletsConflict         = errors.New("wallet already exists")
+	ErrRecoveriesConflict      = errors.New("recovery already exists")
 )
+
+type RecoveryKeychain struct {
+	Email    string        `db:"email"`
+	Salt     string        `db:"salt"`
+	Keychain string        `db:"keychain"`
+	Address  types.Address `db:"address"`
+	WalletID string        `db:"wallet_id"`
+}
 
 //go:generate mockery -case underscore -name WalletQI
 type WalletQI interface {
@@ -46,35 +60,31 @@ type WalletQI interface {
 	CreatePasswordFactor(walletID string, factor *tfa.Password) error
 	// DeletePasswordFactor assumes there is single password factor per wallet
 	DeletePasswordFactor(walletID string) error
+	// TODO also belongs somewhere else, here for same reasons
+	CreateRecovery(RecoveryKeychain) error
 
 	// Create expected to set wallet.ID on successful create
 	// May throw:
 	// * ErrWalletsKDFViolated if KDF version is invalid
 	// * ErrWalletsWalletIDViolated if wallet_id is not unique
 	Create(wallet *Wallet) error
-	CreateOrganizationAttachment(wid int64) error
-	UpdateOrganizationAttachment(wid int64, address, operation string) error
-	OrganizationWatcherCursor() (string, error)
 
 	// LoadWallet
 	ByEmail(username string) (*Wallet, error)
+	// ByWalletID lookups both primary and recovery wallet ids
 	ByWalletID(walletId string) (*Wallet, error)
 	DeleteWallets(walletIDs []string) error
 
-	ByID(id int64) (*Wallet, error)
 	ByCurrentAccountID(accountID string) (*Wallet, error)
 	ByAccountID(address types.Address) (*Wallet, error)
 
-	Verify(id int64) error
-
 	Update(w *Wallet) error
 
-	Delete(id int64) error
-	// delete all wallets except provided one
-	SetActive(accountID, walletID string) error
-
+	// DEPRECATED
 	Page(uint64) WalletQI
+	// DEPRECATED
 	ByState(uint64) WalletQI
+	// DEPRECATED
 	Select() ([]Wallet, error)
 }
 
@@ -95,6 +105,27 @@ func (q *WalletQ) Transaction(fn func(q WalletQI) error) (err error) {
 	return q.parent.Transaction(func() error {
 		return fn(q)
 	})
+}
+
+func (q *WalletQ) CreateRecovery(recovery RecoveryKeychain) error {
+	stmt := sq.Insert(tableRecoveries).
+		SetMap(map[string]interface{}{
+			"wallet":        recovery.Email,
+			"salt":          recovery.Salt,
+			"keychain_data": recovery.Keychain,
+			"wallet_id":     recovery.WalletID,
+			"address":       recovery.Address,
+		})
+	_, err := q.parent.Exec(stmt)
+	if err != nil {
+		pqerr, ok := errors.Cause(err).(*pq.Error)
+		if ok {
+			if pqerr.Constraint == recoveriesWalletIDKeyConstraint {
+				return ErrRecoveriesConflict
+			}
+		}
+	}
+	return err
 }
 
 func (q *WalletQ) CreatePasswordFactor(walletID string, factor *tfa.Password) error {
@@ -182,38 +213,6 @@ func (q *WalletQ) Create(w *Wallet) error {
 	return err
 }
 
-func (q *WalletQ) CreateOrganizationAttachment(wid int64) error {
-	stmt := sq.Insert("organization_wallets").
-		SetMap(map[string]interface{}{
-			"wallet_id": wid,
-		})
-	_, err := q.parent.Exec(stmt)
-	return err
-}
-
-func (q *WalletQ) UpdateOrganizationAttachment(wid int64, address, operation string) error {
-	stmt := sq.Update("organization_wallets").SetMap(map[string]interface{}{
-		"organization_address": address,
-		"operation":            operation,
-	}).Where("wallet_id = ?", wid)
-	_, err := q.parent.Exec(stmt)
-	return err
-}
-
-func (q *WalletQ) OrganizationWatcherCursor() (string, error) {
-	result := ""
-	stmt := sq.
-		Select("operation").
-		From("organization_wallets").
-		OrderBy("operation desc").
-		Limit(1)
-	err := q.parent.Get(&result, stmt)
-	if err == sql.ErrNoRows {
-		return "0", nil
-	}
-	return result, err
-}
-
 func (q *WalletQ) ByEmail(email string) (*Wallet, error) {
 	var result Wallet
 	stmt := walletSelect.Where("w.email = ?", email)
@@ -246,16 +245,9 @@ func (q *WalletQ) ByAccountID(address types.Address) (*Wallet, error) {
 	return result, err
 }
 
-func (q *WalletQ) ByID(id int64) (*Wallet, error) {
-	result := &Wallet{}
-	stmt := walletSelect.Where("w.id = ?", id)
-	err := q.parent.Get(result, stmt)
-	return result, err
-}
-
-func (q *WalletQ) ByWalletID(walletId string) (*Wallet, error) {
+func (q *WalletQ) ByWalletID(walletID string) (*Wallet, error) {
 	var result Wallet
-	stmt := walletSelect.Where("w.wallet_id = ?", walletId)
+	stmt := walletSelect.Where("w.wallet_id = ? or r.wallet_id", walletID, walletID)
 
 	err := q.parent.Get(&result, stmt)
 	if err == sql.ErrNoRows {
@@ -304,37 +296,6 @@ func (q *WalletQ) Select() ([]Wallet, error) {
 	var result []Wallet
 	q.Err = q.parent.Select(&result, q.sql)
 	return result, q.Err
-}
-
-func (q *WalletQ) SetActive(accountID string, walletID string) error {
-	stmt := sq.Delete("wallets").
-		Where("account_id = ?", accountID).
-		Where("wallet_id != ?", walletID)
-
-	_, err := q.parent.Exec(stmt)
-	return err
-}
-
-func (q *WalletQ) Delete(id int64) error {
-	if q.Err != nil {
-		return q.Err
-	}
-
-	sqq := sq.Delete("wallets").Where("id = ?", id)
-	_, q.Err = q.parent.Exec(sqq)
-
-	return q.Err
-}
-
-func (q *WalletQ) Verify(id int64) error {
-	if q.Err != nil {
-		return q.Err
-	}
-
-	sqq := walletUpdate.Set("verified", true).Where("id = ?", id)
-	_, q.Err = q.parent.Exec(sqq)
-
-	return q.Err
 }
 
 func (q *WalletQ) Update(w *Wallet) error {

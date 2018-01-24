@@ -11,7 +11,6 @@ import (
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/ape/problems"
 	"gitlab.com/distributed_lab/logan/v3"
-	"gitlab.com/swarmfund/api/coreinfo"
 	"gitlab.com/swarmfund/api/db2/api"
 	"gitlab.com/swarmfund/api/internal/api/handlers"
 	"gitlab.com/swarmfund/api/internal/api/middlewares"
@@ -21,15 +20,15 @@ import (
 	"gitlab.com/swarmfund/api/internal/secondfactor"
 	"gitlab.com/swarmfund/api/storage"
 	"gitlab.com/swarmfund/go/doorman"
-	"gitlab.com/swarmfund/go/keypair"
-	"gitlab.com/swarmfund/horizon-connector"
+	"gitlab.com/swarmfund/horizon-connector/v2"
+	"gitlab.com/tokend/keypair"
 )
 
 func Router(
 	entry *logan.Entry, walletQ api.WalletQI, tokensQ data.EmailTokensQ,
 	usersQ api.UsersQI, doorman doorman.Doorman, horizon *horizon.Connector,
-	accountManager keypair.KP, tfaQ api.TFAQI, storage *storage.Connector,
-	coreConn *coreinfo.Connector, blobQ data.Blobs, sentry *raven.Client,
+	tfaQ api.TFAQI, storage *storage.Connector, master keypair.Address, signer keypair.Full,
+	coreInfo data.CoreInfoI, blobQ data.Blobs, sentry *raven.Client,
 	userDispatch hose.UserDispatch,
 ) chi.Router {
 	r := chi.NewRouter()
@@ -45,11 +44,11 @@ func Router(
 			handlers.CtxEmailTokensQ(tokensQ),
 			handlers.CtxUsersQ(usersQ),
 			handlers.CtxHorizon(horizon),
-			handlers.CtxAccountManagerKP(accountManager),
+			handlers.CtxTransaction(master, signer),
 			handlers.CtxTFAQ(tfaQ),
 			handlers.CtxDoorman(doorman),
 			handlers.CtxStorage(storage),
-			handlers.CtxCoreInfo(coreConn),
+			handlers.CtxCoreInfo(coreInfo),
 			handlers.CtxUserBusDispatch(userDispatch),
 		),
 	)
