@@ -128,8 +128,8 @@ func (c *Connector) makeBucket(bucket string) error {
 	return nil
 }
 
-func (c *Connector) DocumentURL(bucket, key string) (*url.URL, error) {
-	return c.minio.PresignedGetObject(strings.ToLower(bucket), strings.ToLower(key), 3600*time.Second, nil)
+func (c *Connector) DocumentURL(key string) (*url.URL, error) {
+	return c.minio.PresignedGetObject(strings.ToLower(bucketName), strings.ToLower(key), 3600*time.Second, nil)
 }
 
 func (c *Connector) Delete(bucket, key string) error {
