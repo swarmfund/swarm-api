@@ -248,7 +248,7 @@ func (q *WalletQ) ByAccountID(address types.Address) (*Wallet, error) {
 
 func (q *WalletQ) ByWalletID(walletID string) (*Wallet, error) {
 	var result Wallet
-	stmt := walletSelect.Where("w.wallet_id = ? or r.wallet_id", walletID, walletID)
+	stmt := walletSelect.Where("w.wallet_id = ? or r.wallet_id = ?", walletID, walletID)
 
 	err := q.parent.Get(&result, stmt)
 	if err == sql.ErrNoRows {
