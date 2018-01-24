@@ -19,6 +19,9 @@ func (user *User) CheckState() types.UserState {
 	case types.UserTypeNotVerified:
 		return types.UserStateNil
 	case types.UserTypeGeneral:
+		// TODO unstub after proper KYC deployed
+		return types.UserStateWaitingForApproval
+
 		// should have individual details
 		for _, record := range user.KYCEntities {
 			if record.Entity.Type == types.KYCEntityTypeIndividual {

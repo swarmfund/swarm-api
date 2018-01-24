@@ -14,9 +14,10 @@ const (
 	DocumentTypeDelta
 	DocumentTypeTokenTerms
 	DocumentTypeTokenMetrics
+	DocumentTypeKYCIdDocument
+	DocumentTypeKYCPoa
 )
 
 func IsPublicDocument(t DocumentType) bool {
-	// TODO revert once past demo
-	return true
+	return t != DocumentTypeKYCIdDocument && t != DocumentTypeKYCPoa
 }
