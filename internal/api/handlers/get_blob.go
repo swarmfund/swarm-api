@@ -9,8 +9,10 @@ import (
 	. "github.com/go-ozzo/ozzo-validation"
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/ape/problems"
+	"gitlab.com/swarmfund/api/internal/api/movetoape"
 	"gitlab.com/swarmfund/api/internal/api/resources"
 	"gitlab.com/swarmfund/api/internal/types"
+	"gitlab.com/swarmfund/go/doorman"
 )
 
 type (
@@ -41,8 +43,6 @@ func GetBlob(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO check allowed
-
 	blob, err := BlobQ(r).Get(request.BlobID)
 	if err != nil {
 		Log(r).WithError(err).Error("failed to get blob")
@@ -53,6 +53,14 @@ func GetBlob(w http.ResponseWriter, r *http.Request) {
 	if blob == nil {
 		ape.RenderErr(w, problems.NotFound())
 		return
+	}
+
+	if !types.IsPublicBlob(blob.Type) {
+		err := Doorman(r, doorman.SignerOf(string(request.Address)), doorman.SignerOf(CoreInfo(r).GetMasterAccountID()))
+		if err != nil {
+			movetoape.RenderDoormanErr(w, err)
+			return
+		}
 	}
 
 	response := CreateBlobResponse{
