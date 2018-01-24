@@ -1,5 +1,7 @@
 -- +migrate Up
 
+CREATE UNIQUE INDEX wallets_email_unique_constraint ON wallets(email);
+
 CREATE TABLE recoveries
 (
   wallet        TEXT NOT NULL
@@ -20,3 +22,4 @@ CREATE UNIQUE INDEX recoveries_wallet_id_unique_constraint
 
 drop index recoveries_wallet_id_unique_constraint;
 drop table recoveries;
+drop index wallets_email_unique_constraint;
