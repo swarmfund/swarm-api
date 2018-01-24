@@ -30,15 +30,9 @@ type (
 	PatchUserRequestAttributes struct {
 		State        *types.UserState `json:"state"`
 		RejectReason string           `json:"reject_reason"`
+		KYCSequence  int64            `json:"kyc_sequence"`
 	}
 	PatchUserRequestRelationships struct {
-		KYC struct {
-			Data struct {
-				Attributes struct {
-					Sequence int64 `json:"sequence"`
-				} `json:"attributes"`
-			} `json:"data"`
-		} `json:"kyc"`
 		Transaction struct {
 			Data struct {
 				Attributes struct {
@@ -177,7 +171,7 @@ func PatchUser(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 			// check if KYC sequence is provided
-			if request.Data.Relationships.KYC.Data.Attributes.Sequence == 0 {
+			if request.Data.Attributes.KYCSequence == 0 {
 				ape.RenderErr(w, problems.BadRequest(Errors{
 					"/data/relatioships/kyc": errors.New("sequence is required to change state"),
 				})...)
@@ -186,7 +180,7 @@ func PatchUser(w http.ResponseWriter, r *http.Request) {
 
 			// all checks have passed, updating user state
 			user.State = *request.Data.Attributes.State
-			user.KYCSequence = request.Data.Relationships.KYC.Data.Attributes.Sequence
+			user.KYCSequence = request.Data.Attributes.KYCSequence
 		}
 	}
 
