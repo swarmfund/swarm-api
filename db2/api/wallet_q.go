@@ -20,7 +20,8 @@ var walletSelect = sq.Select(
 	"r.address as recovery_address",
 	"r.wallet_id as recovery_wallet_id").
 	From("wallets w").
-	Join("recoveries r on w.email = r.wallet").
+	// TODO make just join
+	LeftJoin("recoveries r on w.email = r.wallet").
 	Join("email_tokens et on w.wallet_id = et.wallet_id")
 
 var walletInsert = sq.Insert("wallets")
