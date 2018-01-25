@@ -59,7 +59,6 @@ func initWebActions(app *App) {
 	// participants
 	r.Post("/details", &DetailsAction{})
 	r.Post("/participants", &ParticipantsAction{})
-	r.Get("/user_id", &GetUserIdAction{})
 
 	r.NotFound(&NotFoundAction{})
 }

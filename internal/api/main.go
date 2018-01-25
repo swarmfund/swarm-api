@@ -124,6 +124,7 @@ func Router(
 	})
 
 	r.Get("/data/enums", handlers.GetDataEnums)
+	r.Get("/user_id", handlers.GetUserID)
 
 	return r
 }
