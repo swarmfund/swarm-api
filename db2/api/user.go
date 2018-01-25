@@ -36,6 +36,8 @@ type User struct {
 	IntegrationMeta json.RawMessage `db:"integration_meta"`
 	// KYCEntities comes from join on kyc_entities
 	KYCEntities KYCEntities `db:"kyc_entities"`
+	// RecoveryAddress recovery signer, comes from join on recoveries
+	RecoveryAddress types.Address `db:"recovery_address"`
 }
 
 // Details will throw panic aggressively instead of returning error
