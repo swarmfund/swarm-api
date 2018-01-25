@@ -22,7 +22,7 @@ var (
 		"u.*",
 		"r.address as recovery_address",
 		"(select json_agg(kyc) from kyc_entities kyc where kyc.user_id=u.id) as kyc_entities").
-		Join("recoveries r on r.address=u.address").
+		Join("recoveries r on r.wallet=u.email").
 		From(tableUserAliased)
 
 	insertUser = sq.Insert(tableUser)
