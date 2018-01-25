@@ -180,8 +180,12 @@ func PatchUser(w http.ResponseWriter, r *http.Request) {
 
 			// all checks have passed, updating user state
 			user.State = *request.Data.Attributes.State
-			user.KYCSequence = request.Data.Attributes.KYCSequence
 		}
+	}
+
+	// FIXME set in proper branch
+	if request.Data.Attributes.KYCSequence != 0 {
+		user.KYCSequence = request.Data.Attributes.KYCSequence
 	}
 
 	err = UsersQ(r).Transaction(func(q api.UsersQI) error {
