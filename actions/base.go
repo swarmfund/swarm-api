@@ -1,11 +1,7 @@
 package actions
 
 import (
-	"crypto/sha1"
-	"encoding/base64"
-	"encoding/hex"
 	"encoding/json"
-	"errors"
 	"net/http"
 
 	gctx "github.com/goji/context"
@@ -118,42 +114,4 @@ func (base *Base) Do(fns ...func()) {
 
 		fn()
 	}
-}
-
-// Setup runs the provided funcs if and only if no call to Setup() has been
-// made previously on this action.
-func (base *Base) Setup(fns ...func()) {
-	if base.isSetup {
-		return
-	}
-	base.Do(fns...)
-	base.isSetup = true
-}
-
-func (base *Base) GetByteArray(name string, length int) string {
-	rawValue := base.GetNonEmptyString(name)
-	if base.Err != nil {
-		return ""
-	}
-
-	value, err := base64.StdEncoding.DecodeString(rawValue)
-
-	if err != nil {
-		base.Err = err
-		return ""
-	}
-
-	if len(value) != length {
-		base.SetInvalidField(name, errors.New(" is not "+string(length)+"byte length"))
-		return ""
-	}
-	return base64.StdEncoding.EncodeToString(value)
-}
-
-func (base *Base) ValidateHash(orig, hash string) bool {
-	rawOrig := []byte(orig)
-	hasher := sha1.New()
-	hasher.Write(rawOrig)
-	hashed := hex.EncodeToString(hasher.Sum(nil))
-	return hashed == hash
 }

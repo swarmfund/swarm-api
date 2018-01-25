@@ -83,7 +83,7 @@ func CreateTFABackend(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// check allowed
-	if err := Doorman(r, doorman.SignerOf(wallet.AccountID)); err != nil {
+	if err := Doorman(r, doorman.SignerOf(string(wallet.AccountID))); err != nil {
 		movetoape.RenderDoormanErr(w, err)
 		return
 	}
@@ -92,7 +92,7 @@ func CreateTFABackend(w http.ResponseWriter, r *http.Request) {
 
 	switch request.Data.Type {
 	case types.WalletFactorTOTP:
-		backend, err = tfa.NewTOTPBackend("Swarm Fund", wallet.Username)
+		backend, err = tfa.NewTOTPBackend("Swarm", wallet.Username)
 		if err != nil {
 			Log(r).WithError(err).Error("failed to generate backend")
 			ape.RenderErr(w, problems.InternalError())

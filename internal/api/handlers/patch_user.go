@@ -28,7 +28,9 @@ type (
 		Relationships PatchUserRequestRelationships `json:"relationships"`
 	}
 	PatchUserRequestAttributes struct {
-		State *types.UserState `json:"state"`
+		State        *types.UserState `json:"state"`
+		RejectReason string           `json:"reject_reason"`
+		KYCSequence  int64            `json:"kyc_sequence"`
 	}
 	PatchUserRequestRelationships struct {
 		Transaction struct {
@@ -123,11 +125,17 @@ func PatchUser(w http.ResponseWriter, r *http.Request) {
 				})...)
 				return
 			}
-
-			// TODO reject reason required when rejecting
+			// reject reason is required when rejecting
+			if *request.Data.Attributes.State == types.UserStateRejected && request.Data.Attributes.RejectReason == "" {
+				ape.RenderErr(w, problems.BadRequest(Errors{
+					"/data/attributes/reject_reason": errors.New("required"),
+				})...)
+				return
+			}
 
 			// all checks have passed, updating user state
 			user.State = *request.Data.Attributes.State
+			user.RejectReason = request.Data.Attributes.RejectReason
 		}
 	} else {
 		// user could update type
@@ -162,10 +170,22 @@ func PatchUser(w http.ResponseWriter, r *http.Request) {
 				})...)
 				return
 			}
+			// check if KYC sequence is provided
+			if request.Data.Attributes.KYCSequence == 0 {
+				ape.RenderErr(w, problems.BadRequest(Errors{
+					"/data/relatioships/kyc": errors.New("sequence is required to change state"),
+				})...)
+				return
+			}
 
 			// all checks have passed, updating user state
 			user.State = *request.Data.Attributes.State
 		}
+	}
+
+	// FIXME set in proper branch
+	if request.Data.Attributes.KYCSequence != 0 {
+		user.KYCSequence = request.Data.Attributes.KYCSequence
 	}
 
 	err = UsersQ(r).Transaction(func(q api.UsersQI) error {
@@ -174,7 +194,8 @@ func PatchUser(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if tx := request.Data.Relationships.Transaction.Data.Attributes.Envelope; tx != "" {
-			if err := Horizon(r).SubmitTX(tx); err != nil {
+			if result := Horizon(r).Submitter().Submit(r.Context(), tx); result.Err != nil {
+				// TODO assert fail reasons
 				return errors.Wrap(err, "failed to submit transaction")
 			}
 		}

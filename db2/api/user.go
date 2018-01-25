@@ -21,6 +21,8 @@ type User struct {
 	Email             string               `db:"email"`
 	UserType          types.UserType       `db:"type"`
 	State             types.UserState      `db:"state"`
+	KYCSequence       int64                `db:"kyc_sequence"`
+	RejectReason      string               `db:"reject_reason"`
 	Documents         Documents            `db:"documents"`
 	DocumentsVersion  int64                `db:"documents_version"`
 	LimitReviewStatue UserLimitReviewState `db:"limit_review_state"`
@@ -34,6 +36,8 @@ type User struct {
 	IntegrationMeta json.RawMessage `db:"integration_meta"`
 	// KYCEntities comes from join on kyc_entities
 	KYCEntities KYCEntities `db:"kyc_entities"`
+	// RecoveryAddress recovery signer, comes from join on recoveries
+	RecoveryAddress types.Address `db:"recovery_address"`
 }
 
 // Details will throw panic aggressively instead of returning error

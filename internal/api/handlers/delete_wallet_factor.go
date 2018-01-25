@@ -56,7 +56,7 @@ func DeleteWalletFactor(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// check allowed
-	if err := Doorman(r, doorman.SignerOf(wallet.AccountID)); err != nil {
+	if err := Doorman(r, doorman.SignerOf(string(wallet.AccountID))); err != nil {
 		movetoape.RenderDoormanErr(w, err)
 		return
 	}

@@ -32,6 +32,9 @@ func init() {
 			interface{}(BlobTypeDelta).(fmt.Stringer).String():            BlobTypeDelta,
 			interface{}(BlobTypeTokenTerms).(fmt.Stringer).String():       BlobTypeTokenTerms,
 			interface{}(BlobTypeTokenMetrics).(fmt.Stringer).String():     BlobTypeTokenMetrics,
+			interface{}(BlobTypeKYCForm).(fmt.Stringer).String():          BlobTypeKYCForm,
+			interface{}(BlobTypeKYCIdDocument).(fmt.Stringer).String():    BlobTypeKYCIdDocument,
+			interface{}(BlobTypeKYCPoa).(fmt.Stringer).String():           BlobTypeKYCPoa,
 		}
 	}
 }
@@ -48,6 +51,9 @@ var _BlobTypeNameToValue = map[string]BlobType{
 	"delta":             BlobTypeDelta,
 	"token_terms":       BlobTypeTokenTerms,
 	"token_metrics":     BlobTypeTokenMetrics,
+	"kyc_form":          BlobTypeKYCForm,
+	"kyc_id_document":   BlobTypeKYCIdDocument,
+	"kyc_poa":           BlobTypeKYCPoa,
 }
 
 var _BlobTypeValueToName = map[BlobType]string{
@@ -62,6 +68,9 @@ var _BlobTypeValueToName = map[BlobType]string{
 	BlobTypeDelta:            "delta",
 	BlobTypeTokenTerms:       "token_terms",
 	BlobTypeTokenMetrics:     "token_metrics",
+	BlobTypeKYCForm:          "kyc_form",
+	BlobTypeKYCIdDocument:    "kyc_id_document",
+	BlobTypeKYCPoa:           "kyc_poa",
 }
 
 // String is generated so BlobType satisfies fmt.Stringer.

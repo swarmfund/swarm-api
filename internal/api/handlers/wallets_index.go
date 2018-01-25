@@ -73,7 +73,7 @@ func WalletsIndex(w http.ResponseWriter, r *http.Request) {
 		Data: make(WalletsIndexData, 0, len(wallets)),
 	}
 	for _, wallet := range wallets {
-		response.Data = append(response.Data, resources.NewWalletData(&wallet))
+		response.Data = append(response.Data, resources.NewWallet(&wallet).Data)
 	}
 	response.Links = urlval.Encode(r, filters)
 

@@ -37,9 +37,7 @@ func (action *ParticipantsAction) loadParams() {
 }
 
 func (action *ParticipantsAction) checkAllowed() {
-	action.checkSignerConstraints(
-		SignerOf(action.App.CoreInfo.MasterAccountID),
-	)
+	// TODO master
 }
 
 func (action *ParticipantsAction) loadParticipants() {
