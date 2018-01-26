@@ -20,7 +20,8 @@ var walletSelect = sq.Select(
 	"r.address as recovery_address",
 	"r.wallet_id as recovery_wallet_id").
 	From("wallets w").
-	Join("recoveries r on w.email = r.wallet").
+	// TODO make just join
+	LeftJoin("recoveries r on w.email = r.wallet").
 	Join("email_tokens et on w.wallet_id = et.wallet_id")
 
 var walletInsert = sq.Insert("wallets")
@@ -247,7 +248,7 @@ func (q *WalletQ) ByAccountID(address types.Address) (*Wallet, error) {
 
 func (q *WalletQ) ByWalletID(walletID string) (*Wallet, error) {
 	var result Wallet
-	stmt := walletSelect.Where("w.wallet_id = ? or r.wallet_id", walletID, walletID)
+	stmt := walletSelect.Where("w.wallet_id = ? or r.wallet_id = ?", walletID, walletID)
 
 	err := q.parent.Get(&result, stmt)
 	if err == sql.ErrNoRows {

@@ -14,10 +14,12 @@ import (
 	"github.com/pkg/errors"
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/ape/problems"
+	"gitlab.com/swarmfund/api/internal/api/movetoape"
 	"gitlab.com/swarmfund/api/internal/api/resources"
 	"gitlab.com/swarmfund/api/internal/data"
 	"gitlab.com/swarmfund/api/internal/data/postgres"
 	"gitlab.com/swarmfund/api/internal/types"
+	"gitlab.com/swarmfund/go/doorman"
 	"gitlab.com/swarmfund/go/hash"
 )
 
@@ -120,7 +122,10 @@ func CreateBlob(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO check allowed
+	if err := Doorman(r, doorman.SignerOf(string(request.Address))); err != nil {
+		movetoape.RenderDoormanErr(w, err)
+		return
+	}
 
 	blob := request.Blob()
 

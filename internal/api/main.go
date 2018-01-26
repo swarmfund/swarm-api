@@ -97,6 +97,7 @@ func Router(
 		// documents
 		r.Route("/{address}/documents", func(r chi.Router) {
 			r.Post("/", handlers.PutDocument)
+			r.Get("/{document}", handlers.GetDocument)
 		})
 
 		// kyc
@@ -123,7 +124,9 @@ func Router(
 		r.Post("/discourse-sso", sso.SSORedirect)
 	})
 
-		r.Get("/data/enums", handlers.GetDataEnums)
-	//})
+	r.Get("/data/enums", handlers.GetDataEnums)
+	r.Get("/user_id", handlers.GetUserID)
+	r.Post("/participants", handlers.GetParticipants)
+	r.Post("/details", handlers.GetDetails)
 	return r
 }
