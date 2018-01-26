@@ -20,7 +20,9 @@ var (
 	tableUserAliased = fmt.Sprintf("%s u", tableUser)
 	selectUser       = sq.Select(
 		"u.*",
+		"r.address as recovery_address",
 		"(select json_agg(kyc) from kyc_entities kyc where kyc.user_id=u.id) as kyc_entities").
+		Join("recoveries r on r.wallet=u.email").
 		From(tableUserAliased)
 
 	insertUser = sq.Insert(tableUser)
@@ -150,8 +152,10 @@ func (q *UsersQ) LimitReviewRequests() UsersQI {
 func (q *UsersQ) Update(user *User) error {
 	stmt := updateUser(string(user.Address)).
 		SetMap(map[string]interface{}{
-			"type":  user.UserType,
-			"state": user.State,
+			"type":          user.UserType,
+			"state":         user.State,
+			"kyc_sequence":  user.KYCSequence,
+			"reject_reason": user.RejectReason,
 		})
 	_, err := q.parent.Exec(stmt)
 	return err

@@ -60,7 +60,7 @@ func (c *Connector) SendVerificationLink(email string, payload clienturl.Payload
 		return errors.Wrap(err, "failed to encode payload")
 	}
 	letter := &Letter{
-		Header: "Swarm Fund Email Verification",
+		Header: "Swarm Email Verification",
 		Link:   fmt.Sprintf("%s/%s", c.conf.ClientRouter, encoded),
 	}
 
@@ -102,15 +102,15 @@ func (c *Connector) NotifyKYCReviewPending(recipient string) error {
 }
 
 func (c *Connector) NotifyApproval(email string) error {
-	header := "Swarm Fund Account Approved"
-	msg := "Your account was just approved at Swarm Fund. "
+	header := "Swarm Account Approved"
+	msg := "Your account was just approved at Swarm. "
 
 	letter := Letter{Header: header, Body: msg, Link: ""}
 	return c.sendKycNotification(email, letter)
 }
 
 func (c *Connector) NotifyRejection(email string) error {
-	header := "Swarm Fund Account Rejected"
+	header := "Swarm Account Rejected"
 	msg := "Your request was rejected by the administrator. Log in to your account for more details."
 
 	letter := Letter{Header: header, Body: msg, Link: ""}

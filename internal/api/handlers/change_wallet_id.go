@@ -71,7 +71,7 @@ func ChangeWalletID(w http.ResponseWriter, r *http.Request) {
 
 	// we are not forcing any 2fa checks if request is for recovery wallet
 	// TODO better check for request signer
-	if request.CurrentWalletID != wallet.RecoveryWalletID {
+	if request.CurrentWalletID != *wallet.RecoveryWalletID {
 		// check if user knows password
 		if err := secondfactor.NewConsumer(TFAQ(r)).WithTokenMixin("pwd-check").WithBackendType(types.WalletFactorPassword).Consume(r, wallet); err != nil {
 			RenderFactorConsumeError(w, r, err)

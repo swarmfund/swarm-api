@@ -15,4 +15,11 @@ const (
 	BlobTypeDelta
 	BlobTypeTokenTerms
 	BlobTypeTokenMetrics
+	BlobTypeKYCForm
+	BlobTypeKYCIdDocument
+	BlobTypeKYCPoa
 )
+
+func IsPublicBlob(t BlobType) bool {
+	return t <= BlobTypeTokenMetrics
+}

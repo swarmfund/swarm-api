@@ -11,6 +11,7 @@ import (
 	"gitlab.com/distributed_lab/ape/problems"
 	"gitlab.com/swarmfund/api/internal/api/resources"
 	"gitlab.com/swarmfund/api/internal/types"
+	"gitlab.com/swarmfund/go/doorman"
 )
 
 type (
@@ -77,14 +78,25 @@ func BlobIndex(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var isAllowed bool
+	err = Doorman(r, doorman.SignerOf(string(request.Address)), doorman.SignerOf(CoreInfo(r).GetMasterAccountID()))
+	if err == nil {
+		isAllowed = true
+	}
+
 	var response struct {
 		Data []resources.Blob `json:"data"`
 	}
 
-	response.Data = make([]resources.Blob, 0, len(records))
+	response.Data = make([]resources.Blob, 0)
 
 	for _, record := range records {
-		response.Data = append(response.Data, resources.NewBlob(&record))
+		// sorry
+		if types.IsPublicBlob(record.Type) {
+			response.Data = append(response.Data, resources.NewBlob(&record))
+		} else if isAllowed {
+			response.Data = append(response.Data, resources.NewBlob(&record))
+		}
 	}
 
 	json.NewEncoder(w).Encode(response)
