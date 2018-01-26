@@ -49,20 +49,6 @@ func initWebMiddleware(app *App) {
 	r.Use(middleware.AutomaticOptions)
 }
 
-// initWebActions installs the routing configuration of horizon onto the
-// provided app.  All route registration should be implemented here.
-func initWebActions(app *App) {
-	// ok
-
-	r := app.web.router
-
-	// participants
-	r.Post("/details", &DetailsAction{})
-	r.Post("/participants", &ParticipantsAction{})
-
-	r.NotFound(&NotFoundAction{})
-}
-
 func init() {
 	appInit.Add(
 		"web.init",
@@ -73,12 +59,6 @@ func init() {
 	appInit.Add(
 		"web.middleware",
 		initWebMiddleware,
-
-		"web.init",
-	)
-	appInit.Add(
-		"web.actions",
-		initWebActions,
 
 		"web.init",
 	)

@@ -25,6 +25,7 @@ func GetUserID(w http.ResponseWriter, r *http.Request) {
 		ape.RenderErr(w, problems.NotFound())
 		return
 	}
+
 	res := map[string]string{
 		"account_id": string(record.Address),
 	}

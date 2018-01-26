@@ -125,6 +125,7 @@ func Router(
 
 	r.Get("/data/enums", handlers.GetDataEnums)
 	r.Get("/user_id", handlers.GetUserID)
-
+	r.Post("/participants", handlers.GetParticipants)
+	r.Post("/details", handlers.GetDetails)
 	return r
 }
