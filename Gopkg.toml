@@ -123,7 +123,7 @@
 
 [[override]]
   name = "gitlab.com/swarmfund/go"
-  branch = "dev"
+  branch = "prod"
 
 [[constraint]]
   name = "gitlab.com/swarmfund/horizon-connector"

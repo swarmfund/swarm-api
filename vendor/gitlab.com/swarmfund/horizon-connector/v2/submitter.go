@@ -63,6 +63,7 @@ func (s *Submitter) Submit(ctx context.Context, envelope string) SubmitResult {
 		case "transaction_malformed":
 			result.Err = ErrSubmitMalformed
 		case "transaction_failed":
+			println(response.Extras)
 			result.Err = ErrSubmitRejected
 			result.TXCode = response.Extras.ResultCodes.Transaction
 			result.OpCodes = response.Extras.ResultCodes.Messages
