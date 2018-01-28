@@ -10,6 +10,7 @@ import (
 	"github.com/pkg/errors"
 	"gitlab.com/swarmfund/horizon-connector/v2/internal/resources"
 	"gitlab.com/swarmfund/horizon-connector/v2/internal/responses"
+	"gitlab.com/distributed_lab/logan/v3"
 )
 
 var (
@@ -63,7 +64,7 @@ func (s *Submitter) Submit(ctx context.Context, envelope string) SubmitResult {
 		case "transaction_malformed":
 			result.Err = ErrSubmitMalformed
 		case "transaction_failed":
-			println(response.Extras)
+			logan.New().WithField("response", string(result.RawResponse)).Warn("Transaction failed")
 			result.Err = ErrSubmitRejected
 			result.TXCode = response.Extras.ResultCodes.Transaction
 			result.OpCodes = response.Extras.ResultCodes.Messages
