@@ -28,7 +28,7 @@ var (
 	insertUser = sq.Insert(tableUser)
 	updateUser = func(address string) sq.UpdateBuilder {
 		return sq.Update(tableUserAliased).
-			Where("address = ?", address).
+			Where("u.address = ?", address).
 			Set("updated_at", time.Now())
 	}
 	ErrUsersConflict = errors.New("address constraint violated")
@@ -137,7 +137,7 @@ func (q *UsersQ) EmailMatches(str string) UsersQI {
 }
 
 func (q *UsersQ) AddressMatches(str string) UsersQI {
-	q.sql = q.sql.Where("address ilike ?", fmt.Sprint("%", str, "%"))
+	q.sql = q.sql.Where("u.address ilike ?", fmt.Sprint("%", str, "%"))
 	return q
 }
 
