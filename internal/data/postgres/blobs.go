@@ -30,7 +30,7 @@ type Blobs struct {
 
 func NewBlobs(repo *db2.Repo) *Blobs {
 	return &Blobs{
-		repo, blobsSelect,
+		repo.Clone(), blobsSelect,
 	}
 }
 
