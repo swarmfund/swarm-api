@@ -17,7 +17,6 @@ import (
 	"gitlab.com/swarmfund/api/internal/types"
 	"gitlab.com/swarmfund/api/tfa"
 	"gitlab.com/swarmfund/go/doorman"
-	"github.com/aws/aws-sdk-go/aws/request"
 )
 
 type (
