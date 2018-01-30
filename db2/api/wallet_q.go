@@ -73,9 +73,9 @@ type WalletQI interface {
 
 	// LoadWallet
 	ByEmail(username string) (*Wallet, error)
-	// ByWalletID lookups both primary and recovery wallet ids
 	ByWalletID(walletId string) (*Wallet, error)
 	DeleteWallets(walletIDs []string) error
+	ByWalletIDOrRecovery(walletId string) (*Wallet, error)
 
 	ByCurrentAccountID(accountID string) (*Wallet, error)
 	ByAccountID(address types.Address) (*Wallet, error)
@@ -267,6 +267,18 @@ func (q *WalletQ) ByAccountID(address types.Address) (*Wallet, error) {
 func (q *WalletQ) ByWalletID(walletID string) (*Wallet, error) {
 	var result Wallet
 	stmt := walletSelect.Where("w.wallet_id = ?", walletID)
+
+	err := q.parent.Get(&result, stmt)
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
+
+	return &result, err
+}
+
+func (q *WalletQ) ByWalletIDOrRecovery(walletID string) (*Wallet, error) {
+	var result Wallet
+	stmt := walletSelect.Where("w.wallet_id = ? OR recovery_wallet_id = ?", walletID, walletID)
 
 	err := q.parent.Get(&result, stmt)
 	if err == sql.ErrNoRows {
