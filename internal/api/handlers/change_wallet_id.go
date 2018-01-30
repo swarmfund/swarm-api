@@ -64,8 +64,12 @@ func ChangeWalletID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	ownerOfData := wallet.CurrentAccountID
+	if wallet.RecoveryAddress != nil && ownerOfData == "" {
+		ownerOfData = *wallet.RecoveryAddress
+	}
 	// check allowed
-	if err := Doorman(r, doorman.SignerOf(string(wallet.CurrentAccountID))); err != nil {
+	if err := Doorman(r, doorman.SignerOf(string(ownerOfData))); err != nil {
 		movetoape.RenderDoormanErr(w, err)
 		return
 	}
