@@ -44,6 +44,7 @@ func (r ChangeWalletIDRequest) Validate() error {
 }
 
 func ChangeWalletID(w http.ResponseWriter, r *http.Request) {
+	// TODO: must be refactored
 	request, err := NewChangeWalletIDRequest(r)
 	if err != nil {
 		ape.RenderErr(w, problems.BadRequest(err)...)
@@ -83,6 +84,14 @@ func ChangeWalletID(w http.ResponseWriter, r *http.Request) {
 			RenderFactorConsumeError(w, r, err)
 			return
 		}
+		// load actual wallet not recovery
+	} else {
+		wallet, err = WalletQ(r).ByEmail(wallet.Username)
+		if err != nil {
+			Log(r).WithError(err).Error("failed to get wallet by email")
+			ape.RenderErr(w, problems.InternalError())
+			return
+		}
 	}
 
 	factor := tfa.NewPasswordBackend(tfa.PasswordDetails{
@@ -97,6 +106,7 @@ func ChangeWalletID(w http.ResponseWriter, r *http.Request) {
 	wallet.KeychainData = request.Data.Attributes.KeychainData
 	wallet.CurrentAccountID = types.Address(request.Data.Attributes.AccountID)
 	wallet.KDF = request.Data.Relationships.KDF.Data.ID
+	// TODO transaction is not working. Error on horizon submition still makes commit!!!!!!!!!!
 	err = WalletQ(r).Transaction(func(q api.WalletQI) error {
 		// update wallet
 		if err = WalletQ(r).Update(wallet); err != nil {
