@@ -7,7 +7,7 @@ import (
 )
 
 func initVerificationSender(app *App) {
-	go func() {
+	/*go func() {
 		tokensQ := app.EmailTokensQ()
 		ticker := time.NewTicker(5 * time.Second)
 		for ; ; <-ticker.C {
@@ -26,7 +26,7 @@ func initVerificationSender(app *App) {
 				}
 			}
 		}
-	}()
+	}()*/
 }
 
 func init() {
