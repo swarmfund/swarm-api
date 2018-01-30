@@ -30,8 +30,12 @@ type Blobs struct {
 
 func NewBlobs(repo *db2.Repo) *Blobs {
 	return &Blobs{
-		repo, blobsSelect,
+		repo.Clone(), blobsSelect,
 	}
+}
+
+func (q *Blobs) New() data.Blobs {
+	return NewBlobs(q.Repo.Clone())
 }
 
 func (q *Blobs) Transaction(fn func(data.Blobs) error) error {

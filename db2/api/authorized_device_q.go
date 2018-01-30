@@ -27,7 +27,9 @@ type AuthorizedDeviceQ struct {
 
 func (q *Q) AuthorizedDevice() AuthorizedDeviceQI {
 	return &AuthorizedDeviceQ{
-		parent: q,
+		parent: &Q{
+			q.Clone(),
+		},
 		sql:    authorizedDeviceSelect,
 	}
 }

@@ -7,6 +7,7 @@ import (
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/ape/problems"
 	"gitlab.com/swarmfund/api/internal/api/resources"
+	"strconv"
 )
 
 func GetKDF(w http.ResponseWriter, r *http.Request) {
@@ -21,6 +22,9 @@ func GetKDF(w http.ResponseWriter, r *http.Request) {
 	}
 
 	email := r.URL.Query().Get("email")
+	// if invalid just ignore it
+	isRecovery, _ := strconv.ParseBool(r.URL.Query().Get("is_recovery"))
+
 	if email != "" {
 		wallet, err := WalletQ(r).ByEmail(email)
 		if err != nil {
@@ -41,6 +45,15 @@ func GetKDF(w http.ResponseWriter, r *http.Request) {
 		}
 
 		kdf.Salt = wallet.Salt
+		if isRecovery {
+			if wallet.RecoveryWalletID == nil {
+				Log(r).WithField("wallet", wallet.Id).Error("does not have recovery wallet id")
+				ape.RenderErr(w, problems.InternalError())
+				return
+			}
+
+			kdf.Salt = *wallet.RecoveryWalletID
+		}
 	}
 
 	ape.Render(w, kdf)

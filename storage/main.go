@@ -98,33 +98,6 @@ func (c *Connector) makeBucket(bucket string) error {
 		}
 	}
 
-	fields := strings.Split(c.conf.ObjectCreateARN, ":")
-	if len(fields) != 6 {
-		return errors.New("invalid arn")
-	}
-
-	mb, err := c.minio.GetBucketNotification(bucket)
-	if err != nil {
-		return err
-	}
-
-	arn := minio.NewArn(fields[1], fields[2], fields[3], fields[4], fields[5])
-	nc := minio.NewNotificationConfig(arn)
-	nc.AddEvents(minio.ObjectRemovedAll, minio.ObjectCreatedAll)
-	switch fields[2] {
-	case "sns":
-		mb.AddTopic(nc)
-	case "sqs":
-		mb.AddQueue(nc)
-	case "lambda":
-		mb.AddLambda(nc)
-	default:
-		return errors.New("invalid arn service")
-	}
-
-	if err := c.minio.SetBucketNotification(bucket, mb); err != nil {
-		return err
-	}
 	return nil
 }
 
