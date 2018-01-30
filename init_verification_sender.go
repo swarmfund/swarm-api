@@ -1,11 +1,5 @@
 package api
 
-import (
-	"time"
-
-	"gitlab.com/swarmfund/api/internal/clienturl"
-)
-
 func initVerificationSender(app *App) {
 	/*go func() {
 		tokensQ := app.EmailTokensQ()
