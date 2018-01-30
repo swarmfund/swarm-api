@@ -18,7 +18,8 @@ var walletSelect = sq.Select(
 	"w.*",
 	"et.confirmed as verified",
 	"r.address as recovery_address",
-	"r.wallet_id as recovery_wallet_id").
+	"r.wallet_id as recovery_wallet_id",
+	"r.salt as recovery_salt").
 	From("wallets w").
 	// TODO make just join
 	LeftJoin("recoveries r on w.email = r.wallet").

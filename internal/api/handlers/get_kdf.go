@@ -46,13 +46,13 @@ func GetKDF(w http.ResponseWriter, r *http.Request) {
 
 		kdf.Salt = wallet.Salt
 		if isRecovery {
-			if wallet.RecoveryWalletID == nil {
-				Log(r).WithField("wallet", wallet.Id).Error("does not have recovery wallet id")
+			if wallet.RecoverySalt == nil {
+				Log(r).WithField("wallet", wallet.Id).Error("does not have recovery salt")
 				ape.RenderErr(w, problems.InternalError())
 				return
 			}
 
-			kdf.Salt = *wallet.RecoveryWalletID
+			kdf.Salt = *wallet.RecoverySalt
 		}
 	}
 
