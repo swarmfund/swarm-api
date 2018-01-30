@@ -80,6 +80,8 @@ type WalletQI interface {
 	ByCurrentAccountID(accountID string) (*Wallet, error)
 	ByAccountID(address types.Address) (*Wallet, error)
 
+	RecoveryByWalletID(recoveryWalletID string) (*RecoveryKeychain, error)
+
 	Update(w *Wallet) error
 
 	// DEPRECATED
@@ -101,7 +103,7 @@ func (q *WalletQ) New() WalletQI {
 		parent: &Q{
 			q.parent.Clone(),
 		},
-		sql:    walletSelect,
+		sql: walletSelect,
 	}
 }
 
@@ -109,6 +111,19 @@ func (q *WalletQ) Transaction(fn func(q WalletQI) error) (err error) {
 	return q.parent.Transaction(func() error {
 		return fn(q)
 	})
+}
+
+func (q *WalletQ) RecoveryByWalletID(recoveryWalletID string) (*RecoveryKeychain, error) {
+	query := sq.Select("email", "salt", "keychain", "address", "wallet_id").
+		From(tableRecoveries).Where("wallet_id = ?", recoveryWalletID)
+
+	var result RecoveryKeychain
+	err := q.parent.Get(&result, query)
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
+
+	return &result, err
 }
 
 func (q *WalletQ) CreateRecovery(recovery RecoveryKeychain) error {
@@ -251,7 +266,7 @@ func (q *WalletQ) ByAccountID(address types.Address) (*Wallet, error) {
 
 func (q *WalletQ) ByWalletID(walletID string) (*Wallet, error) {
 	var result Wallet
-	stmt := walletSelect.Where("w.wallet_id = ? or r.wallet_id = ?", walletID, walletID)
+	stmt := walletSelect.Where("w.wallet_id = ?", walletID)
 
 	err := q.parent.Get(&result, stmt)
 	if err == sql.ErrNoRows {

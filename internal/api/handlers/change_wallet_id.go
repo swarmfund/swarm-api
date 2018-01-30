@@ -17,6 +17,7 @@ import (
 	"gitlab.com/swarmfund/api/internal/types"
 	"gitlab.com/swarmfund/api/tfa"
 	"gitlab.com/swarmfund/go/doorman"
+	"github.com/aws/aws-sdk-go/aws/request"
 )
 
 type (
@@ -43,6 +44,34 @@ func (r ChangeWalletIDRequest) Validate() error {
 	)
 }
 
+func loadWallet(r *http.Request, currentWalletID string) (*api.Wallet, bool, error) {
+	wallet, err := WalletQ(r).ByWalletID(currentWalletID)
+	if err != nil {
+		return nil, false, errors.Wrap(err, "failed to load wallet by id")
+	}
+
+	if wallet != nil {
+		return wallet, false, nil
+	}
+
+	// maybe its recovery
+	recovery, err := WalletQ(r).RecoveryByWalletID(currentWalletID)
+	if err != nil {
+		return nil, false, errors.Wrap(err, "failed to load recovery by id")
+	}
+
+	if recovery == nil {
+		return nil, false, nil
+	}
+
+	wallet, err = WalletQ(r).ByEmail(recovery.Email)
+	if err != nil {
+		return nil, false, errors.Wrap(err, "failed to load wallet by email for recovery")
+	}
+
+	return wallet, true, nil
+}
+
 func ChangeWalletID(w http.ResponseWriter, r *http.Request) {
 	// TODO: must be refactored
 	request, err := NewChangeWalletIDRequest(r)
@@ -52,7 +81,7 @@ func ChangeWalletID(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// load wallet
-	wallet, err := WalletQ(r).ByWalletID(request.CurrentWalletID)
+	wallet, isRecovery, err := loadWallet(r, request.CurrentWalletID)
 	if err != nil {
 		Log(r).WithError(err).Error("failed to get wallet")
 		ape.RenderErr(w, problems.InternalError())
@@ -64,12 +93,12 @@ func ChangeWalletID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ownerOfData := wallet.CurrentAccountID
-	if wallet.RecoveryAddress != nil && ownerOfData == "" {
-		ownerOfData = *wallet.RecoveryAddress
+	ownerOfData := string(wallet.CurrentAccountID)
+	if isRecovery {
+		ownerOfData = string(wallet.AccountID)
 	}
 	// check allowed
-	if err := Doorman(r, doorman.SignerOf(string(ownerOfData))); err != nil {
+	if err := Doorman(r, doorman.SignerOf(ownerOfData)); err != nil {
 		movetoape.RenderDoormanErr(w, err)
 		return
 	}
@@ -89,13 +118,6 @@ func ChangeWalletID(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		// load actual wallet not recovery
-	} else {
-		wallet, err = WalletQ(r).ByEmail(wallet.Username)
-		if err != nil {
-			Log(r).WithError(err).Error("failed to get wallet by email")
-			ape.RenderErr(w, problems.InternalError())
-			return
-		}
 	}
 
 	factor := tfa.NewPasswordBackend(tfa.PasswordDetails{
