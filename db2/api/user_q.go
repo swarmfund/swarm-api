@@ -86,7 +86,9 @@ type UsersQI interface {
 
 func (q *Q) Users() UsersQI {
 	return &UsersQ{
-		parent: q,
+		parent: &Q{
+			q.Clone(),
+		},
 		sql:    selectUser,
 	}
 }

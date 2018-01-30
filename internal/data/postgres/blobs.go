@@ -34,6 +34,10 @@ func NewBlobs(repo *db2.Repo) *Blobs {
 	}
 }
 
+func (q *Blobs) New() data.Blobs {
+	return NewBlobs(q.Repo.Clone())
+}
+
 func (q *Blobs) Transaction(fn func(data.Blobs) error) error {
 	return q.Repo.Transaction(func() error {
 		return fn(q)
