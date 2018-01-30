@@ -114,7 +114,7 @@ func (q *WalletQ) Transaction(fn func(q WalletQI) error) (err error) {
 }
 
 func (q *WalletQ) RecoveryByWalletID(recoveryWalletID string) (*RecoveryKeychain, error) {
-	query := sq.Select("wallet", "salt", "keychain", "address", "wallet_id").
+	query := sq.Select("wallet", "salt", "address", "wallet_id").
 		From(tableRecoveries).Where("wallet_id = ?", recoveryWalletID)
 
 	var result RecoveryKeychain
