@@ -13,7 +13,7 @@ import (
 
 const (
 	tableUser      = "users"
-	tableUserLimit = 5
+	tableUserLimit = 100
 )
 
 var (
