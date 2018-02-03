@@ -2,22 +2,41 @@ before_script:
   # login to docker registry
   - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN registry.gitlab.com
 
+# docker-in-docker allows to build and publish docker images
 services:
   - docker:dind
 
 variables:
+  TEST_DOCKERFILE: test.dockerfile
+  BUILD_DOCKERFILE: build.dockerfile
   IMAGE_NAME: registry.gitlab.com/swarmfund/api
   IMAGE_BUILD_NAME: $IMAGE_NAME:$CI_COMMIT_SHA
+  IMAGE_TEST_NAME: $IMAGE_NAME:$CI_COMMIT_SHA-test
   IMAGE_RELEASE_NAME: $IMAGE_NAME:latest
 
 stages:
   - build
-    
-build-production:
+  - publish
+  - test
+  # TODO pages
+
+build:
   image: docker:latest
   stage: build
   script:
-    - docker build --pull -t $IMAGE_BUILD_NAME .
+    - docker build --pull -t $IMAGE_BUILD_NAME -f $BUILD_DOCKERFILE .
+
+publish:
+  image: docker:latest
+  stage: publish
+  script:
     - docker push $IMAGE_BUILD_NAME
     - docker tag $IMAGE_BUILD_NAME $IMAGE_RELEASE_NAME
     - docker push $IMAGE_RELEASE_NAME
+
+test:
+  image: docker:latest
+  stage: test
+  script:
+    - docker build --pull -t $IMAGE_TEST_NAME -f $TEST_DOCKERFILE .
+    - docker run $IMAGE_TEST_NAME ./...
