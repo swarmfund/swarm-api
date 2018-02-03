@@ -13,7 +13,7 @@ import (
 
 const (
 	tableUser      = "users"
-	tableUserLimit = 5
+	tableUserLimit = 100
 )
 
 var (
@@ -28,7 +28,7 @@ var (
 	insertUser = sq.Insert(tableUser)
 	updateUser = func(address string) sq.UpdateBuilder {
 		return sq.Update(tableUserAliased).
-			Where("address = ?", address).
+			Where("u.address = ?", address).
 			Set("updated_at", time.Now())
 	}
 	ErrUsersConflict = errors.New("address constraint violated")
@@ -86,7 +86,9 @@ type UsersQI interface {
 
 func (q *Q) Users() UsersQI {
 	return &UsersQ{
-		parent: q,
+		parent: &Q{
+			q.Clone(),
+		},
 		sql:    selectUser,
 	}
 }
@@ -137,7 +139,7 @@ func (q *UsersQ) EmailMatches(str string) UsersQI {
 }
 
 func (q *UsersQ) AddressMatches(str string) UsersQI {
-	q.sql = q.sql.Where("address ilike ?", fmt.Sprint("%", str, "%"))
+	q.sql = q.sql.Where("u.address ilike ?", fmt.Sprint("%", str, "%"))
 	return q
 }
 

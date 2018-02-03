@@ -131,7 +131,7 @@ func CtxBlobQ(q data.Blobs) func(context.Context) context.Context {
 }
 
 func BlobQ(r *http.Request) data.Blobs {
-	return r.Context().Value(blobQCtxKey).(data.Blobs)
+	return r.Context().Value(blobQCtxKey).(data.Blobs).New()
 }
 
 func CtxUserBusDispatch(dispatch hose.UserDispatch) func(context.Context) context.Context {

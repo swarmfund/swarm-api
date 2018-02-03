@@ -43,7 +43,36 @@ func (r ChangeWalletIDRequest) Validate() error {
 	)
 }
 
+func loadWallet(r *http.Request, currentWalletID string) (*api.Wallet, bool, error) {
+	wallet, err := WalletQ(r).ByWalletID(currentWalletID)
+	if err != nil {
+		return nil, false, errors.Wrap(err, "failed to load wallet by id")
+	}
+
+	if wallet != nil {
+		return wallet, false, nil
+	}
+
+	// maybe its recovery
+	recovery, err := WalletQ(r).RecoveryByWalletID(currentWalletID)
+	if err != nil {
+		return nil, false, errors.Wrap(err, "failed to load recovery by id")
+	}
+
+	if recovery == nil {
+		return nil, false, nil
+	}
+
+	wallet, err = WalletQ(r).ByEmail(recovery.Email)
+	if err != nil {
+		return nil, false, errors.Wrap(err, "failed to load wallet by email for recovery")
+	}
+
+	return wallet, true, nil
+}
+
 func ChangeWalletID(w http.ResponseWriter, r *http.Request) {
+	// TODO: must be refactored
 	request, err := NewChangeWalletIDRequest(r)
 	if err != nil {
 		ape.RenderErr(w, problems.BadRequest(err)...)
@@ -51,7 +80,7 @@ func ChangeWalletID(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// load wallet
-	wallet, err := WalletQ(r).ByWalletID(request.CurrentWalletID)
+	wallet, isRecovery, err := loadWallet(r, request.CurrentWalletID)
 	if err != nil {
 		Log(r).WithError(err).Error("failed to get wallet")
 		ape.RenderErr(w, problems.InternalError())
@@ -63,8 +92,12 @@ func ChangeWalletID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	ownerOfData := string(wallet.CurrentAccountID)
+	if isRecovery {
+		ownerOfData = string(wallet.AccountID)
+	}
 	// check allowed
-	if err := Doorman(r, doorman.SignerOf(string(wallet.CurrentAccountID))); err != nil {
+	if err := Doorman(r, doorman.SignerOf(ownerOfData)); err != nil {
 		movetoape.RenderDoormanErr(w, err)
 		return
 	}
@@ -83,6 +116,7 @@ func ChangeWalletID(w http.ResponseWriter, r *http.Request) {
 			RenderFactorConsumeError(w, r, err)
 			return
 		}
+		// load actual wallet not recovery
 	}
 
 	factor := tfa.NewPasswordBackend(tfa.PasswordDetails{
@@ -97,6 +131,7 @@ func ChangeWalletID(w http.ResponseWriter, r *http.Request) {
 	wallet.KeychainData = request.Data.Attributes.KeychainData
 	wallet.CurrentAccountID = types.Address(request.Data.Attributes.AccountID)
 	wallet.KDF = request.Data.Relationships.KDF.Data.ID
+	// TODO transaction is not working. Error on horizon submition still makes commit!!!!!!!!!!
 	err = WalletQ(r).Transaction(func(q api.WalletQI) error {
 		// update wallet
 		if err = WalletQ(r).Update(wallet); err != nil {

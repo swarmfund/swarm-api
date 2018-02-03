@@ -20,7 +20,9 @@ type Q struct {
 
 func (q *Q) Wallet() WalletQI {
 	return &WalletQ{
-		parent: q,
+		parent: &Q{
+			q.Clone(),
+		},
 		sql:    walletSelect,
 	}
 }
