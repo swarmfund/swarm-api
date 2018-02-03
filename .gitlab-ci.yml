@@ -7,7 +7,9 @@ services:
   - docker:dind
 
 variables:
+  # dockerfile for building test image
   TEST_DOCKERFILE: test.dockerfile
+  # dockerfile for building artifact image
   BUILD_DOCKERFILE: build.dockerfile
   IMAGE_NAME: registry.gitlab.com/swarmfund/api
   IMAGE_BUILD_NAME: $IMAGE_NAME:$CI_COMMIT_SHA
@@ -16,24 +18,20 @@ variables:
 
 stages:
   - build
-  - publish
   - test
   # TODO pages
 
+# build and publish docker image to the registry
 build:
   image: docker:latest
   stage: build
   script:
     - docker build --pull -t $IMAGE_BUILD_NAME -f $BUILD_DOCKERFILE .
-
-publish:
-  image: docker:latest
-  stage: publish
-  script:
     - docker push $IMAGE_BUILD_NAME
     - docker tag $IMAGE_BUILD_NAME $IMAGE_RELEASE_NAME
     - docker push $IMAGE_RELEASE_NAME
 
+# build testing image and run tests
 test:
   image: docker:latest
   stage: test
