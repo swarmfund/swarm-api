@@ -1,7 +1,3 @@
-before_script:
-  # login to docker registry
-  - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN registry.gitlab.com
-
 # docker-in-docker allows to build and publish docker images
 services:
   - docker:dind
@@ -29,6 +25,8 @@ build:
   image: docker:latest
   stage: build
   script:
+    # login to docker registry
+    - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN registry.gitlab.com
     - docker build --pull -t $IMAGE_BUILD_NAME -f $BUILD_DOCKERFILE .
     - docker push $IMAGE_BUILD_NAME
     - docker tag $IMAGE_BUILD_NAME $IMAGE_RELEASE_NAME
