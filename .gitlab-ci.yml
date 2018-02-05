@@ -15,10 +15,13 @@ variables:
   IMAGE_BUILD_NAME: $IMAGE_NAME:$CI_COMMIT_SHA
   IMAGE_TEST_NAME: $IMAGE_NAME:$CI_COMMIT_SHA-test
   IMAGE_RELEASE_NAME: $IMAGE_NAME:latest
+  DEPLOYMENT_DIR: /home/deployment
+  DEPLOYMENT_INV: $DEPLOYMENT_DIR/dev.ini
 
 stages:
   - build
   - test
+  - deploy
   # TODO pages
 
 # build and publish docker image to the registry
@@ -39,3 +42,10 @@ test:
     - echo "TODO fix tests"
 #    - docker build --pull -t $IMAGE_TEST_NAME -f $TEST_DOCKERFILE .
 #    - docker run $IMAGE_TEST_NAME ./...
+
+
+deploy:
+  image: williamyeh/ansible:ubuntu16.04
+  stage: deploy
+  script:
+    - ansible all -i $DEPLOYMENT_INV -m ping
