@@ -46,4 +46,4 @@ deploy:
   image: williamyeh/ansible:ubuntu16.04
   stage: deploy
   script:
-    - ansible all -i $DEPLOYMENT_INV -m ping
+    - ANSIBLE_HOST_KEY_CHECKING=False ansible all -i $DEPLOYMENT_INV -m ping
