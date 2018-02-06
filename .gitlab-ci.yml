@@ -49,4 +49,5 @@ deploy:
   script:
     # TODO add host fingerprint
     # TODO secrets from variable
+    - cd $DEPLOYMENT_DIR
     - ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i $DEPLOYMENT_INV -e @secrets/staging.yml -e api_revision=$CI_COMMIT_SHA api.yml
