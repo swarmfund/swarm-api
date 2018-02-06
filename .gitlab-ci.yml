@@ -14,6 +14,7 @@ variables:
   DEPLOYMENT_DIR: /root/deployment
   # TODO set to current branch
   DEPLOYMENT_INV: $DEPLOYMENT_DIR/staging.ini
+  DEPLOYMENT_SECRETS: $DEPLOYMENT_DIR/secrets/staging.yml
 
 stages:
   - build
@@ -50,4 +51,4 @@ deploy:
     # TODO add host fingerprint
     # TODO secrets from variable
     - cd $DEPLOYMENT_DIR
-    - ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i $DEPLOYMENT_INV -e @secrets/staging.yml -e api_revision=$CI_COMMIT_SHA api.yml
+    - ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i $DEPLOYMENT_INV -e @$DEPLOYMENT_SECRETS -e api_revision=$CI_COMMIT_SHA api.yml
