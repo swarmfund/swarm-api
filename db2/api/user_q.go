@@ -13,20 +13,22 @@ import (
 
 const (
 	tableUser      = "users"
-	tableUserLimit = 5
+	tableUserLimit = 100
 )
 
 var (
 	tableUserAliased = fmt.Sprintf("%s u", tableUser)
 	selectUser       = sq.Select(
 		"u.*",
+		"r.address as recovery_address",
 		"(select json_agg(kyc) from kyc_entities kyc where kyc.user_id=u.id) as kyc_entities").
+		Join("recoveries r on r.wallet=u.email").
 		From(tableUserAliased)
 
 	insertUser = sq.Insert(tableUser)
 	updateUser = func(address string) sq.UpdateBuilder {
 		return sq.Update(tableUserAliased).
-			Where("address = ?", address).
+			Where("u.address = ?", address).
 			Set("updated_at", time.Now())
 	}
 	ErrUsersConflict = errors.New("address constraint violated")
@@ -84,7 +86,9 @@ type UsersQI interface {
 
 func (q *Q) Users() UsersQI {
 	return &UsersQ{
-		parent: q,
+		parent: &Q{
+			q.Clone(),
+		},
 		sql:    selectUser,
 	}
 }
@@ -135,7 +139,7 @@ func (q *UsersQ) EmailMatches(str string) UsersQI {
 }
 
 func (q *UsersQ) AddressMatches(str string) UsersQI {
-	q.sql = q.sql.Where("address ilike ?", fmt.Sprint("%", str, "%"))
+	q.sql = q.sql.Where("u.address ilike ?", fmt.Sprint("%", str, "%"))
 	return q
 }
 
@@ -150,8 +154,10 @@ func (q *UsersQ) LimitReviewRequests() UsersQI {
 func (q *UsersQ) Update(user *User) error {
 	stmt := updateUser(string(user.Address)).
 		SetMap(map[string]interface{}{
-			"type":  user.UserType,
-			"state": user.State,
+			"type":          user.UserType,
+			"state":         user.State,
+			"kyc_sequence":  user.KYCSequence,
+			"reject_reason": user.RejectReason,
 		})
 	_, err := q.parent.Exec(stmt)
 	return err

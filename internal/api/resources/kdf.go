@@ -1,7 +1,31 @@
 package resources
 
+import "github.com/go-ozzo/ozzo-validation"
+
 type KDFVersion struct {
 	Version int `jsonapi:"primary,kdf"`
+}
+
+type KDFPlain struct {
+	Data KDFPlainData `json:"data"`
+}
+
+func (r KDFPlain) Validate() error {
+	return validation.ValidateStruct(&r,
+		validation.Field(&r.Data, validation.Required),
+	)
+}
+
+type KDFPlainData struct {
+	Type string `json:"type"`
+	ID   int    `json:"id,string"`
+}
+
+func (r KDFPlainData) Validate() error {
+	return validation.ValidateStruct(&r,
+		validation.Field(&r.Type, validation.In("kdf")),
+		validation.Field(&r.ID, validation.Required),
+	)
 }
 
 type KDF struct {

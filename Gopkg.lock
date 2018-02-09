@@ -309,7 +309,7 @@
 
 [[projects]]
   name = "gitlab.com/distributed_lab/logan"
-  packages = [".","v3","v3/errors","v3/fields"]
+  packages = ["v3","v3/errors","v3/fields"]
   revision = "0f4dfbd71ca22492150c91510966d936f434a3eb"
   version = "v3.3.1"
 
@@ -320,16 +320,16 @@
   revision = "939a613db2add16474a15d5058867fdb7252f1df"
 
 [[projects]]
-  branch = "master"
+  branch = "dev"
   name = "gitlab.com/swarmfund/go"
-  packages = ["amount","crc16","doorman","doorman/data","hash","keypair","network","resources","signcontrol","strkey","xdr"]
-  revision = "2c5f6e04420d02ddea8888e1eff47fc9a470121f"
+  packages = ["amount","crc16","doorman","doorman/data","hash","keypair","network","resources","signcontrol","strkey","xdr","xdrbuild","xdrbuild/internal"]
+  revision = "9aa9d0d6acb160d96dde110b487efb4b98e41ca1"
 
 [[projects]]
   branch = "feature/v2"
   name = "gitlab.com/swarmfund/horizon-connector"
-  packages = [".","internal/resources","v2","v2/internal","v2/internal/account","v2/internal/asset","v2/internal/listener","v2/internal/operation","v2/internal/resources","v2/internal/responses","v2/internal/transaction","v2/types"]
-  revision = "ddba080306809280f3038a485edd88044a3881ba"
+  packages = ["v2","v2/internal","v2/internal/account","v2/internal/asset","v2/internal/errors","v2/internal/listener","v2/internal/operation","v2/internal/resources","v2/internal/responses","v2/internal/transaction","v2/types"]
+  revision = "d3e09dc650b4cc5ac74a34aa2936b2b4bb78f75c"
 
 [[projects]]
   branch = "master"
@@ -382,6 +382,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "50ce480c6a8b906ca0239f4343685afe362dbac7f594d16cc0989fc09fba97a0"
+  inputs-digest = "a421866dda2dfdfe05d57b518aa4a468959ec2c89167c04488c62fd4819c0b94"
   solver-name = "gps-cdcl"
   solver-version = 1

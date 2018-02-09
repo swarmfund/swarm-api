@@ -3,6 +3,8 @@ package handlers
 import (
 	"net/http"
 
+	"encoding/json"
+
 	"github.com/go-chi/chi"
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/ape/problems"
@@ -15,7 +17,7 @@ import (
 func GetWallet(w http.ResponseWriter, r *http.Request) {
 	walletID := chi.URLParam(r, "wallet-id")
 
-	wallet, err := WalletQ(r).ByWalletID(walletID)
+	wallet, err := WalletQ(r).ByWalletIDOrRecovery(walletID)
 	if err != nil {
 		Log(r).WithError(err).Error("failed to get wallet")
 		ape.RenderErr(w, problems.InternalError())
@@ -33,11 +35,16 @@ func GetWallet(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// TODO check block state
-
-	if err := secondfactor.NewConsumer(TFAQ(r)).WithBackendType(types.WalletFactorTOTP).Consume(r, wallet); err != nil {
-		RenderFactorConsumeError(w, r, err)
-		return
+	isRecovery := wallet.RecoveryWalletID != nil && *wallet.RecoveryWalletID == walletID
+	if !isRecovery {
+		if err := secondfactor.NewConsumer(TFAQ(r)).WithBackendType(types.WalletFactorTOTP).Consume(r, wallet); err != nil {
+			RenderFactorConsumeError(w, r, err)
+			return
+		}
 	}
 
-	ape.Render(w, resources.NewWallet(wallet, nil))
+	{
+		resource := resources.NewWallet(wallet)
+		json.NewEncoder(w).Encode(&resource)
+	}
 }

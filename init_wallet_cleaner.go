@@ -59,7 +59,7 @@ func initWalletCleaner(app *App) {
 		return
 	}
 
-	go deleteExpiredWallets(entry, app.EmailTokensQ(), app.APIQ().Wallet(), config.Expiration)
+	//go deleteExpiredWallets(entry, app.EmailTokensQ(), app.APIQ().Wallet(), config.Expiration)
 }
 
 func init() {

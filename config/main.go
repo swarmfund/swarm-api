@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/viper"
 	"gitlab.com/distributed_lab/logan/v3"
 	"gitlab.com/swarmfund/api/internal/discourse"
+	"gitlab.com/swarmfund/api/notificator"
 	"gitlab.com/swarmfund/horizon-connector/v2"
 )
 
@@ -17,7 +18,8 @@ type Config interface {
 	HTTP() HTTP
 	Storage() Storage
 	Log() *logan.Entry
-	Notificator() Notificator
+
+	Notificator() *notificator.Connector
 	Sentry() *raven.Client
 	Horizon() *horizon.Connector
 	Discourse() *discourse.Connector
@@ -29,8 +31,9 @@ type ViperConfig struct {
 	*sync.RWMutex
 
 	// runtime-initialized instances
-	horizon   *horizon.Connector
-	discourse *discourse.Connector
+	horizon     *horizon.Connector
+	discourse   *discourse.Connector
+	notificator *notificator.Connector
 }
 
 func NewViperConfig(fn string) Config {

@@ -59,25 +59,8 @@ func initWebActions(app *App) {
 	// participants
 	r.Post("/details", &DetailsAction{})
 	r.Post("/participants", &ParticipantsAction{})
-
 	r.Get("/user_id", &GetUserIdAction{})
-
-	// limit review
-	r.Get("/users/:id/poi", &UserProofOfIncomeIndexAction{})
-	r.Post("/users/:id/poi/:version", &UserProofOfIncomeApproveAction{})
-
 	r.Get("/data/enums", &GetEnumsAction{})
-
-	// transaction submission
-	r.Post("/transactions", &PendingTransactionCreateAction{})
-
-	// pending transactions
-	r.Get("/accounts/:id/transactions", &PendingTransactionIndexAction{})
-	r.Patch("/transactions/:tx_hash", &PendingTransactionRejectAction{})
-	r.Delete("/transactions/:tx_hash", &PendingTransactionDeleteAction{})
-
-	r.Get("/notifications/:id", &GetNotificationsAction{})
-	r.Patch("/notifications/:id", &PatchNotificationsAction{})
 
 	r.NotFound(&NotFoundAction{})
 }
@@ -86,7 +69,7 @@ func init() {
 	appInit.Add(
 		"web.init",
 		initWeb,
-		"app-context", "stellarCoreInfo", "api-db", "memory_cache",
+		"app-context", "api-db",
 	)
 
 	appInit.Add(

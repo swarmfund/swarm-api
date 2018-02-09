@@ -20,14 +20,6 @@ type GetUserResponse struct {
 func GetUser(w http.ResponseWriter, r *http.Request) {
 	address := chi.URLParam(r, "address")
 
-	if err := Doorman(r,
-		doorman.SignerOf(address),
-		doorman.SignerOf(CoreInfo(r).GetMasterAccountID()),
-	); err != nil {
-		movetoape.RenderDoormanErr(w, err)
-		return
-	}
-
 	user, err := UsersQ(r).ByAddress(address)
 	if err != nil {
 		Log(r).WithError(err).Error("failed to get user")
@@ -37,6 +29,14 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 
 	if user == nil {
 		ape.RenderErr(w, problems.NotFound())
+		return
+	}
+
+	if err := Doorman(r,
+		doorman.SignerOf(address),
+		doorman.SignerOf(CoreInfo(r).GetMasterAccountID()),
+	); err != nil {
+		movetoape.RenderDoormanErr(w, err)
 		return
 	}
 

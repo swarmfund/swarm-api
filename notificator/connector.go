@@ -3,11 +3,11 @@ package notificator
 import (
 	"bytes"
 	"fmt"
+	"html/template"
 	"net/url"
 
 	"github.com/pkg/errors"
 	"gitlab.com/distributed_lab/notificator"
-	"gitlab.com/swarmfund/api/config"
 	"gitlab.com/swarmfund/api/db2/api"
 	"gitlab.com/swarmfund/api/internal/clienturl"
 )
@@ -23,12 +23,22 @@ const (
 	NotificatorTypeOperationNotification = 9
 )
 
-type Connector struct {
-	notificator *notificator.Connector
-	conf        config.Notificator
+type Config struct {
+	Disabled     bool
+	Endpoint     string
+	Secret       string
+	Public       string
+	ClientRouter string
+
+	EmailConfirmation *template.Template
 }
 
-func NewConnector(conf config.Notificator) *Connector {
+type Connector struct {
+	notificator *notificator.Connector
+	conf        Config
+}
+
+func NewConnector(conf Config) *Connector {
 	// TODO move this to config
 	endpoint, err := url.Parse(conf.Endpoint)
 	if err != nil {
@@ -50,7 +60,7 @@ func (c *Connector) SendVerificationLink(email string, payload clienturl.Payload
 		return errors.Wrap(err, "failed to encode payload")
 	}
 	letter := &Letter{
-		Header: "Swarm Fund Email Verification",
+		Header: "Swarm Email Verification",
 		Link:   fmt.Sprintf("%s/%s", c.conf.ClientRouter, encoded),
 	}
 
@@ -92,15 +102,15 @@ func (c *Connector) NotifyKYCReviewPending(recipient string) error {
 }
 
 func (c *Connector) NotifyApproval(email string) error {
-	header := "Swarm Fund Account Approved"
-	msg := "Your account was just approved at Swarm Fund. "
+	header := "Swarm Account Approved"
+	msg := "Your account was just approved at Swarm. "
 
 	letter := Letter{Header: header, Body: msg, Link: ""}
 	return c.sendKycNotification(email, letter)
 }
 
 func (c *Connector) NotifyRejection(email string) error {
-	header := "Swarm Fund Account Rejected"
+	header := "Swarm Account Rejected"
 	msg := "Your request was rejected by the administrator. Log in to your account for more details."
 
 	letter := Letter{Header: header, Body: msg, Link: ""}
@@ -206,6 +216,11 @@ func (c *Connector) SendOperationNotice(opType int, letter TransferNoticeI) erro
 }
 
 func (c *Connector) send(requestType int, token string, payload notificator.Payload) error {
+	if c.conf.Disabled {
+		// TODO log warning
+		return nil
+	}
+
 	response, err := c.notificator.Send(requestType, token, payload)
 	if err != nil {
 		return err

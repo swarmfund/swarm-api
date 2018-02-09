@@ -18,6 +18,7 @@ func (c *ViperConfig) Discourse() *discourse.Connector {
 
 	if c.discourse == nil {
 		var config struct {
+			Disabled bool
 			URL      url.URL
 			Username string
 			Key      string
@@ -32,7 +33,7 @@ func (c *ViperConfig) Discourse() *discourse.Connector {
 			panic(errors.Wrap(err, "failed to figure out discourse"))
 		}
 
-		c.discourse = discourse.NewConnector(&config.URL, config.Username, config.Key)
+		c.discourse = discourse.NewConnector(&config.URL, config.Username, config.Key, config.Disabled)
 	}
 
 	return c.discourse
