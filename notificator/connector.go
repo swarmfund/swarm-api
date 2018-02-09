@@ -74,7 +74,7 @@ func (c *Connector) SendVerificationLink(email string, payload clienturl.Payload
 
 func (c *Connector) NotifyApproval(email string) error {
 	letter := &Letter{
-		Header: "Swarm Fund KYC Review",
+		Header: "Swarm Verification Request",
 		Link:   c.conf.ClientRouter,
 	}
 
@@ -93,7 +93,7 @@ func (c *Connector) NotifyApproval(email string) error {
 
 func (c *Connector) NotifyRejection(email string) error {
 	letter := &Letter{
-		Header: "Swarm Fund KYC Review",
+		Header: "Swarm Verification Request",
 		Link:   c.conf.ClientRouter,
 	}
 
