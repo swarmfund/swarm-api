@@ -50,4 +50,4 @@ storage:
 
 wallet_cleaner:
   enabled: true
-  expiration: 48h
+  expiration: 128h
