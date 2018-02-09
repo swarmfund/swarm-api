@@ -103,6 +103,7 @@ func (a *App) Serve() {
 		a.Blobs(),
 		a.Config().Sentry(),
 		a.userBus.Dispatch,
+		a.Config().Notificator(),
 	)
 	r.Mount("/", a.web.router)
 	http.Handle("/", r)

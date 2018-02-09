@@ -8,6 +8,7 @@ import (
 	"gitlab.com/swarmfund/api/db2/api"
 	"gitlab.com/swarmfund/api/internal/data"
 	"gitlab.com/swarmfund/api/internal/hose"
+	"gitlab.com/swarmfund/api/notificator"
 	"gitlab.com/swarmfund/api/storage"
 	"gitlab.com/swarmfund/go/doorman"
 	"gitlab.com/swarmfund/go/xdrbuild"
@@ -31,6 +32,7 @@ const (
 	coreInfoCtxKey
 	blobQCtxKey
 	userBusDispatchCtxKey
+	notificatorCtxKey
 )
 
 func CtxWalletQ(q api.WalletQI) func(context.Context) context.Context {
@@ -151,6 +153,16 @@ func CtxTransaction(source keypair.Address, signer keypair.Full) func(context.Co
 		ctx = context.WithValue(ctx, txSignerCtxKey, signer)
 		return ctx
 	}
+}
+
+func CtxNotificator(notificator *notificator.Connector) func(context.Context) context.Context {
+	return func(ctx context.Context) context.Context {
+		return context.WithValue(ctx, notificatorCtxKey, notificator)
+	}
+}
+
+func Notificator(r *http.Request) *notificator.Connector {
+	return r.Context().Value(notificatorCtxKey).(*notificator.Connector)
 }
 
 func Transaction(r *http.Request) *xdrbuild.Transaction {
