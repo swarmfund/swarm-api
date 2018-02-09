@@ -1,23 +1,50 @@
-before_script:
-  # login to docker registry
-  - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN registry.gitlab.com
-
+# docker-in-docker allows to build and publish docker images
 services:
   - docker:dind
 
 variables:
+  # dockerfile for building test image
+  TEST_DOCKERFILE: test.dockerfile
+  # dockerfile for building artifact image
+  BUILD_DOCKERFILE: build.dockerfile
   IMAGE_NAME: registry.gitlab.com/swarmfund/api
   IMAGE_BUILD_NAME: $IMAGE_NAME:$CI_COMMIT_SHA
-  IMAGE_RELEASE_NAME: $IMAGE_NAME:latest
+  IMAGE_TEST_NAME: $IMAGE_NAME:$CI_COMMIT_SHA-test
+  DEPLOYMENT_DIR: /root/deployment
+  DEPLOYMENT_INV: $DEPLOYMENT_DIR/$CI_COMMIT_REF_NAME.ini
 
 stages:
   - build
-    
-build-production:
+  - test
+  - deploy
+  # TODO pages
+
+# build and publish docker image to the registry
+build:
   image: docker:latest
   stage: build
   script:
-    - docker build --pull -t $IMAGE_BUILD_NAME .
+    # login to docker registry
+    - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN registry.gitlab.com
+    - docker build --pull -t $IMAGE_BUILD_NAME -f $BUILD_DOCKERFILE .
     - docker push $IMAGE_BUILD_NAME
-    - docker tag $IMAGE_BUILD_NAME $IMAGE_RELEASE_NAME
-    - docker push $IMAGE_RELEASE_NAME
+    # TODO tag and push tagged commits
+
+# build testing image and run tests
+test:
+  image: docker:latest
+  stage: test
+  script:
+    - echo "TODO fix tests"
+#    - docker build --pull -t $IMAGE_TEST_NAME -f $TEST_DOCKERFILE .
+#    - docker run $IMAGE_TEST_NAME ./...
+
+
+deploy:
+  image: williamyeh/ansible:ubuntu16.04
+  stage: deploy
+  only:
+    - staging
+  script:
+    - ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i staging.ini -e @secrets/staging.yml -e api_revision=foobar api.yml
+    - ANSIBLE_HOST_KEY_CHECKING=False ansible all -i $DEPLOYMENT_INV -m ping
