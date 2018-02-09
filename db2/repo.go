@@ -24,12 +24,8 @@ func (r *Repo) Transaction(fn func() error) (err error) {
 	if err = r.Begin(); err != nil {
 		return errors.Wrap(err, "failed to begin tx")
 	}
-	defer func() {
-		if err != nil {
-			// swallowing rollback err, should not affect data consistency
-			r.Rollback()
-		}
-	}()
+	// swallowing rollback err, should not affect data consistency
+	defer r.Rollback()
 
 	if err = fn(); err != nil {
 		return errors.Wrap(err, "failed to execute statements")
