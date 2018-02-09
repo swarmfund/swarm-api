@@ -12,6 +12,7 @@ variables:
   IMAGE_TEST_NAME: $IMAGE_NAME:$CI_COMMIT_SHA-test
   DEPLOYMENT_DIR: /root/deployment
   DEPLOYMENT_INV: $DEPLOYMENT_DIR/$CI_COMMIT_REF_NAME.ini
+  DEPLOYMENT_SECRETS: $DEPLOYMENT_DIR/secrets/$CI_COMMIT_REF_NAME.yml
 
 stages:
   - build
@@ -28,7 +29,6 @@ build:
     - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN registry.gitlab.com
     - docker build --pull -t $IMAGE_BUILD_NAME -f $BUILD_DOCKERFILE .
     - docker push $IMAGE_BUILD_NAME
-    # TODO tag and push tagged commits
 
 # build testing image and run tests
 test:
@@ -46,5 +46,5 @@ deploy:
   only:
     - staging
   script:
-    - ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i staging.ini -e @secrets/staging.yml -e api_revision=foobar api.yml
-    - ANSIBLE_HOST_KEY_CHECKING=False ansible all -i $DEPLOYMENT_INV -m ping
+    # TODO add host fingerprint
+    - ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i $DEPLOYMENT_INV -e @$DEPLOYMENT_SECRETS -e api_revision=$CI_COMMIT_SHA $DEPLOYMENT_DIR/api.yml

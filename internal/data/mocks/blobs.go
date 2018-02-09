@@ -115,6 +115,22 @@ func (_m *Blobs) Get(id string) (*types.Blob, error) {
 	return r0, r1
 }
 
+// New provides a mock function with given fields:
+func (_m *Blobs) New() data.Blobs {
+	ret := _m.Called()
+
+	var r0 data.Blobs
+	if rf, ok := ret.Get(0).(func() data.Blobs); ok {
+		r0 = rf()
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(data.Blobs)
+		}
+	}
+
+	return r0
+}
+
 // Select provides a mock function with given fields:
 func (_m *Blobs) Select() ([]types.Blob, error) {
 	ret := _m.Called()
