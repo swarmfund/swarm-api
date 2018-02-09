@@ -52,6 +52,11 @@ func (c *ViperConfig) Init() error {
 	return nil
 }
 
+// Get will return value associated with config key, empty map if key is missing
 func (c *ViperConfig) Get(key string) map[string]interface{} {
-	return c.Viper.GetStringMap(key)
+	m := c.Viper.GetStringMap(key)
+	if m == nil {
+		m = map[string]interface{}{}
+	}
+	return m
 }
