@@ -1,90 +1,50 @@
-image: shebgregor/ci-golang
-before_script:
-  # Run ssh-agent (inside the build environment)
-  - eval $(ssh-agent -s)
-  # Add the SSH key stored in SSH_PRIVATE_KEY variable to the agent store
-  - echo "$SSH_PRIVATE_KEY" | ssh-add -
-  - mkdir -p ~/.ssh
-  - echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
-  - chmod 600 ~/.ssh/id_rsa
-  - 'echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
-  - 'echo -e "Host gitlab\n\tHostName gitlab.com\n\tIdentityFile ~/.ssh/id_rsa\n\tUser git\n" >> ~/.ssh/config'
+# docker-in-docker allows to build and publish docker images
+services:
+  - docker:dind
+
+variables:
+  # dockerfile for building test image
+  TEST_DOCKERFILE: test.dockerfile
+  # dockerfile for building artifact image
+  BUILD_DOCKERFILE: build.dockerfile
+  IMAGE_NAME: registry.gitlab.com/swarmfund/api
+  IMAGE_BUILD_NAME: $IMAGE_NAME:$CI_COMMIT_SHA
+  IMAGE_TEST_NAME: $IMAGE_NAME:$CI_COMMIT_SHA-test
+  DEPLOYMENT_DIR: /root/deployment
+  DEPLOYMENT_INV: $DEPLOYMENT_DIR/$CI_COMMIT_REF_NAME.ini
 
 stages:
   - build
-  - delivery
   - test
   - deploy
-    
+  # TODO pages
+
+# build and publish docker image to the registry
 build:
+  image: docker:latest
   stage: build
-  variables:
-    APP_PATH: gitlab.com/swarmfund/api
   script:
-    - mkdir -p $GOPATH/src/$APP_PATH
-    - cp -rf ./* $GOPATH/src/$APP_PATH
-    - cd $GOPATH/src/$APP_PATH
-    - go build -o bin/api -a gitlab.com/swarmfund/api/cmd/api
-    - cp -rf ./bin/ /builds/swarmfund/api/bin/
-  artifacts:
-    expire_in: 1 week
-    paths:
-       - bin/api
-  only:
-    - staging
-    - dev
+    # login to docker registry
+    - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN registry.gitlab.com
+    - docker build --pull -t $IMAGE_BUILD_NAME -f $BUILD_DOCKERFILE .
+    - docker push $IMAGE_BUILD_NAME
+    # TODO tag and push tagged commits
 
-delivery:
-  stage: delivery
-  script:
-    - rsync bin/api ubuntu@$HOST_DEV:artifacts/api/${CI_COMMIT_SHA:0:8}/
-  only:
-    - staging
-    - dev
-
+# build testing image and run tests
 test:
+  image: docker:latest
   stage: test
-  variables:
-    APP_PATH: gitlab.com/swarmfund/api
   script:
-    - mkdir -p $GOPATH/src/$APP_PATH
-    - cp -rf ./* $GOPATH/src/$APP_PATH
-    - cd $GOPATH/src/$APP_PATH
-    - go test ./...
+    - echo "TODO fix tests"
+#    - docker build --pull -t $IMAGE_TEST_NAME -f $TEST_DOCKERFILE .
+#    - docker run $IMAGE_TEST_NAME ./...
 
-.deploy: &deploy
+
+deploy:
+  image: williamyeh/ansible:ubuntu16.04
   stage: deploy
-  script:
-    - JOB_NAME=( $CI_JOB_NAME )
-    - BRANCH=${CI_COMMIT_REF_NAME}
-    - THOST=$( echo "HOST_${BRANCH}" | awk '{print toupper($0)}' )
-    - ssh ubuntu@$HOST_DEV "artifacts/update.sh api $BRANCH ${CI_COMMIT_SHA:0:8}"
-    - 'curl -X POST http://${!THOST}:8842/${HOOK_TOKEN}'
-
-deploy:dev:
-  <<: *deploy
   only:
     - staging
-    - dev
-
-deploy:manual:
-  <<: *deploy
-  when: manual
-  only:
-    - staging
-    - dev
-    
-pages:
-  image: ruby:2.3.1
-  stage: deploy
-  before_script:
-    - echo pass
   script:
-    - cd docs
-    - bundle install 
-    - bundle exec middleman build --clean --build-dir=../public
-  artifacts:
-    paths:
-      - public
-  only:
-    - dev
+    - ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i staging.ini -e @secrets/staging.yml -e api_revision=foobar api.yml
+    - ANSIBLE_HOST_KEY_CHECKING=False ansible all -i $DEPLOYMENT_INV -m ping

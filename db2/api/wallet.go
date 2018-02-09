@@ -18,4 +18,5 @@ type Wallet struct {
 	RecoveryAddress *types.Address `db:"recovery_address"`
 	// RecoveryWalletID comes from join on recoveries
 	RecoveryWalletID *string `db:"recovery_wallet_id"`
+	RecoverySalt     *string `db:"recovery_salt"`
 }
