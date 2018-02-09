@@ -11,6 +11,7 @@ import (
 	"github.com/pkg/errors"
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/ape/problems"
+	"gitlab.com/distributed_lab/logan/v3"
 	"gitlab.com/swarmfund/api/db2/api"
 	"gitlab.com/swarmfund/api/internal/api/movetoape"
 	"gitlab.com/swarmfund/api/internal/types"
@@ -79,6 +80,9 @@ func PatchUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// flag denoting if we should try to send KYC state notification to the user
+	var kycStateChanged bool
+
 	// check is allowed
 	signedByAdmin := false
 	if err := Doorman(r, doorman.SignerOf(request.Address)); err != nil {
@@ -118,6 +122,7 @@ func PatchUser(w http.ResponseWriter, r *http.Request) {
 				})...)
 				return
 			}
+
 			// transaction is required when approving
 			if *request.Data.Attributes.State == types.UserStateApproved && request.Data.Relationships.Transaction.Data.Attributes.Envelope == "" {
 				ape.RenderErr(w, problems.BadRequest(Errors{
@@ -136,6 +141,11 @@ func PatchUser(w http.ResponseWriter, r *http.Request) {
 			// all checks have passed, updating user state
 			user.State = *request.Data.Attributes.State
 			user.RejectReason = request.Data.Attributes.RejectReason
+
+			if *request.Data.Attributes.State != types.UserStateWaitingForApproval {
+				// looks like user state is pending for change, let's try to send notification if all goes well
+				kycStateChanged = true
+			}
 		}
 	} else {
 		// user could update type
@@ -209,4 +219,28 @@ func PatchUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(204)
+
+	// request has been processed successfully, we should not panic or render anything after this point
+
+	go func(log *logan.Entry) {
+		defer func() {
+			if rvr := recover(); rvr != nil {
+				log.WithRecover(rvr).Error("post request panic")
+			}
+		}()
+		if kycStateChanged {
+			switch user.State {
+			case types.UserStateApproved:
+				if err := Notificator(r).NotifyApproval(user.Email); err != nil {
+					log.WithError(err).Error("failed to notify approval")
+				}
+			case types.UserStateRejected:
+				if err := Notificator(r).NotifyRejection(user.Email); err != nil {
+					log.WithError(err).Error("failed to notify approval")
+				}
+			default:
+				log.WithField("user", user.Address).WithField("state", user.State).Warn("unknown state")
+			}
+		}
+	}(Log(r))
 }

@@ -89,7 +89,7 @@ func (q *Q) Users() UsersQI {
 		parent: &Q{
 			q.Clone(),
 		},
-		sql:    selectUser,
+		sql: selectUser,
 	}
 }
 

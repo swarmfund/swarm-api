@@ -24,7 +24,11 @@ func (c *ViperConfig) Notificator() *notificator.Connector {
 		if err != nil {
 			panic(errors.Wrap(err, "failed to figure out notificator"))
 		}
+
 		config.EmailConfirmation = assets.Templates.Lookup("email_confirm")
+		config.KYCApprove = assets.Templates.Lookup("kyc_approve")
+		config.KYCReject = assets.Templates.Lookup("kyc_reject")
+
 		c.notificator = notificator.NewConnector(config)
 	}
 
