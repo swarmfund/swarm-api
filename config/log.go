@@ -73,22 +73,21 @@ func (c *ViperConfig) Log() *logan.Entry {
 
 	entry := logan.New().Level(config.Level)
 
-	// init sentry hook
+	if sentry != nil {
+		// sentry error hook
+		levels := []logrus.Level{
+			logrus.ErrorLevel,
+			logrus.FatalLevel,
+			logrus.PanicLevel,
+		}
 
-	// sentry error hook
-	levels := []logrus.Level{
-		logrus.ErrorLevel,
-		logrus.FatalLevel,
-		logrus.PanicLevel,
+		hook, err := logrus_sentry.NewWithClientSentryHook(sentry, levels)
+		if err != nil {
+			panic(errors.Wrap(err, "failed to init sentry hook"))
+		}
+		hook.Timeout = 1 * time.Second
+		entry.AddLogrusHook(hook)
 	}
-
-	hook, err := logrus_sentry.NewWithClientSentryHook(sentry, levels)
-	if err != nil {
-		panic(errors.Wrap(err, "failed to init sentry hook"))
-	}
-	hook.Timeout = 1 * time.Second
-
-	entry.AddLogrusHook(hook)
 
 	c.logan = entry
 	return c.logan
