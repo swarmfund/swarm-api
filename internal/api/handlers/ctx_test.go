@@ -22,17 +22,6 @@ func TestCtxLog(t *testing.T) {
 	}
 }
 
-func TestCtxWalletQ(t *testing.T) {
-	q := &api.WalletQ{}
-	ctx := context.Background()
-	request := &http.Request{}
-	request = request.WithContext(CtxWalletQ(q)(ctx))
-	got := WalletQ(request)
-	if _, ok := got.(api.WalletQI); !ok {
-		t.Fatalf("expected %T got %T", q, got)
-	}
-}
-
 func TestCtxEmailTokensQ(t *testing.T) {
 	expected := &api.EmailTokensQ{}
 	ctx := context.Background()
@@ -52,16 +41,5 @@ func TestCtxHorizon(t *testing.T) {
 	got := Horizon(request)
 	if got != expected {
 		t.Fatalf("expected %#v got %#v", expected, got)
-	}
-}
-
-func TestCtxUsersQ(t *testing.T) {
-	expected := &api.UsersQ{}
-	ctx := context.Background()
-	request := &http.Request{}
-	request = request.WithContext(CtxUsersQ(expected)(ctx))
-	got := UsersQ(request)
-	if _, ok := got.(api.UsersQI); !ok {
-		t.Fatalf("expected %T got %T", expected, got)
 	}
 }
