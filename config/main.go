@@ -34,6 +34,8 @@ type ViperConfig struct {
 	horizon     *horizon.Connector
 	discourse   *discourse.Connector
 	notificator *notificator.Connector
+	sentry      *raven.Client
+	logan       *logan.Entry
 }
 
 func NewViperConfig(fn string) Config {
