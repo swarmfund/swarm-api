@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/dukex/mixpanel"
+	"gitlab.com/swarmfund/go/amount"
 	"gitlab.com/swarmfund/go/xdr"
 )
 
@@ -28,9 +29,9 @@ func (c *Connector) IssuanceRequest(id string, ts *time.Time, op *xdr.CreateIssu
 		Timestamp: ts,
 		Properties: map[string]interface{}{
 			"reference":        op.Reference,
-			"receiver":         op.Request.Receiver,
+			"receiver":         op.Request.Receiver.AsString(),
 			"asset":            op.Request.Asset,
-			"amount":           op.Request.Amount,
+			"amount":           amount.String(int64(op.Request.Amount)),
 			"external_details": op.Request.ExternalDetails,
 		},
 	})
@@ -41,8 +42,8 @@ func (c *Connector) WithdrawalRequest(id string, ts *time.Time, op *xdr.CreateWi
 		IP:        "0",
 		Timestamp: ts,
 		Properties: map[string]interface{}{
-			"balance": op.Request.Balance,
-			"amount":  op.Request.Amount,
+			"balance": op.Request.Balance.AsString(),
+			"amount":  amount.String(int64(op.Request.Amount)),
 			"details": op.Request.Details,
 		},
 	})
