@@ -5,12 +5,12 @@ import (
 )
 
 func initTxWatcher(app *App) {
-	app.txWatcher = txwatcher.NewWatcher(
+	txWatcher := txwatcher.NewWatcher(
 		app.Config().Log().WithField("service", "tx-watcher"),
 		app.Config().Horizon(),
 		app.txBus.Dispatch,
 	)
-	go app.txWatcher.Run()
+	go txWatcher.Run()
 }
 
 func init() {
