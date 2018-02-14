@@ -35,9 +35,8 @@ test:
   image: docker:latest
   stage: test
   script:
-    - echo "TODO fix tests"
-#    - docker build --pull -t $IMAGE_TEST_NAME -f $TEST_DOCKERFILE .
-#    - docker run $IMAGE_TEST_NAME ./...
+    - docker build --pull -t $IMAGE_TEST_NAME -f $TEST_DOCKERFILE .
+    - docker run $IMAGE_TEST_NAME ./...
 
 
 deploy:
