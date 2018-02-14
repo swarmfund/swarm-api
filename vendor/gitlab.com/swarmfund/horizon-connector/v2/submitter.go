@@ -10,7 +10,6 @@ import (
 	"github.com/pkg/errors"
 	"gitlab.com/swarmfund/horizon-connector/v2/internal/resources"
 	"gitlab.com/swarmfund/horizon-connector/v2/internal/responses"
-	"gitlab.com/distributed_lab/logan/v3"
 )
 
 var (
@@ -31,6 +30,16 @@ type SubmitResult struct {
 	OpCodes     []string
 }
 
+func (r SubmitResult) GetLoganFields() map[string]interface{} {
+	return map[string]interface{} {
+		"err":      r.Err.Error(),
+		"raw":      string(r.RawResponse),
+		"tx_code":  r.TXCode,
+		"op_codes": r.OpCodes,
+	}
+}
+
+// TODO Return error
 func (s *Submitter) Submit(ctx context.Context, envelope string) SubmitResult {
 	var buf bytes.Buffer
 	err := json.NewEncoder(&buf).Encode(&resources.TransactionSubmit{
@@ -64,10 +73,9 @@ func (s *Submitter) Submit(ctx context.Context, envelope string) SubmitResult {
 		case "transaction_malformed":
 			result.Err = ErrSubmitMalformed
 		case "transaction_failed":
-			logan.New().WithField("response", string(result.RawResponse)).Warn("Transaction failed")
 			result.Err = ErrSubmitRejected
 			result.TXCode = response.Extras.ResultCodes.Transaction
-			result.OpCodes = response.Extras.ResultCodes.Messages
+			result.OpCodes = response.Extras.ResultCodes.Operations
 		default:
 			panic("unknown reject type")
 		}
