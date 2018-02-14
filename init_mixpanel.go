@@ -34,7 +34,7 @@ func init() {
 					fields := logan.F{
 						"type":     "issuance-request",
 						"request":  body.Reference,
-						"receiver": body.Request.Receiver,
+						"receiver": body.Request.Receiver.AsString(),
 					}
 					address, err := horizon.Accounts().ByBalance(body.Request.Receiver.AsString())
 					if err != nil {
@@ -53,7 +53,7 @@ func init() {
 					body := op.Body.CreateWithdrawalRequestOp
 					fields := logan.F{
 						"type":      "withdrawal-request",
-						"requester": body.Request.Balance,
+						"requester": body.Request.Balance.AsString(),
 					}
 					address, err := horizon.Accounts().ByBalance(body.Request.Balance.AsString())
 					if err != nil {
