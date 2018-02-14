@@ -19,7 +19,6 @@ import (
 	"gitlab.com/swarmfund/api/internal/hose"
 	"gitlab.com/swarmfund/api/log"
 	"gitlab.com/swarmfund/api/storage"
-	"gitlab.com/swarmfund/api/txwatcher"
 	"gitlab.com/swarmfund/go/doorman"
 	"gitlab.com/swarmfund/horizon-connector/v2"
 	"gitlab.com/tokend/keypair"
@@ -43,10 +42,9 @@ type App struct {
 	memoryCache    *cache.Cache
 	storage        *storage.Connector
 	// DEPRECATED
-	horizon   *horizon.Connector
-	txWatcher *txwatcher.Watcher
-	txBus     *hose.TransactionBus
-	userBus   *hose.UserBus
+	horizon *horizon.Connector
+	txBus   *hose.TransactionBus
+	userBus *hose.UserBus
 }
 
 // NewApp constructs an new App instance from the provided config.

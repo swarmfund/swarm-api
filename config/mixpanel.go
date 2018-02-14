@@ -1,12 +1,12 @@
 package config
 
 import (
-	"github.com/dukex/mixpanel"
 	"github.com/pkg/errors"
 	"gitlab.com/distributed_lab/figure"
+	"gitlab.com/swarmfund/api/internal/mixpanel"
 )
 
-func (c *ViperConfig) Mixpanel() mixpanel.Mixpanel {
+func (c *ViperConfig) Mixpanel() *mixpanel.Connector {
 	c.Lock()
 	defer c.Unlock()
 
@@ -21,7 +21,7 @@ func (c *ViperConfig) Mixpanel() mixpanel.Mixpanel {
 		if err != nil {
 			panic(errors.Wrap(err, "failed to figure out"))
 		}
-		c.mixpanel = mixpanel.New(config.Token, "")
+		c.mixpanel = mixpanel.New(config.Token)
 	}
 
 	return c.mixpanel

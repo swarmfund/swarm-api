@@ -3,12 +3,12 @@ package config
 import (
 	"sync"
 
-	"github.com/dukex/mixpanel"
 	raven "github.com/getsentry/raven-go"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 	"gitlab.com/distributed_lab/logan/v3"
 	"gitlab.com/swarmfund/api/internal/discourse"
+	"gitlab.com/swarmfund/api/internal/mixpanel"
 	"gitlab.com/swarmfund/api/notificator"
 	"gitlab.com/swarmfund/horizon-connector/v2"
 )
@@ -24,7 +24,7 @@ type Config interface {
 	Sentry() *raven.Client
 	Horizon() *horizon.Connector
 	Discourse() *discourse.Connector
-	Mixpanel() mixpanel.Mixpanel
+	Mixpanel() *mixpanel.Connector
 
 	Get(string) map[string]interface{}
 }
@@ -39,7 +39,7 @@ type ViperConfig struct {
 	notificator *notificator.Connector
 	sentry      *raven.Client
 	logan       *logan.Entry
-	mixpanel    mixpanel.Mixpanel
+	mixpanel    *mixpanel.Connector
 }
 
 func NewViperConfig(fn string) Config {
