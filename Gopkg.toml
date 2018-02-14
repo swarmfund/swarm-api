@@ -127,7 +127,7 @@
 
 [[constraint]]
   name = "gitlab.com/swarmfund/horizon-connector"
-  branch = "feature/v2"
+  branch = "master"
 
 [[constraint]]
   branch = "master"
