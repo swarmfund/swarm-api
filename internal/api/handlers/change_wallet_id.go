@@ -43,36 +43,7 @@ func (r ChangeWalletIDRequest) Validate() error {
 	)
 }
 
-func loadWallet(r *http.Request, currentWalletID string) (*api.Wallet, bool, error) {
-	wallet, err := WalletQ(r).ByWalletID(currentWalletID)
-	if err != nil {
-		return nil, false, errors.Wrap(err, "failed to load wallet by id")
-	}
-
-	if wallet != nil {
-		return wallet, false, nil
-	}
-
-	// maybe its recovery
-	recovery, err := WalletQ(r).RecoveryByWalletID(currentWalletID)
-	if err != nil {
-		return nil, false, errors.Wrap(err, "failed to load recovery by id")
-	}
-
-	if recovery == nil {
-		return nil, false, nil
-	}
-
-	wallet, err = WalletQ(r).ByEmail(recovery.Email)
-	if err != nil {
-		return nil, false, errors.Wrap(err, "failed to load wallet by email for recovery")
-	}
-
-	return wallet, true, nil
-}
-
 func ChangeWalletID(w http.ResponseWriter, r *http.Request) {
-	// TODO: must be refactored
 	request, err := NewChangeWalletIDRequest(r)
 	if err != nil {
 		ape.RenderErr(w, problems.BadRequest(err)...)
@@ -80,7 +51,7 @@ func ChangeWalletID(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// load wallet
-	wallet, isRecovery, err := loadWallet(r, request.CurrentWalletID)
+	wallet, isRecovery, err := WalletQ(r).ByWalletOrRecoveryID(request.CurrentWalletID)
 	if err != nil {
 		Log(r).WithError(err).Error("failed to get wallet")
 		ape.RenderErr(w, problems.InternalError())
@@ -92,19 +63,17 @@ func ChangeWalletID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ownerOfData := string(wallet.CurrentAccountID)
-	if isRecovery {
-		ownerOfData = string(wallet.AccountID)
-	}
-	// check allowed
-	if err := Doorman(r, doorman.SignerOf(ownerOfData)); err != nil {
+	// explicitly checking against recovery address for wallets that don't yet have account
+	err = Doorman(r,
+		doorman.SignatureOf(string(wallet.RecoveryAddress)),
+		doorman.SignatureOf(string(wallet.CurrentAccountID)))
+	if err != nil {
 		movetoape.RenderDoormanErr(w, err)
 		return
 	}
 
 	// we are not forcing any 2fa checks if request is for recovery wallet
-	// TODO better check for request signer
-	if request.CurrentWalletID != *wallet.RecoveryWalletID {
+	if !isRecovery {
 		// check if user knows password
 		if err := secondfactor.NewConsumer(TFAQ(r)).WithTokenMixin("pwd-check").WithBackendType(types.WalletFactorPassword).Consume(r, wallet); err != nil {
 			RenderFactorConsumeError(w, r, err)
@@ -116,7 +85,22 @@ func ChangeWalletID(w http.ResponseWriter, r *http.Request) {
 			RenderFactorConsumeError(w, r, err)
 			return
 		}
-		// load actual wallet not recovery
+	}
+
+	if isRecovery {
+		// handling case when some one tries to recover non-existent account
+		if err := performUserCreate(r, wallet); err != nil {
+			switch errors.Cause(err) {
+			case ErrWalletNotVerified:
+				ape.RenderErr(w, movetoape.Forbidden("verification_required"))
+			case api.ErrUsersConflict:
+				ape.RenderErr(w, problems.Conflict())
+			default:
+				Log(r).WithError(err).Error("failed to create user")
+				ape.RenderErr(w, problems.InternalError())
+			}
+			return
+		}
 	}
 
 	factor := tfa.NewPasswordBackend(tfa.PasswordDetails{
