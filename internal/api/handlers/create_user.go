@@ -75,7 +75,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 			Op(xdrbuild.CreateAccountOp{
 				Address:     string(request.Address),
 				AccountType: xdr.AccountTypeNotVerified,
-				Recovery:    string(*wallet.RecoveryAddress),
+				Recovery:    string(wallet.RecoveryAddress),
 			}).Marshal()
 		if err != nil {
 			return errors.Wrap(err, "failed to build tx envelope")
