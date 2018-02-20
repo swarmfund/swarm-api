@@ -17,6 +17,10 @@ import (
 	"gitlab.com/swarmfund/go/xdrbuild"
 )
 
+var (
+	ErrWalletNotVerified = errors.New("wallet not verified")
+)
+
 type CreateUserRequest struct {
 	Address types.Address `json:"-"`
 }
@@ -34,34 +38,15 @@ func (r *CreateUserRequest) Validate() error {
 	)
 }
 
-func CreateUser(w http.ResponseWriter, r *http.Request) {
-	request, err := NewCreateUserRequest(r)
-	if err != nil {
-		ape.RenderErr(w, problems.BadRequest(err)...)
-		return
-	}
-
-	if err := Doorman(r, doorman.SignerOf(string(request.Address))); err != nil {
-		movetoape.RenderDoormanErr(w, err)
-		return
-	}
-
+func performUserCreate(r *http.Request, wallet *api.Wallet) error {
 	// wallet should exists and be verified when creating user
-	wallet, err := WalletQ(r).ByAccountID(request.Address)
-	if err != nil {
-		Log(r).WithError(err).Error("failed to get wallet")
-		ape.RenderErr(w, problems.InternalError())
-		return
-	}
-
 	if wallet == nil || !wallet.Verified {
-		ape.RenderErr(w, movetoape.Forbidden("verification_required"))
-		return
+		return ErrWalletNotVerified
 	}
 
-	err = UsersQ(r).Transaction(func(q api.UsersQI) error {
+	err := UsersQ(r).Transaction(func(q api.UsersQI) error {
 		err := q.Create(&api.User{
-			Address: request.Address,
+			Address: wallet.AccountID,
 			Email:   wallet.Username,
 			// everybody is created equal
 			UserType: types.UserTypeNotVerified,
@@ -73,9 +58,9 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 
 		envelope, err := Transaction(r).
 			Op(xdrbuild.CreateAccountOp{
-				Address:     string(request.Address),
+				Address:     string(wallet.AccountID),
 				AccountType: xdr.AccountTypeNotVerified,
-				Recovery:    string(*wallet.RecoveryAddress),
+				Recovery:    string(wallet.RecoveryAddress),
 			}).Marshal()
 		if err != nil {
 			return errors.Wrap(err, "failed to build tx envelope")
@@ -90,7 +75,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 			Type: hose.UserEventTypeCreated,
 			User: hose.User{
 				Email:   wallet.Username,
-				Address: request.Address,
+				Address: wallet.AccountID,
 			},
 		})
 		return nil
@@ -98,11 +83,43 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		cause := errors.Cause(err)
 		if cause == api.ErrUsersConflict {
-			ape.RenderErr(w, problems.Conflict())
-			return
+			return cause
 		}
-		Log(r).WithError(err).Error("failed to create user")
+		return err
+	}
+
+	return nil
+}
+
+func CreateUser(w http.ResponseWriter, r *http.Request) {
+	request, err := NewCreateUserRequest(r)
+	if err != nil {
+		ape.RenderErr(w, problems.BadRequest(err)...)
+		return
+	}
+
+	if err := Doorman(r, doorman.SignerOf(string(request.Address))); err != nil {
+		movetoape.RenderDoormanErr(w, err)
+		return
+	}
+
+	wallet, err := WalletQ(r).ByAccountID(request.Address)
+	if err != nil {
+		Log(r).WithError(err).Error("failed to get wallet")
 		ape.RenderErr(w, problems.InternalError())
+		return
+	}
+
+	if err := performUserCreate(r, wallet); err != nil {
+		switch errors.Cause(err) {
+		case ErrWalletNotVerified:
+			ape.RenderErr(w, movetoape.Forbidden("verification_required"))
+		case api.ErrUsersConflict:
+			ape.RenderErr(w, problems.Conflict())
+		default:
+			Log(r).WithError(err).Error("failed to create user")
+			ape.RenderErr(w, problems.InternalError())
+		}
 		return
 	}
 
