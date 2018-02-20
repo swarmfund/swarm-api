@@ -93,13 +93,14 @@ func ChangeWalletID(w http.ResponseWriter, r *http.Request) {
 			switch errors.Cause(err) {
 			case ErrWalletNotVerified:
 				ape.RenderErr(w, movetoape.Forbidden("verification_required"))
+				return
 			case api.ErrUsersConflict:
-				ape.RenderErr(w, problems.Conflict())
+				// it's ok, user already exists
 			default:
 				Log(r).WithError(err).Error("failed to create user")
 				ape.RenderErr(w, problems.InternalError())
+				return
 			}
-			return
 		}
 	}
 
