@@ -40,6 +40,8 @@ type User struct {
 	KYCEntities KYCEntities `db:"kyc_entities"`
 	// RecoveryAddress recovery signer, comes from join on recoveries
 	RecoveryAddress types.Address `db:"recovery_address"`
+	// AirdropState treat nils as valid undefined value, comes from json on airdrops
+	AirdropState *types.AirdropState `db:"airdrop_state"`
 }
 
 // Details will throw panic aggressively instead of returning error

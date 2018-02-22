@@ -21,8 +21,11 @@ var (
 	selectUser       = sq.Select(
 		"u.*",
 		"r.address as recovery_address",
+		"a.state as airdrop_state",
 		"(select json_agg(kyc) from kyc_entities kyc where kyc.user_id=u.id) as kyc_entities").
 		Join("recoveries r on r.wallet=u.email").
+		// joining left since it's optional due to late migration
+		LeftJoin("airdrops a on a.owner=u.address").
 		From(tableUserAliased)
 
 	insertUser = sq.Insert(tableUser)
