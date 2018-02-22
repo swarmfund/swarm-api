@@ -5,6 +5,8 @@ import (
 	"database/sql/driver"
 	"encoding/json"
 
+	"time"
+
 	"github.com/go-errors/errors"
 	"github.com/guregu/null"
 	"gitlab.com/swarmfund/api/internal/types"
@@ -26,7 +28,7 @@ type User struct {
 	Documents         Documents            `db:"documents"`
 	DocumentsVersion  int64                `db:"documents_version"`
 	LimitReviewStatue UserLimitReviewState `db:"limit_review_state"`
-	CreatedAt         string               `db:"created_at"`
+	CreatedAt         time.Time            `db:"created_at"`
 	UpdatedAt         string               `db:"updated_at"`
 	DeletedAt         sql.NullString       `db:"deleted_at"`
 

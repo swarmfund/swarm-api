@@ -1,6 +1,8 @@
 package resources
 
 import (
+	"time"
+
 	"gitlab.com/swarmfund/api/db2/api"
 	"gitlab.com/swarmfund/api/internal/types"
 )
@@ -17,6 +19,7 @@ type (
 		KYCSequence     int64           `json:"kyc_sequence"`
 		RejectReason    string          `json:"reject_reason"`
 		RecoveryAddress types.Address   `json:"recovery_address"`
+		CreatedAt       time.Time       `json:"created_at"`
 	}
 )
 
@@ -30,6 +33,7 @@ func NewUser(user *api.User) User {
 			KYCSequence:     user.KYCSequence,
 			RejectReason:    user.RejectReason,
 			RecoveryAddress: user.RecoveryAddress,
+			CreatedAt:       user.CreatedAt,
 		},
 	}
 }
