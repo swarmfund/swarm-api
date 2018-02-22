@@ -75,12 +75,10 @@ type WalletQI interface {
 	ByEmail(username string) (*Wallet, error)
 	ByWalletID(walletId string) (*Wallet, error)
 	DeleteWallets(walletIDs []string) error
-	ByWalletIDOrRecovery(walletId string) (*Wallet, error)
+	ByWalletOrRecoveryID(walletId string) (*Wallet, bool, error)
 
 	ByCurrentAccountID(accountID string) (*Wallet, error)
 	ByAccountID(address types.Address) (*Wallet, error)
-
-	RecoveryByWalletID(recoveryWalletID string) (*RecoveryKeychain, error)
 
 	Update(w *Wallet) error
 
@@ -111,19 +109,6 @@ func (q *WalletQ) Transaction(fn func(q WalletQI) error) (err error) {
 	return q.parent.Transaction(func() error {
 		return fn(q)
 	})
-}
-
-func (q *WalletQ) RecoveryByWalletID(recoveryWalletID string) (*RecoveryKeychain, error) {
-	query := sq.Select("wallet", "salt", "address", "wallet_id").
-		From(tableRecoveries).Where("wallet_id = ?", recoveryWalletID)
-
-	var result RecoveryKeychain
-	err := q.parent.Get(&result, query)
-	if err == sql.ErrNoRows {
-		return nil, nil
-	}
-
-	return &result, err
 }
 
 func (q *WalletQ) CreateRecovery(recovery RecoveryKeychain) error {
@@ -276,16 +261,16 @@ func (q *WalletQ) ByWalletID(walletID string) (*Wallet, error) {
 	return &result, err
 }
 
-func (q *WalletQ) ByWalletIDOrRecovery(walletID string) (*Wallet, error) {
+func (q *WalletQ) ByWalletOrRecoveryID(walletID string) (*Wallet, bool, error) {
 	var result Wallet
 	stmt := walletSelect.Where("w.wallet_id = ? OR r.wallet_id = ?", walletID, walletID)
 
 	err := q.parent.Get(&result, stmt)
 	if err == sql.ErrNoRows {
-		return nil, nil
+		return nil, false, nil
 	}
 
-	return &result, err
+	return &result, result.RecoveryWalletID == walletID, err
 }
 
 func (q *WalletQ) DeleteWallets(walletIDs []string) error {
