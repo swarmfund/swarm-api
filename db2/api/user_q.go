@@ -139,17 +139,17 @@ func (q *UsersQ) WithAddress(addresses ...string) UsersQI {
 }
 
 func (q *UsersQ) ByState(state types.UserState) UsersQI {
-	q.sql = q.sql.Where("state & ? != 0", state)
+	q.sql = q.sql.Where("u.state & ? != 0", state)
 	return q
 }
 
 func (q *UsersQ) ByType(tpe types.UserType) UsersQI {
-	q.sql = q.sql.Where("type & ? != 0", tpe)
+	q.sql = q.sql.Where("u.type & ? != 0", tpe)
 	return q
 }
 
 func (q *UsersQ) EmailMatches(str string) UsersQI {
-	q.sql = q.sql.Where("email ilike ?", fmt.Sprint("%", str, "%"))
+	q.sql = q.sql.Where("u.email ilike ?", fmt.Sprint("%", str, "%"))
 	return q
 }
 
