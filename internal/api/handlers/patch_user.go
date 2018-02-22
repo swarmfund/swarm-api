@@ -120,7 +120,7 @@ func PatchUser(w http.ResponseWriter, r *http.Request) {
 			// only when user is waiting for approval
 			if user.State != types.UserStateWaitingForApproval {
 				ape.RenderErr(w, problems.BadRequest(Errors{
-					"/data/attributes/state": errors.New("state transition is not allowed"),
+					"/data/attributes/state": errors.New("allowed only for WAP users"),
 				})...)
 				return
 			}
@@ -171,14 +171,14 @@ func PatchUser(w http.ResponseWriter, r *http.Request) {
 			// only to waiting for approval
 			if *request.Data.Attributes.State != types.UserStateWaitingForApproval {
 				ape.RenderErr(w, problems.BadRequest(Errors{
-					"/data/attributes/state": errors.New("state transition is not allowed"),
+					"/data/attributes/state": errors.New("only updating to WAP allowed"),
 				})...)
 				return
 			}
 			// check if user is really able to change state
 			if user.CheckState() != types.UserStateWaitingForApproval {
 				ape.RenderErr(w, problems.BadRequest(Errors{
-					"/data/attributes/state": errors.New("state transition is not allowed"),
+					"/data/attributes/state": errors.New("not ready for WAP"),
 				})...)
 				return
 			}
@@ -199,14 +199,14 @@ func PatchUser(w http.ResponseWriter, r *http.Request) {
 			// only to claim state
 			if *request.Data.Attributes.AirdropState != types.AirdropStateClaimed {
 				ape.RenderErr(w, problems.BadRequest(Errors{
-					"/data/attributes/airdrop_state": errors.New("transition is not allowed"),
+					"/data/attributes/airdrop_state": errors.New("only update to claimed allowed"),
 				})...)
 				return
 			}
 			// only if he is eligible
 			if (user.AirdropState != nil && *user.AirdropState != types.AirdropStateEligible) || !user.IsAirdropEligible() {
 				ape.RenderErr(w, problems.BadRequest(Errors{
-					"/data/attributes/airdrop_state": errors.New("transition is not allowed"),
+					"/data/attributes/airdrop_state": errors.New("allowed only for eligible"),
 				})...)
 				return
 			}
