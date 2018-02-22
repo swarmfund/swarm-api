@@ -7,8 +7,10 @@ import (
 
 	"time"
 
-	"github.com/go-errors/errors"
+	"regexp"
+
 	"github.com/guregu/null"
+	"github.com/pkg/errors"
 	"gitlab.com/swarmfund/api/internal/types"
 )
 
@@ -42,6 +44,15 @@ type User struct {
 	RecoveryAddress types.Address `db:"recovery_address"`
 	// AirdropState treat nils as valid undefined value, comes from json on airdrops
 	AirdropState *types.AirdropState `db:"airdrop_state"`
+}
+
+func (user *User) IsAirdropEligible() bool {
+	pattern := `(?i).+@(163.com|qq.com|126.com|189.cn|139.com|sina.com|aliyun.com|xinjiyuan99.com)`
+	blacklisted, err := regexp.MatchString(pattern, user.Email)
+	if err != nil {
+		panic(errors.Wrap(err, "blacklist check failed"))
+	}
+	return !blacklisted
 }
 
 // Details will throw panic aggressively instead of returning error

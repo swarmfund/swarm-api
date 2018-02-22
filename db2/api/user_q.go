@@ -48,6 +48,8 @@ type UsersQI interface {
 	New() UsersQI
 	Transaction(func(UsersQI) error) error
 
+	UpdateAirdropState(address types.Address, state types.AirdropState) error
+
 	// Participants
 	Participants(participants map[int64][]Participant) error
 
@@ -104,6 +106,16 @@ func (q *UsersQ) Transaction(fn func(UsersQI) error) error {
 	return q.parent.Transaction(func() error {
 		return fn(q)
 	})
+}
+
+func (q *UsersQ) UpdateAirdropState(address types.Address, state types.AirdropState) error {
+	stmt := sq.Insert("airdrops").SetMap(map[string]interface{}{
+		"owner": address,
+		"state": state,
+	}).Suffix("ON CONFLICT (owner) DO UPDATE SET state = EXCLUDED.state;")
+
+	_, err := q.parent.Exec(stmt)
+	return err
 }
 
 func (q *UsersQ) WithIntegration(exchange string) UsersQI {

@@ -1,4 +1,4 @@
-package resources
+package api
 
 import (
 	"fmt"
@@ -20,7 +20,10 @@ func TestIsEmailAirdropEligible(t *testing.T) {
 
 	for i, tc := range cases {
 		t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
-			got := isEmailAirdropEligible(tc.email)
+			user := User{
+				Email: tc.email,
+			}
+			got := user.IsAirdropEligible()
 			assert.Equal(t, tc.expected, got)
 		})
 	}

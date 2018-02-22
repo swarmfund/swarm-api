@@ -3,9 +3,6 @@ package resources
 import (
 	"time"
 
-	"regexp"
-
-	"github.com/pkg/errors"
 	"gitlab.com/swarmfund/api/db2/api"
 	"gitlab.com/swarmfund/api/internal/types"
 )
@@ -27,22 +24,13 @@ type (
 	}
 )
 
-func isEmailAirdropEligible(email string) bool {
-	pattern := `(?i).+@(163.com|qq.com|126.com|189.cn|139.com|sina.com|aliyun.com|xinjiyuan99.com)`
-	blacklisted, err := regexp.MatchString(pattern, email)
-	if err != nil {
-		panic(errors.Wrap(err, "blacklist check failed"))
-	}
-	return !blacklisted
-}
-
 // NewUser populates user resource from db record
 func NewUser(user *api.User) User {
 	// worth place for this, but there is nothing better
 	if user.AirdropState == nil {
 		state := types.AirdropStateEligible
-		// checking if email domain is blacklisted
-		if !isEmailAirdropEligible(user.Email) {
+		// checking if user is eligible
+		if !user.IsAirdropEligible() {
 			state = types.AirdropStateNotEligible
 		}
 		user.AirdropState = &state
