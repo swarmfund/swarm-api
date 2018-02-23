@@ -64,7 +64,7 @@ func (q *Favorites) Create(favorite data.Favorite) error {
 }
 
 func (q *Favorites) Delete(owner types2.Address, id int64) error {
-	stmt := squirrel.Delete(tableFavorites).Where("owner = ? and key = ?", owner, id)
+	stmt := squirrel.Delete(tableFavorites).Where("owner = ? and id = ?", owner, id)
 	_, err := q.repo.Exec(stmt)
 	return err
 }
