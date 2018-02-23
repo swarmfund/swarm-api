@@ -11,11 +11,13 @@ import (
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/ape/problems"
 	"gitlab.com/distributed_lab/logan/v3"
+	"gitlab.com/swarmfund/api/db2"
 	"gitlab.com/swarmfund/api/db2/api"
 	"gitlab.com/swarmfund/api/internal/api/handlers"
 	"gitlab.com/swarmfund/api/internal/api/middlewares"
 	"gitlab.com/swarmfund/api/internal/data"
 	"gitlab.com/swarmfund/api/internal/discourse/sso"
+	"gitlab.com/swarmfund/api/internal/favorites"
 	"gitlab.com/swarmfund/api/internal/hose"
 	"gitlab.com/swarmfund/api/internal/secondfactor"
 	"gitlab.com/swarmfund/api/notificator"
@@ -30,7 +32,7 @@ func Router(
 	usersQ api.UsersQI, doorman doorman.Doorman, horizon *horizon.Connector,
 	tfaQ api.TFAQI, storage *storage.Connector, master keypair.Address, signer keypair.Full,
 	coreInfo data.CoreInfoI, blobQ data.Blobs, sentry *raven.Client,
-	userDispatch hose.UserDispatch, notificator *notificator.Connector,
+	userDispatch hose.UserDispatch, notificator *notificator.Connector, repo *db2.Repo,
 ) chi.Router {
 	r := chi.NewRouter()
 
@@ -118,6 +120,9 @@ func Router(
 			r.Get("/", handlers.BlobIndex)
 			r.Get("/{blob}", handlers.GetBlob)
 		})
+
+		// favorites
+		r.Route("/{address}/favorites", favorites.Router(repo))
 	})
 
 	r.Route("/integrations", func(r chi.Router) {
