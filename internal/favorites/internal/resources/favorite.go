@@ -6,7 +6,6 @@ import (
 	"github.com/go-ozzo/ozzo-validation"
 	"gitlab.com/swarmfund/api/internal/favorites/internal/data"
 	"gitlab.com/swarmfund/api/internal/favorites/internal/types"
-	"gitlab.com/swarmfund/go/xdr"
 )
 
 type Favorite struct {
@@ -51,7 +50,4 @@ func (r FavoriteAttributes) Validate() error {
 	return validation.ValidateStruct(&r,
 		validation.Field(&r.Key, validation.Required),
 	)
-
-	xdr.REviRequesTyp
-	xdr.OperationType()
 }

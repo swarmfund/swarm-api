@@ -20,6 +20,7 @@ type Favorite struct {
 
 type Favorites interface {
 	Create(favorite Favorite) error
+	Delete(owner types.Address, id int64) error
 
 	// filter methods
 	Page(uint64) Favorites

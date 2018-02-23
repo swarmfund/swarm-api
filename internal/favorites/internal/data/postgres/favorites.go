@@ -7,6 +7,7 @@ import (
 	"gitlab.com/swarmfund/api/db2"
 	"gitlab.com/swarmfund/api/internal/favorites/internal/data"
 	"gitlab.com/swarmfund/api/internal/favorites/internal/types"
+	types2 "gitlab.com/swarmfund/api/internal/types"
 )
 
 const (
@@ -59,6 +60,12 @@ func (q *Favorites) Create(favorite data.Favorite) error {
 			}
 		}
 	}
+	return err
+}
+
+func (q *Favorites) Delete(owner types2.Address, id int64) error {
+	stmt := squirrel.Delete(tableFavorites).Where("owner = ? and key = ?", owner, id)
+	_, err := q.repo.Exec(stmt)
 	return err
 }
 
