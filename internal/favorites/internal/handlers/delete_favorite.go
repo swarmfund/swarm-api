@@ -49,7 +49,7 @@ func DeleteFavorite(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := handlers.Doorman(r, doorman.SignatureOf(string(request.Owner))); err != nil {
+	if err := handlers.Doorman(r, doorman.SignerOf(string(request.Owner))); err != nil {
 		movetoape.RenderDoormanErr(w, err)
 		return
 	}
