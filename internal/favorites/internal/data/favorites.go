@@ -25,5 +25,6 @@ type Favorites interface {
 	// filter methods
 	Page(uint64) Favorites
 	ByType(types2.FavoriteType) Favorites
+	ByOwner(address types.Address) Favorites
 	Select() ([]Favorite, error)
 }
