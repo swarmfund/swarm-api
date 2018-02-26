@@ -30,6 +30,7 @@ func SignerOf(address string) SignerConstraint {
 	}
 }
 
+
 func SignatureOf(address string) SignerConstraint {
 	return func(r *http.Request, doorman Doorman) error {
 		signer, err := signcontrol.CheckSignature(r)
@@ -44,3 +45,4 @@ func SignatureOf(address string) SignerConstraint {
 		return signcontrol.ErrNotAllowed
 	}
 }
+
