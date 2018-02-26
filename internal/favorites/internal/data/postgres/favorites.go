@@ -79,6 +79,11 @@ func (q *Favorites) ByType(tpe types.FavoriteType) data.Favorites {
 	return q
 }
 
+func (q *Favorites) ByOwner(owner types2.Address) data.Favorites {
+	q.sql = q.sql.Where("f.owner = ?", owner)
+	return q
+}
+
 func (q *Favorites) Select() (result []data.Favorite, err error) {
 	err = q.repo.Select(&result, q.sql)
 	return result, err
