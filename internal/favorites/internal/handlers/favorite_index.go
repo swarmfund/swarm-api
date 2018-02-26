@@ -15,6 +15,7 @@ import (
 	"gitlab.com/swarmfund/api/internal/api/urlval"
 	"gitlab.com/swarmfund/api/internal/favorites/internal/resources"
 	"gitlab.com/swarmfund/api/internal/favorites/internal/types"
+	types2 "gitlab.com/swarmfund/api/internal/types"
 	"gitlab.com/swarmfund/go/doorman"
 )
 
@@ -49,7 +50,7 @@ func (r FavoriteFilters) Validate() error {
 
 func FavoriteIndex(w http.ResponseWriter, r *http.Request) {
 	// TODO validate owner address
-	owner := chi.URLParam(r, "address")
+	owner := types2.Address(chi.URLParam(r, "address"))
 
 	filters, err := NewFavoriteFilters(r)
 	if err != nil {
@@ -57,12 +58,12 @@ func FavoriteIndex(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := handlers.Doorman(r, doorman.SignerOf(owner)); err != nil {
+	if err := handlers.Doorman(r, doorman.SignerOf(string(owner))); err != nil {
 		movetoape.RenderDoormanErr(w, err)
 		return
 	}
 
-	q := FavoritesQ(r).Page(filters.Page)
+	q := FavoritesQ(r).Page(filters.Page).ByOwner(owner)
 
 	if filters.Type != nil {
 		q = q.ByType(types.FavoriteType(*filters.Type))
