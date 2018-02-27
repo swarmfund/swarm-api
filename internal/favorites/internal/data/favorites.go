@@ -19,6 +19,8 @@ type Favorite struct {
 }
 
 type Favorites interface {
+	New() Favorites
+
 	Create(favorite Favorite) error
 	Delete(owner types.Address, id int64) error
 
