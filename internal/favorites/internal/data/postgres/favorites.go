@@ -39,6 +39,10 @@ func NewFavorites(repo *db2.Repo) *Favorites {
 	}
 }
 
+func (q *Favorites) New() data.Favorites {
+	return NewFavorites(q.repo)
+}
+
 func (q *Favorites) Create(favorite data.Favorite) error {
 	stmt := squirrel.Insert(tableFavorites).SetMap(map[string]interface{}{
 		"type":  favorite.Type,

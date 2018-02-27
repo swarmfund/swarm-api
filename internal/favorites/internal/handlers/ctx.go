@@ -20,5 +20,5 @@ func CtxFavoritesQ(q data.Favorites) func(context.Context) context.Context {
 }
 
 func FavoritesQ(r *http.Request) data.Favorites {
-	return r.Context().Value(favoritesQCtx).(data.Favorites)
+	return r.Context().Value(favoritesQCtx).(data.Favorites).New()
 }
