@@ -390,7 +390,7 @@
   revision = "939a613db2add16474a15d5058867fdb7252f1df"
 
 [[projects]]
-  branch = "prod"
+  branch = "master"
   name = "gitlab.com/swarmfund/go"
   packages = [
     "amount",
@@ -407,7 +407,7 @@
     "xdrbuild",
     "xdrbuild/internal"
   ]
-  revision = "5a22823ee0c0fb7f3cad0b396ffd8f915cb6941e"
+  revision = "c71a5b7d45aa6ace2e4f8567ca71389dc14877ee"
 
 [[projects]]
   branch = "master"
@@ -511,6 +511,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "8c3b15c7a1996e3cc08e2dfe71951c5d65a1deb3ce82f27abba4fe5cc6742c76"
+  inputs-digest = "76a28f1c16da02f62aa60dfaaf3f5af8fcca8af0d0d39596659c333065b051a9"
   solver-name = "gps-cdcl"
   solver-version = 1

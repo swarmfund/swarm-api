@@ -21,8 +21,11 @@ var (
 	selectUser       = sq.Select(
 		"u.*",
 		"r.address as recovery_address",
+		"a.state as airdrop_state",
 		"(select json_agg(kyc) from kyc_entities kyc where kyc.user_id=u.id) as kyc_entities").
 		Join("recoveries r on r.wallet=u.email").
+		// joining left since it's optional due to late migration
+		LeftJoin("airdrops a on a.owner=u.address").
 		From(tableUserAliased)
 
 	insertUser = sq.Insert(tableUser)
@@ -44,6 +47,8 @@ type UsersQ struct {
 type UsersQI interface {
 	New() UsersQI
 	Transaction(func(UsersQI) error) error
+
+	UpdateAirdropState(address types.Address, state types.AirdropState) error
 
 	// Participants
 	Participants(participants map[int64][]Participant) error
@@ -103,6 +108,16 @@ func (q *UsersQ) Transaction(fn func(UsersQI) error) error {
 	})
 }
 
+func (q *UsersQ) UpdateAirdropState(address types.Address, state types.AirdropState) error {
+	stmt := sq.Insert("airdrops").SetMap(map[string]interface{}{
+		"owner": address,
+		"state": state,
+	}).Suffix("ON CONFLICT (owner) DO UPDATE SET state = EXCLUDED.state;")
+
+	_, err := q.parent.Exec(stmt)
+	return err
+}
+
 func (q *UsersQ) WithIntegration(exchange string) UsersQI {
 	if q.Err != nil {
 		return q
@@ -124,17 +139,17 @@ func (q *UsersQ) WithAddress(addresses ...string) UsersQI {
 }
 
 func (q *UsersQ) ByState(state types.UserState) UsersQI {
-	q.sql = q.sql.Where("state & ? != 0", state)
+	q.sql = q.sql.Where("u.state & ? != 0", state)
 	return q
 }
 
 func (q *UsersQ) ByType(tpe types.UserType) UsersQI {
-	q.sql = q.sql.Where("type & ? != 0", tpe)
+	q.sql = q.sql.Where("u.type & ? != 0", tpe)
 	return q
 }
 
 func (q *UsersQ) EmailMatches(str string) UsersQI {
-	q.sql = q.sql.Where("email ilike ?", fmt.Sprint("%", str, "%"))
+	q.sql = q.sql.Where("u.email ilike ?", fmt.Sprint("%", str, "%"))
 	return q
 }
 

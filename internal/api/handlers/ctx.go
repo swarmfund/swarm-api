@@ -177,7 +177,7 @@ func Transaction(r *http.Request) *xdrbuild.Transaction {
 		Sign(signer)
 }
 
-func CtxWallet(disableConfirm config.Wallets) func(context.Context) context.Context {
+func CtxWallets(disableConfirm config.Wallets) func(context.Context) context.Context {
 	return func(ctx context.Context) context.Context {
 		return context.WithValue(ctx, walletAdditionCtxKey, disableConfirm)
 	}

@@ -29,9 +29,10 @@ type (
 		Relationships PatchUserRequestRelationships `json:"relationships"`
 	}
 	PatchUserRequestAttributes struct {
-		State        *types.UserState `json:"state"`
-		RejectReason string           `json:"reject_reason"`
-		KYCSequence  int64            `json:"kyc_sequence"`
+		State        *types.UserState    `json:"state"`
+		RejectReason string              `json:"reject_reason"`
+		KYCSequence  int64               `json:"kyc_sequence"`
+		AirdropState *types.AirdropState `json:"airdrop_state"`
 	}
 	PatchUserRequestRelationships struct {
 		Transaction struct {
@@ -70,6 +71,7 @@ func (r PatchUserRequestData) Validate() error {
 func (r PatchUserRequestAttributes) Validate() error {
 	return ValidateStruct(&r,
 		Field(&r.State),
+		Field(&r.AirdropState),
 	)
 }
 
@@ -118,7 +120,7 @@ func PatchUser(w http.ResponseWriter, r *http.Request) {
 			// only when user is waiting for approval
 			if user.State != types.UserStateWaitingForApproval {
 				ape.RenderErr(w, problems.BadRequest(Errors{
-					"/data/attributes/state": errors.New("state transition is not allowed"),
+					"/data/attributes/state": errors.New("allowed only for WAP users"),
 				})...)
 				return
 			}
@@ -169,14 +171,14 @@ func PatchUser(w http.ResponseWriter, r *http.Request) {
 			// only to waiting for approval
 			if *request.Data.Attributes.State != types.UserStateWaitingForApproval {
 				ape.RenderErr(w, problems.BadRequest(Errors{
-					"/data/attributes/state": errors.New("state transition is not allowed"),
+					"/data/attributes/state": errors.New("only updating to WAP allowed"),
 				})...)
 				return
 			}
 			// check if user is really able to change state
 			if user.CheckState() != types.UserStateWaitingForApproval {
 				ape.RenderErr(w, problems.BadRequest(Errors{
-					"/data/attributes/state": errors.New("state transition is not allowed"),
+					"/data/attributes/state": errors.New("not ready for WAP"),
 				})...)
 				return
 			}
@@ -190,6 +192,25 @@ func PatchUser(w http.ResponseWriter, r *http.Request) {
 
 			// all checks have passed, updating user state
 			user.State = *request.Data.Attributes.State
+		}
+
+		// user could update airdrop state
+		if request.Data.Attributes.AirdropState != nil && !(user.AirdropState != nil && *user.AirdropState == *request.Data.Attributes.AirdropState) {
+			// only to claim state
+			if *request.Data.Attributes.AirdropState != types.AirdropStateClaimed {
+				ape.RenderErr(w, problems.BadRequest(Errors{
+					"/data/attributes/airdrop_state": errors.New("only update to claimed allowed"),
+				})...)
+				return
+			}
+			// only if he is eligible
+			if (user.AirdropState != nil && *user.AirdropState != types.AirdropStateEligible) || !user.IsAirdropEligible() {
+				ape.RenderErr(w, problems.BadRequest(Errors{
+					"/data/attributes/airdrop_state": errors.New("allowed only for eligible"),
+				})...)
+				return
+			}
+			// all checks have passed, update will be applied in transaction below
 		}
 	}
 
@@ -207,6 +228,12 @@ func PatchUser(w http.ResponseWriter, r *http.Request) {
 			if result := Horizon(r).Submitter().Submit(r.Context(), tx); result.Err != nil {
 				// TODO assert fail reasons
 				return errors.Wrap(err, "failed to submit transaction")
+			}
+		}
+
+		if state := request.Data.Attributes.AirdropState; state != nil {
+			if err := q.UpdateAirdropState(user.Address, *state); err != nil {
+				return errors.Wrap(err, "failed to update airdrop state")
 			}
 		}
 
