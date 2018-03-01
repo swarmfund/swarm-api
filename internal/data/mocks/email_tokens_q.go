@@ -9,13 +9,13 @@ type EmailTokensQ struct {
 	mock.Mock
 }
 
-// Create provides a mock function with given fields: walletID, token
-func (_m *EmailTokensQ) Create(walletID string, token string) error {
-	ret := _m.Called(walletID, token)
+// Create provides a mock function with given fields: walletID, token, confirmed
+func (_m *EmailTokensQ) Create(walletID string, token string, confirmed bool) error {
+	ret := _m.Called(walletID, token, confirmed)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(string, string) error); ok {
-		r0 = rf(walletID, token)
+	if rf, ok := ret.Get(0).(func(string, string, bool) error); ok {
+		r0 = rf(walletID, token, confirmed)
 	} else {
 		r0 = ret.Error(0)
 	}

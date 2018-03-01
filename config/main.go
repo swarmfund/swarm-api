@@ -19,6 +19,7 @@ type Config interface {
 	HTTP() HTTP
 	Storage() Storage
 	Log() *logan.Entry
+	Wallets() Wallets
 
 	Notificator() *notificator.Connector
 	Sentry() *raven.Client
@@ -40,6 +41,7 @@ type ViperConfig struct {
 	sentry      *raven.Client
 	logan       *logan.Entry
 	mixpanel    *mixpanel.Connector
+	wallets     *Wallets
 }
 
 func NewViperConfig(fn string) Config {

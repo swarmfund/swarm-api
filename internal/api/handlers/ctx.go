@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"gitlab.com/distributed_lab/logan/v3"
+	"gitlab.com/swarmfund/api/config"
 	"gitlab.com/swarmfund/api/db2/api"
 	"gitlab.com/swarmfund/api/internal/data"
 	"gitlab.com/swarmfund/api/internal/hose"
@@ -33,6 +34,7 @@ const (
 	blobQCtxKey
 	userBusDispatchCtxKey
 	notificatorCtxKey
+	walletAdditionCtxKey
 )
 
 func CtxWalletQ(q api.WalletQI) func(context.Context) context.Context {
@@ -173,4 +175,14 @@ func Transaction(r *http.Request) *xdrbuild.Transaction {
 		NewBuilder(info.Passphrase(), info.TXExpire()).
 		Transaction(source).
 		Sign(signer)
+}
+
+func CtxWallet(disableConfirm config.Wallets) func(context.Context) context.Context {
+	return func(ctx context.Context) context.Context {
+		return context.WithValue(ctx, walletAdditionCtxKey, disableConfirm)
+	}
+}
+
+func Wallet(r *http.Request) config.Wallets {
+	return r.Context().Value(walletAdditionCtxKey).(config.Wallets)
 }

@@ -119,8 +119,8 @@ func (_m *WalletQI) ByWalletID(walletId string) (*api.Wallet, error) {
 	return r0, r1
 }
 
-// ByWalletIDOrRecovery provides a mock function with given fields: walletId
-func (_m *WalletQI) ByWalletIDOrRecovery(walletId string) (*api.Wallet, error) {
+// ByWalletOrRecoveryID provides a mock function with given fields: walletId
+func (_m *WalletQI) ByWalletOrRecoveryID(walletId string) (*api.Wallet, bool, error) {
 	ret := _m.Called(walletId)
 
 	var r0 *api.Wallet
@@ -132,14 +132,21 @@ func (_m *WalletQI) ByWalletIDOrRecovery(walletId string) (*api.Wallet, error) {
 		}
 	}
 
-	var r1 error
-	if rf, ok := ret.Get(1).(func(string) error); ok {
+	var r1 bool
+	if rf, ok := ret.Get(1).(func(string) bool); ok {
 		r1 = rf(walletId)
 	} else {
-		r1 = ret.Error(1)
+		r1 = ret.Get(1).(bool)
 	}
 
-	return r0, r1
+	var r2 error
+	if rf, ok := ret.Get(2).(func(string) error); ok {
+		r2 = rf(walletId)
+	} else {
+		r2 = ret.Error(2)
+	}
+
+	return r0, r1, r2
 }
 
 // Create provides a mock function with given fields: wallet
@@ -242,29 +249,6 @@ func (_m *WalletQI) Page(_a0 uint64) api.WalletQI {
 	}
 
 	return r0
-}
-
-// RecoveryByWalletID provides a mock function with given fields: recoveryWalletID
-func (_m *WalletQI) RecoveryByWalletID(recoveryWalletID string) (*api.RecoveryKeychain, error) {
-	ret := _m.Called(recoveryWalletID)
-
-	var r0 *api.RecoveryKeychain
-	if rf, ok := ret.Get(0).(func(string) *api.RecoveryKeychain); ok {
-		r0 = rf(recoveryWalletID)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*api.RecoveryKeychain)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(string) error); ok {
-		r1 = rf(recoveryWalletID)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
 }
 
 // Select provides a mock function with given fields:

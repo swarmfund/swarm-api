@@ -102,6 +102,7 @@ func (a *App) Serve() {
 		a.Config().Sentry(),
 		a.userBus.Dispatch,
 		a.Config().Notificator(),
+		a.config.Wallets(),
 	)
 	r.Mount("/", a.web.router)
 	http.Handle("/", r)
