@@ -151,8 +151,7 @@ func (q *WalletQ) UpdateWalletKDF(kdf data.WalletKDF) error {
 	stmt := sq.Update("kdf_wallets").SetMap(map[string]interface{}{
 		"salt":    kdf.Salt,
 		"version": kdf.Version,
-		"wallet":  kdf.Wallet,
-	})
+	}).Where("wallet = ?", kdf.Wallet)
 	_, err := q.parent.Exec(stmt)
 	return err
 }
