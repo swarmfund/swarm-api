@@ -13,6 +13,7 @@ import (
 	"gitlab.com/swarmfund/api/db2/api"
 	"gitlab.com/swarmfund/api/internal/api/movetoape"
 	"gitlab.com/swarmfund/api/internal/api/resources"
+	"gitlab.com/swarmfund/api/internal/data"
 	"gitlab.com/swarmfund/api/internal/secondfactor"
 	"gitlab.com/swarmfund/api/internal/types"
 	"gitlab.com/swarmfund/api/tfa"
@@ -112,15 +113,22 @@ func ChangeWalletID(w http.ResponseWriter, r *http.Request) {
 
 	// update wallet
 	wallet.WalletId = request.Data.ID
-	wallet.Salt = request.Data.Attributes.Salt
 	wallet.KeychainData = request.Data.Attributes.KeychainData
 	wallet.CurrentAccountID = types.Address(request.Data.Attributes.AccountID)
-	wallet.KDF = request.Data.Relationships.KDF.Data.ID
 	// TODO transaction is not working. Error on horizon submition still makes commit!!!!!!!!!!
 	err = WalletQ(r).Transaction(func(q api.WalletQI) error {
 		// update wallet
 		if err = WalletQ(r).Update(wallet); err != nil {
 			return errors.Wrap(err, "failed to update wallet")
+		}
+
+		// update wallet kdf
+		if err := WalletQ(r).UpdateWalletKDF(data.WalletKDF{
+			Wallet:  wallet.Username,
+			Version: request.Data.Relationships.KDF.Data.ID,
+			Salt:    request.Data.Attributes.Salt,
+		}); err != nil {
+			return errors.Wrap(err, "failed to update wallet kdf")
 		}
 
 		// update factor

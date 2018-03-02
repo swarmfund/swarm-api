@@ -8,8 +8,6 @@ type Wallet struct {
 	CurrentAccountID  types.Address `db:"current_account_id"`
 	WalletId          string        `db:"wallet_id"`
 	Username          string        `db:"email"`
-	Salt              string        `db:"salt"`
-	KDF               int           `db:"kdf_id"`
 	KeychainData      string        `db:"keychain_data"`
 	VerificationToken string        `db:"verification_token"`
 	// Verified comes from join on email_tokens and shows if wallet email was confirmed
