@@ -10,6 +10,7 @@ import (
 	"gitlab.com/distributed_lab/ape/problems"
 	"gitlab.com/swarmfund/api/db2/api"
 	"gitlab.com/swarmfund/api/internal/api/resources"
+	"gitlab.com/swarmfund/api/internal/data"
 	"gitlab.com/swarmfund/api/internal/lorem"
 	"gitlab.com/swarmfund/api/tfa"
 )
@@ -54,9 +55,13 @@ func CreateWallet(w http.ResponseWriter, r *http.Request) {
 		AccountID:        request.Data.Attributes.AccountID,
 		CurrentAccountID: request.Data.Attributes.AccountID,
 		WalletId:         request.Data.ID,
-		Salt:             request.Data.Attributes.Salt,
-		KDF:              request.Data.Relationships.KDF.Data.ID,
 		KeychainData:     request.Data.Attributes.KeychainData,
+	}
+
+	walletKDF := data.WalletKDF{
+		Wallet:  request.Data.Attributes.Email,
+		Version: request.Data.Relationships.KDF.Data.ID,
+		Salt:    request.Data.Attributes.Salt,
 	}
 
 	factor := tfa.NewPasswordBackend(tfa.PasswordDetails{
@@ -93,6 +98,9 @@ func CreateWallet(w http.ResponseWriter, r *http.Request) {
 			return errors.Wrap(err, "failed to create recovery")
 		}
 
+		if err := q.CreateWalletKDF(walletKDF); err != nil {
+			return errors.Wrap(err, "failed to create wallet kdf")
+		}
 		return nil
 	})
 	if err != nil {
