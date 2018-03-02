@@ -1,6 +1,9 @@
 package resources
 
-import "github.com/go-ozzo/ozzo-validation"
+import (
+	"github.com/go-ozzo/ozzo-validation"
+	"gitlab.com/swarmfund/api/internal/data"
+)
 
 type KDFVersion struct {
 	Version int `jsonapi:"primary,kdf"`
@@ -29,11 +32,31 @@ func (r KDFPlainData) Validate() error {
 }
 
 type KDF struct {
-	Version   int     `jsonapi:"primary,kdf"`
-	Algorithm string  `jsonapi:"attr,algorithm"`
-	Bits      uint    `jsonapi:"attr,bits"`
-	N         float64 `jsonapi:"attr,n"`
-	R         uint    `jsonapi:"attr,r"`
-	P         uint    `jsonapi:"attr,p"`
-	Salt      string  `jsonapi:"attr,salt,omitempty"`
+	Type       string        `json:"type"`
+	ID         int           `json:"id,string"`
+	Attributes KDFAttributes `json:"attributes"`
+}
+
+type KDFAttributes struct {
+	Algorithm string  `json:"algorithm"`
+	Bits      uint    `json:"bits"`
+	N         float64 `json:"n"`
+	R         uint    `json:"r"`
+	P         uint    `json:"p"`
+	Salt      string  `json:"salt,omitempty"`
+}
+
+func NewKDF(r data.KDF) KDF {
+	return KDF{
+		Type: "kdf",
+		ID:   r.Version,
+		Attributes: KDFAttributes{
+			Algorithm: r.Algorithm,
+			Bits:      r.Bits,
+			N:         r.N,
+			R:         r.R,
+			P:         r.P,
+			Salt:      r.Salt,
+		},
+	}
 }

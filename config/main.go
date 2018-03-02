@@ -19,7 +19,6 @@ type Config interface {
 	HTTP() HTTP
 	Storage() Storage
 	Log() *logan.Entry
-
 	Notificator() *notificator.Connector
 	Sentry() *raven.Client
 	Horizon() *horizon.Connector
