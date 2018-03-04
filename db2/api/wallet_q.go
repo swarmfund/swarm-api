@@ -10,6 +10,7 @@ import (
 	sq "github.com/lann/squirrel"
 	"github.com/lib/pq"
 	"github.com/pkg/errors"
+	"gitlab.com/swarmfund/api/internal/data"
 	"gitlab.com/swarmfund/api/internal/types"
 	"gitlab.com/swarmfund/api/tfa"
 )
@@ -56,6 +57,12 @@ type RecoveryKeychain struct {
 type WalletQI interface {
 	New() WalletQI
 	Transaction(func(WalletQI) error) error
+
+	// KDF
+	KDFByVersion(int64) (*data.KDF, error)
+	CreateWalletKDF(data.WalletKDF) error
+	KDFByEmail(string) (*data.KDF, error)
+	UpdateWalletKDF(data.WalletKDF) error
 
 	// TODO belongs to TFAQI, it's here for transaction implementation reasons
 	// CreatePasswordFactor will mutate factor with ID
@@ -105,6 +112,49 @@ func (q *WalletQ) New() WalletQI {
 	}
 }
 
+func (q *WalletQ) KDFByVersion(version int64) (*data.KDF, error) {
+	var result data.KDF
+	stmt := sq.Select("*").From("kdf").Where("version = ?", version)
+	err := q.parent.Get(&result, stmt)
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
+	return &result, err
+}
+
+func (q *WalletQ) KDFByEmail(email string) (*data.KDF, error) {
+	var result data.KDF
+	stmt := sq.
+		Select("kdf.version", "kdf.algorithm", "kdf.bits",
+			"kdf.n", "kdf.r", "kdf.p", "kdf_wallets.salt").
+		From("kdf_wallets").
+		Join("kdf on kdf.version = kdf_wallets.version").
+		Where("kdf_wallets.wallet = ?", email)
+	err := q.parent.Get(&result, stmt)
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
+	return &result, err
+}
+
+func (q *WalletQ) CreateWalletKDF(kdf data.WalletKDF) error {
+	stmt := sq.Insert("kdf_wallets").SetMap(map[string]interface{}{
+		"salt":    kdf.Salt,
+		"version": kdf.Version,
+		"wallet":  kdf.Wallet,
+	})
+	_, err := q.parent.Exec(stmt)
+	return err
+}
+
+func (q *WalletQ) UpdateWalletKDF(kdf data.WalletKDF) error {
+	stmt := sq.Update("kdf_wallets").SetMap(map[string]interface{}{
+		"salt":    kdf.Salt,
+		"version": kdf.Version,
+	}).Where("wallet = ?", kdf.Wallet)
+	_, err := q.parent.Exec(stmt)
+	return err
+}
 func (q *WalletQ) Transaction(fn func(q WalletQI) error) (err error) {
 	return q.parent.Transaction(func() error {
 		return fn(q)
@@ -196,8 +246,6 @@ func (q *WalletQ) Create(w *Wallet) error {
 		"account_id":         w.AccountID,
 		"current_account_id": w.CurrentAccountID,
 		"email":              w.Username,
-		"salt":               w.Salt,
-		"kdf_id":             w.KDF,
 		"keychain_data":      w.KeychainData,
 	}).Suffix("returning id")
 
@@ -317,7 +365,6 @@ func (q *WalletQ) Select() ([]Wallet, error) {
 func (q *WalletQ) Update(w *Wallet) error {
 	stmt := walletUpdate.SetMap(map[string]interface{}{
 		"wallet_id":          w.WalletId,
-		"salt":               w.Salt,
 		"current_account_id": w.CurrentAccountID,
 		"keychain_data":      w.KeychainData,
 	}).Where("id = ?", w.Id)
