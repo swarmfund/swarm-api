@@ -11,6 +11,7 @@ import (
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/ape/problems"
 	"gitlab.com/distributed_lab/logan/v3"
+	"gitlab.com/swarmfund/api/config"
 	"gitlab.com/swarmfund/api/db2"
 	"gitlab.com/swarmfund/api/db2/api"
 	"gitlab.com/swarmfund/api/internal/api/handlers"
@@ -33,6 +34,7 @@ func Router(
 	tfaQ api.TFAQI, storage *storage.Connector, master keypair.Address, signer keypair.Full,
 	coreInfo data.CoreInfoI, blobQ data.Blobs, sentry *raven.Client,
 	userDispatch hose.UserDispatch, notificator *notificator.Connector, repo *db2.Repo,
+	wallets config.Wallets,
 ) chi.Router {
 	r := chi.NewRouter()
 
@@ -54,6 +56,7 @@ func Router(
 			handlers.CtxCoreInfo(coreInfo),
 			handlers.CtxUserBusDispatch(userDispatch),
 			handlers.CtxNotificator(notificator),
+			handlers.CtxWallets(wallets),
 		),
 	)
 

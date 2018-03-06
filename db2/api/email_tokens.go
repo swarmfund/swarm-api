@@ -37,10 +37,11 @@ func (q *EmailTokensQ) New() data.EmailTokensQ {
 	return NewEmailTokensQ(q.Repo)
 }
 
-func (q *EmailTokensQ) Create(wid, token string) error {
+func (q *EmailTokensQ) Create(wid, token string, confirmed bool) error {
 	stmt := squirrel.Insert(emailTokenTable).SetMap(map[string]interface{}{
 		"wallet_id": wid,
 		"token":     token,
+		"confirmed": confirmed,
 	})
 	_, err := q.Exec(stmt)
 	return err
