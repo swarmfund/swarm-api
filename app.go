@@ -84,8 +84,6 @@ func (a *App) Blobs() data.Blobs {
 func (a *App) Serve() {
 	a.web.router.Compile()
 
-	horizonURL := a.Config().API().HorizonURL
-
 	r := api2.Router(
 		a.Config().Log().WithField("service", "api"),
 		a.APIQ().Wallet(),
@@ -93,7 +91,7 @@ func (a *App) Serve() {
 		a.APIQ().Users(),
 		doorman.New(
 			a.Config().API().SkipSignatureCheck,
-			horizon2.NewAccountQ(horizon.NewConnector(&horizonURL)),
+			horizon2.NewAccountQ(a.Config().Horizon()),
 		),
 		a.horizon,
 		a.APIQ().TFA(),
