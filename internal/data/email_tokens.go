@@ -15,7 +15,7 @@ type EmailToken struct {
 type EmailTokensQ interface {
 	New() EmailTokensQ
 	// handlers:
-	Create(walletID, token string) error
+	Create(walletID, token string, confirmed bool) error
 	// Verify marks token as verified if provided arguments are valid.
 	// bool shows if operation succeeded
 	Verify(walletID, token string) (bool, error)

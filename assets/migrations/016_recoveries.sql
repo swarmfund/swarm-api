@@ -22,4 +22,4 @@ CREATE UNIQUE INDEX recoveries_wallet_id_unique_constraint
 
 drop index recoveries_wallet_id_unique_constraint;
 drop table recoveries;
-drop index wallets_email_unique_constraint;
+drop index wallets_email_unique_constraint cascade;
