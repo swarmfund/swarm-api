@@ -5,9 +5,9 @@ import (
 
 	"github.com/go-chi/chi"
 	. "github.com/go-ozzo/ozzo-validation"
-	"github.com/pkg/errors"
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/ape/problems"
+	"gitlab.com/distributed_lab/logan/v3/errors"
 	"gitlab.com/swarmfund/api/db2/api"
 	"gitlab.com/swarmfund/api/internal/api/movetoape"
 	"gitlab.com/swarmfund/api/internal/hose"
@@ -67,7 +67,7 @@ func performUserCreate(r *http.Request, wallet *api.Wallet) error {
 		}
 		if result := Horizon(r).Submitter().Submit(r.Context(), envelope); result.Err != nil {
 			// TODO assert fail reasons
-			return errors.Wrap(result.Err, "failed to submit tx")
+			return errors.Wrap(result.Err, "failed to submit tx", result.GetLoganFields())
 		}
 
 		// dispatch user create event
