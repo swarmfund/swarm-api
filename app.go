@@ -83,6 +83,9 @@ func (a *App) Blobs() data.Blobs {
 // the shutdown signals.
 func (a *App) Serve() {
 	a.web.router.Compile()
+
+	horizonURL := a.Config().API().HorizonURL
+
 	r := api2.Router(
 		a.Config().Log().WithField("service", "api"),
 		a.APIQ().Wallet(),
@@ -90,7 +93,7 @@ func (a *App) Serve() {
 		a.APIQ().Users(),
 		doorman.New(
 			a.Config().API().SkipSignatureCheck,
-			horizon2.NewAccountQ(horizon2.New(a.Config().API().HorizonURL)),
+			horizon2.NewAccountQ(horizon.NewConnector(&horizonURL)),
 		),
 		a.horizon,
 		a.APIQ().TFA(),
@@ -105,6 +108,7 @@ func (a *App) Serve() {
 		a.APIRepo(a.ctx),
 		a.config.Wallets(),
 	)
+
 	r.Mount("/", a.web.router)
 	http.Handle("/", r)
 
