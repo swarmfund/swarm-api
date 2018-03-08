@@ -47,6 +47,10 @@ type User struct {
 }
 
 func (user *User) IsAirdropEligible() bool {
+	if user.AirdropState != nil && *user.AirdropState != types.AirdropStateNotEligible {
+		return true
+	}
+
 	pattern := `(?i).+@(163.com|qq.com|126.com|189.cn|139.com|sina.com|aliyun.com|xinjiyuan99.com)`
 	blacklisted, err := regexp.MatchString(pattern, user.Email)
 	if err != nil {
