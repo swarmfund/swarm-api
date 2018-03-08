@@ -37,10 +37,11 @@ func (q *EmailTokensQ) New() data.EmailTokensQ {
 	return NewEmailTokensQ(q.Repo)
 }
 
-func (q *EmailTokensQ) Create(wid, token string) error {
+func (q *EmailTokensQ) Create(wid, token string, confirmed bool) error {
 	stmt := squirrel.Insert(emailTokenTable).SetMap(map[string]interface{}{
 		"wallet_id": wid,
 		"token":     token,
+		"confirmed": confirmed,
 	})
 	_, err := q.Exec(stmt)
 	return err
@@ -104,7 +105,10 @@ func (q *EmailTokensQ) GetUnconfirmed() ([]data.EmailToken, error) {
 }
 
 func (q *EmailTokensQ) MarkSent(tid int64) error {
-	stmt := squirrel.Update(emailTokenTable).Set("last_sent_at", time.Now().UTC())
+	stmt := squirrel.
+		Update(emailTokenTable).
+		Set("last_sent_at", time.Now().UTC()).
+		Where("id = ?", tid)
 	_, err := q.Exec(stmt)
 	return err
 }
