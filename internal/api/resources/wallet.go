@@ -60,7 +60,7 @@ func (r Referrer) Validate() error {
 }
 
 type ReferrerData struct {
-	ID types.Address `json:"address"`
+	ID types.Address `json:"id"`
 }
 
 func (r ReferrerData) Validate() error {
