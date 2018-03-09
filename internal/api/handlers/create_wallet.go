@@ -40,6 +40,9 @@ func (r *CreateWalletRequest) Validate() error {
 		errs["/data/relationships/recovery/account_id"] = Validate(
 			r.Data.Relationships.Recovery.Data.Attributes.AccountID, Required)
 	}
+	if r.Data.Relationships.Referrer != nil {
+		errs["/data/relationships/referrer"] = Validate(r.Data.Relationships.Referrer)
+	}
 	return errs.Filter()
 }
 
@@ -101,6 +104,13 @@ func CreateWallet(w http.ResponseWriter, r *http.Request) {
 		if err := q.CreateWalletKDF(walletKDF); err != nil {
 			return errors.Wrap(err, "failed to create wallet kdf")
 		}
+
+		if referrer := request.Data.Relationships.Referrer; referrer != nil {
+			if err := q.CreateReferral(referrer.Data.ID, wallet.AccountID); err != nil {
+				return errors.Wrap(err, "failed to create wallet referrer")
+			}
+		}
+
 		return nil
 	})
 	if err != nil {
