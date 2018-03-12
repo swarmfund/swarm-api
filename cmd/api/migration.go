@@ -2,47 +2,19 @@ package main
 
 import (
 	"database/sql"
-	"log"
-	"os"
-	"strconv"
 
-	"github.com/spf13/cobra"
+	"github.com/pkg/errors"
 	"gitlab.com/swarmfund/api/db2"
 )
 
 type Migrator func(*sql.DB, db2.MigrateDir, int) (int, error)
 
-func migrateDB(cmd *cobra.Command, args []string, dbConnectionURL string, migrator Migrator) {
-	// Allow invokations with 1 or 2 args.  All other args counts are erroneous.
-	if len(args) < 1 || len(args) > 2 {
-		cmd.Usage()
-		os.Exit(1)
-	}
-
-	dir := db2.MigrateDir(args[0])
-	count := 0
-
-	// If a second arg is present, parse it to an int and use it as the count
-	// argument to the migration call.
-	if len(args) == 2 {
-		var err error
-		count, err = strconv.Atoi(args[1])
-		if err != nil {
-			log.Println(err)
-			cmd.Usage()
-			os.Exit(1)
-		}
-	}
-
+func migrateDB(direction string, count int, dbConnectionURL string, migrator Migrator) (int, error) {
 	db, err := sql.Open("postgres", dbConnectionURL)
 	if err != nil {
-		log.Fatal(err)
+		return 0, errors.Wrap(err, "failed to open database")
 	}
 
-	applied, err := migrator(db, dir, count)
-	if err != nil {
-		log.Fatal(err)
-	} else {
-		log.Printf("Applied %d migration", applied)
-	}
+	applied, err := migrator(db, db2.MigrateDir(direction), count)
+	return applied, errors.Wrap(err, "failed to apply migrations")
 }

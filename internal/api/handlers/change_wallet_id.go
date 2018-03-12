@@ -7,9 +7,9 @@ import (
 
 	"github.com/go-chi/chi"
 	. "github.com/go-ozzo/ozzo-validation"
-	"github.com/pkg/errors"
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/ape/problems"
+	"gitlab.com/distributed_lab/logan/v3/errors"
 	"gitlab.com/swarmfund/api/db2/api"
 	"gitlab.com/swarmfund/api/internal/api/movetoape"
 	"gitlab.com/swarmfund/api/internal/api/resources"
@@ -143,7 +143,7 @@ func ChangeWalletID(w http.ResponseWriter, r *http.Request) {
 		// TODO validate envelope not empty
 		if result := Horizon(r).Submitter().Submit(r.Context(), request.Data.Relationships.Transaction.Data.Attributes.Envelope); result.Err != nil {
 			// TODO assert fail reasons
-			return errors.Wrap(result.Err, "failed to submit transaction")
+			return errors.Wrap(result.Err, "failed to submit transaction", result.GetLoganFields())
 		}
 
 		return nil
