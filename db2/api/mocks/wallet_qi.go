@@ -192,6 +192,20 @@ func (_m *WalletQI) CreateRecovery(_a0 api.RecoveryKeychain) error {
 	return r0
 }
 
+// CreateReferral provides a mock function with given fields: referrer, referral
+func (_m *WalletQI) CreateReferral(referrer types.Address, referral types.Address) error {
+	ret := _m.Called(referrer, referral)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(types.Address, types.Address) error); ok {
+		r0 = rf(referrer, referral)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // CreateWalletKDF provides a mock function with given fields: _a0
 func (_m *WalletQI) CreateWalletKDF(_a0 data.WalletKDF) error {
 	ret := _m.Called(_a0)

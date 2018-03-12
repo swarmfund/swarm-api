@@ -61,6 +61,7 @@ func performUserCreate(r *http.Request, wallet *api.Wallet) error {
 				Address:     string(wallet.AccountID),
 				AccountType: xdr.AccountTypeNotVerified,
 				Recovery:    string(wallet.RecoveryAddress),
+				Referrer:    wallet.Referrer,
 			}).Marshal()
 		if err != nil {
 			return errors.Wrap(err, "failed to build tx envelope")

@@ -7,12 +7,32 @@ import (
 
 	"encoding/json"
 
+	"strings"
+
+	"github.com/pkg/errors"
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/ape/problems"
 	"gitlab.com/distributed_lab/logan/v3"
 	"gitlab.com/swarmfund/api/internal/api/resources"
 	"gitlab.com/swarmfund/api/internal/data"
 )
+
+func getCaseInsensitiveKDF(r *http.Request, email string) (kdf *data.KDF, emailFound string, err error) {
+	// first try as-is
+	kdf, err = WalletQ(r).KDFByEmail(email)
+	if err != nil {
+		return nil, email, errors.Wrap(err, "failed to get wallet kdf")
+	}
+	if kdf == nil {
+		// if kdf is not found let's try lower-case
+		email = strings.ToLower(email)
+		kdf, err = WalletQ(r).KDFByEmail(email)
+		if err != nil {
+			return nil, email, errors.Wrap(err, "failed to get wallet kdf")
+		}
+	}
+	return kdf, email, nil
+}
 
 func GetKDF(w http.ResponseWriter, r *http.Request) {
 
@@ -33,7 +53,7 @@ func GetKDF(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	case email != "" && !isRecovery: // load wallet KDF
-		kdf, err = WalletQ(r).KDFByEmail(email)
+		kdf, _, err = getCaseInsensitiveKDF(r, email)
 		if err != nil {
 			Log(r).WithError(err).Error("failed to get wallet kdf")
 			ape.RenderErr(w, problems.InternalError())
@@ -42,7 +62,7 @@ func GetKDF(w http.ResponseWriter, r *http.Request) {
 	case email != "" && isRecovery: // load recovery KDF for wallet
 		// FIXME it's bad, you need to move recoveries to kdf_wallets
 		// load wallet to get recovery salt
-		kdf, err = WalletQ(r).KDFByEmail(email)
+		kdf, email, err = getCaseInsensitiveKDF(r, email)
 		if err != nil {
 			Log(r).WithError(err).Error("failed to get wallet kdf")
 			ape.RenderErr(w, problems.InternalError())
@@ -60,6 +80,7 @@ func GetKDF(w http.ResponseWriter, r *http.Request) {
 		}
 		if wallet == nil {
 			// 404 will be rendered below
+			kdf = nil
 			break
 		}
 		kdf.Salt = wallet.RecoverySalt

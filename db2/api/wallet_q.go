@@ -20,11 +20,13 @@ var walletSelect = sq.Select(
 	"et.confirmed as verified",
 	"r.address as recovery_address",
 	"r.wallet_id as recovery_wallet_id",
-	"r.salt as recovery_salt").
+	"r.salt as recovery_salt",
+	"ref.referrer").
 	From("wallets w").
 	// TODO make just join
 	LeftJoin("recoveries r on w.email = r.wallet").
-	Join("email_tokens et on w.wallet_id = et.wallet_id")
+	Join("email_tokens et on w.wallet_id = et.wallet_id").
+	LeftJoin("referrals ref on w.account_id = ref.referral")
 
 var walletInsert = sq.Insert("wallets")
 var walletUpdate = sq.Update("wallets")
@@ -63,6 +65,9 @@ type WalletQI interface {
 	CreateWalletKDF(data.WalletKDF) error
 	KDFByEmail(string) (*data.KDF, error)
 	UpdateWalletKDF(data.WalletKDF) error
+
+	// referrals
+	CreateReferral(referrer types.Address, referral types.Address) error
 
 	// TODO belongs to TFAQI, it's here for transaction implementation reasons
 	// CreatePasswordFactor will mutate factor with ID
@@ -135,6 +140,16 @@ func (q *WalletQ) KDFByEmail(email string) (*data.KDF, error) {
 		return nil, nil
 	}
 	return &result, err
+}
+
+func (q *WalletQ) CreateReferral(referrer types.Address, referral types.Address) error {
+	stmt := sq.Insert("referrals").SetMap(map[string]interface{}{
+		"referrer": referrer,
+		"referral": referral,
+	})
+
+	_, err := q.parent.Exec(stmt)
+	return err
 }
 
 func (q *WalletQ) CreateWalletKDF(kdf data.WalletKDF) error {
