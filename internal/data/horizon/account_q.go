@@ -2,20 +2,22 @@ package horizon
 
 import (
 	"gitlab.com/swarmfund/go/resources"
+	"gitlab.com/swarmfund/horizon-connector/v2"
 )
 
 type AccountQ struct {
-	horizon *Client
+	horizon *horizon.Connector
 }
 
-func NewAccountQ(horizon *Client) *AccountQ {
+func NewAccountQ(horizon *horizon.Connector) *AccountQ {
 	return &AccountQ{
 		horizon: horizon,
 	}
 }
 
 func (q *AccountQ) Signers(address string) ([]resources.Signer, error) {
-	signers, err := q.horizon.Account(address).Signers()
+
+	signers, err := q.horizon.Accounts().Signers(address)
 	if err != nil {
 		return nil, err
 	}
@@ -30,9 +32,9 @@ func (q *AccountQ) Signers(address string) ([]resources.Signer, error) {
 		result = append(result, resources.Signer{
 			AccountID:  signer.PublicKey,
 			Weight:     int(signer.Weight),
-			SignerType: int(signer.SignerTypeI),
-			Identity:   int(signer.SignerIdentity),
-			Name:       signer.SignerName,
+			SignerType: int(signer.Type),
+			Identity:   int(signer.Identity),
+			Name:       signer.Name,
 		})
 	}
 	return result, nil

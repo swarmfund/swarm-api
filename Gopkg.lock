@@ -407,7 +407,7 @@
     "xdrbuild",
     "xdrbuild/internal"
   ]
-  revision = "3d7b51459047d9b015c679bb5dd431e4c1c6f9bd"
+  revision = "2c8e0dfa264e645fb01fba44ec1a84e37b9bfea3"
 
 [[projects]]
   branch = "master"
