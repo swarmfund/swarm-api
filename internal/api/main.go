@@ -41,7 +41,7 @@ func Router(
 	r.Use(
 		ape.RecoverMiddleware(entry, sentry),
 		secondfactor.HashMiddleware(),
-		middlewares.Logger(entry, 200*time.Second),
+		middlewares.Logger(entry, 300*time.Millisecond),
 		middlewares.ContenType(jsonapi.MediaType),
 		middlewares.Ctx(
 			handlers.CtxWalletQ(walletQ),
