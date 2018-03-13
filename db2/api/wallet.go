@@ -17,4 +17,6 @@ type Wallet struct {
 	// RecoveryWalletID comes from join on recoveries
 	RecoveryWalletID string `db:"recovery_wallet_id"`
 	RecoverySalt     string `db:"recovery_salt"`
+	// Referrer comes from join on referrals add shows who referred this wallet
+	Referrer *string `db:"referrer"`
 }
