@@ -1,8 +1,6 @@
 package txwatcher
 
 import (
-	"time"
-
 	"gitlab.com/distributed_lab/logan/v3"
 	"gitlab.com/swarmfund/api/internal/hose"
 	"gitlab.com/swarmfund/horizon-connector/v2"
@@ -30,7 +28,6 @@ func (w *Watcher) Run() {
 	errs := w.horizon.Listener().Transactions(events)
 
 	for {
-		time.Sleep(1 * time.Second)
 		select {
 		case event := <-events:
 			if event.Transaction != nil {
