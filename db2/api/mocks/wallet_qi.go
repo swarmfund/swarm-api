@@ -2,6 +2,7 @@
 package mocks
 
 import api "gitlab.com/swarmfund/api/db2/api"
+import data "gitlab.com/swarmfund/api/internal/data"
 import mock "github.com/stretchr/testify/mock"
 import tfa "gitlab.com/swarmfund/api/tfa"
 import types "gitlab.com/swarmfund/api/internal/types"
@@ -191,6 +192,34 @@ func (_m *WalletQI) CreateRecovery(_a0 api.RecoveryKeychain) error {
 	return r0
 }
 
+// CreateReferral provides a mock function with given fields: referrer, referral
+func (_m *WalletQI) CreateReferral(referrer types.Address, referral types.Address) error {
+	ret := _m.Called(referrer, referral)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(types.Address, types.Address) error); ok {
+		r0 = rf(referrer, referral)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// CreateWalletKDF provides a mock function with given fields: _a0
+func (_m *WalletQI) CreateWalletKDF(_a0 data.WalletKDF) error {
+	ret := _m.Called(_a0)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(data.WalletKDF) error); ok {
+		r0 = rf(_a0)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // DeletePasswordFactor provides a mock function with given fields: walletID
 func (_m *WalletQI) DeletePasswordFactor(walletID string) error {
 	ret := _m.Called(walletID)
@@ -217,6 +246,52 @@ func (_m *WalletQI) DeleteWallets(walletIDs []string) error {
 	}
 
 	return r0
+}
+
+// KDFByEmail provides a mock function with given fields: _a0
+func (_m *WalletQI) KDFByEmail(_a0 string) (*data.KDF, error) {
+	ret := _m.Called(_a0)
+
+	var r0 *data.KDF
+	if rf, ok := ret.Get(0).(func(string) *data.KDF); ok {
+		r0 = rf(_a0)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*data.KDF)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(string) error); ok {
+		r1 = rf(_a0)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// KDFByVersion provides a mock function with given fields: _a0
+func (_m *WalletQI) KDFByVersion(_a0 int64) (*data.KDF, error) {
+	ret := _m.Called(_a0)
+
+	var r0 *data.KDF
+	if rf, ok := ret.Get(0).(func(int64) *data.KDF); ok {
+		r0 = rf(_a0)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*data.KDF)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(int64) error); ok {
+		r1 = rf(_a0)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 // New provides a mock function with given fields:
@@ -295,6 +370,20 @@ func (_m *WalletQI) Update(w *api.Wallet) error {
 	var r0 error
 	if rf, ok := ret.Get(0).(func(*api.Wallet) error); ok {
 		r0 = rf(w)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// UpdateWalletKDF provides a mock function with given fields: _a0
+func (_m *WalletQI) UpdateWalletKDF(_a0 data.WalletKDF) error {
+	ret := _m.Called(_a0)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(data.WalletKDF) error); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Error(0)
 	}
