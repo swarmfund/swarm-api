@@ -2,12 +2,12 @@ package handlers
 
 import (
 	"net/http"
-	"strconv"
 
 	"encoding/json"
 
 	"github.com/go-chi/chi"
 	. "github.com/go-ozzo/ozzo-validation"
+	"github.com/spf13/cast"
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/ape/problems"
 	"gitlab.com/distributed_lab/logan/v3/errors"
@@ -18,69 +18,54 @@ import (
 )
 
 type (
-	BlobIndexRequest struct {
-		Address       types.Address
-		Relationships map[string]string
-		Type          *types.BlobType
-	}
-
 	BlobIndexFilter struct {
 		Page          uint64            `url:"page"`
 		Address       types.Address     `url:"address"`
-		Type          *uint64           `url:"type"`
+		Type          *types.BlobType   `url:"type"`
 		Relationships map[string]string `url:"relationships"`
 	}
 )
 
 func NewBlobIndexFilter(r *http.Request) (BlobIndexFilter, error) {
-	filters := BlobIndexFilter{
-		Page:    1,
-		Address: types.Address(chi.URLParam(r, "address")),
+	filter := BlobIndexFilter{
+		Page:          1,
+		Address:       types.Address(chi.URLParam(r, "address")),
+		Relationships: make(map[string]string),
 	}
 
-	if err := urlval.Decode(r.URL.Query(), &filters); err != nil {
-		return filters, errors.Wrap(err, "failed to populate")
+	values := r.URL.Query()
+	if err := urlval.DecodeWithValues(&values, &filter); err != nil {
+		return filter, errors.Wrap(err, "failed to populate")
 	}
-	return filters, filters.Validate()
+
+	if values.Get("type") != "" {
+		raw, err := cast.ToInt32E(values.Get("type")) //strconv.ParseInt(values.Get("type"), 0, 32)
+		if err != nil {
+			return filter, err
+		}
+		tpe := types.BlobType(raw)
+		filter.Type = &tpe
+
+		values.Del("type")
+	}
+
+	for k := range values {
+		filter.Relationships[k] = values.Get(k)
+	}
+
+	return filter, filter.Validate()
 }
 
 func (r BlobIndexFilter) Validate() error {
 	return ValidateStruct(&r,
+		Field(&r.Address, Required),
 		Field(&r.Page, Min(uint64(1))),
-		Field(&r.Type, Min(uint64(1))),
+		Field(&r.Type, Min(int32(1))),
 	)
 }
 
-func NewBlobIndexRequest(r *http.Request) (BlobIndexRequest, error) {
-	request := BlobIndexRequest{
-		Address:       types.Address(chi.URLParam(r, "address")),
-		Relationships: make(map[string]string),
-	}
-	values := r.URL.Query()
-	{
-		if values.Get("type") != "" {
-			raw, err := strconv.ParseInt(values.Get("type"), 0, 32)
-			if err != nil {
-				return request, err
-			}
-			tpe := types.BlobType(raw)
-			request.Type = &tpe
-		}
-		values.Del("type")
-	}
-	for k := range values {
-		request.Relationships[k] = values.Get(k)
-	}
-	return request, request.Validate()
-}
-
-func (r BlobIndexRequest) Validate() error {
-	// TODO implement
-	return nil
-}
-
 func BlobIndex(w http.ResponseWriter, r *http.Request) {
-	request, err := NewBlobIndexRequest(r)
+	request, err := NewBlobIndexFilter(r)
 	if err != nil {
 		ape.RenderErr(w, problems.BadRequest(err)...)
 		return
