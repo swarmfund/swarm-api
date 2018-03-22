@@ -1,6 +1,9 @@
 package main
 
 import (
+	"os"
+
+	"github.com/spf13/cast"
 	"github.com/spf13/cobra"
 	"gitlab.com/swarmfund/api"
 	"gitlab.com/swarmfund/api/assets"
@@ -9,6 +12,8 @@ import (
 )
 
 var (
+	// use exitCode to set process exit code instead of direct os.Exit call
+	exitCode       int
 	configFile     string
 	configInstance config.Config
 	rootCmd        = &cobra.Command{
@@ -29,12 +34,39 @@ var (
 		Short: "migrate schema",
 		Long:  "performs a schema migration command",
 		Run: func(cmd *cobra.Command, args []string) {
-			migrateDB(cmd, args, configInstance.API().DatabaseURL, assets.Migrations.Migrate)
+			log := configInstance.Log().WithField("service", "migration")
+			var count int
+			// Allow invocations with 1 or 2 args.  All other args counts are erroneous.
+			if len(args) < 1 || len(args) > 2 {
+				log.WithField("arguments", args).Error("wrong argument count")
+				exitCode = 1
+				return
+			}
+			// If a second arg is present, parse it to an int and use it as the count
+			// argument to the migration call.
+			if len(args) == 2 {
+				var err error
+				if count, err = cast.ToIntE(args[1]); err != nil {
+					log.WithError(err).Error("failed to parse count")
+					exitCode = 1
+					return
+				}
+			}
+
+			applied, err := migrateDB(args[0], count, configInstance.API().DatabaseURL, assets.Migrations.Migrate)
+			log = log.WithField("applied", applied)
+			if err != nil {
+				log.WithError(err).Error("migration failed")
+				exitCode = 1
+				return
+			}
+			log.Info("migrations applied")
 		},
 	}
 )
 
 func main() {
+	defer os.Exit(exitCode)
 	cobra.OnInitialize(func() {
 		c, err := initConfig(configFile)
 		if err != nil {

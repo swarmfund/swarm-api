@@ -37,6 +37,7 @@ type WalletRelationships struct {
 	Factor      *PasswordFactor `json:"factor,omitempty"`
 	Transaction *Transaction    `json:"transaction,omitempty"`
 	Recovery    *PasswordFactor `json:"recovery,omitempty"`
+	Referrer    *Referrer       `json:"referrer,omitempty"`
 }
 
 func (r WalletRelationships) Validate() error {
@@ -45,6 +46,26 @@ func (r WalletRelationships) Validate() error {
 		validation.Field(&r.Factor),
 		validation.Field(&r.Transaction),
 		validation.Field(&r.Recovery),
+	)
+}
+
+type Referrer struct {
+	Data ReferrerData `json:"data"`
+}
+
+func (r Referrer) Validate() error {
+	return validation.ValidateStruct(&r,
+		validation.Field(&r.Data, validation.Required),
+	)
+}
+
+type ReferrerData struct {
+	ID types.Address `json:"id"`
+}
+
+func (r ReferrerData) Validate() error {
+	return validation.ValidateStruct(&r,
+		validation.Field(&r.ID, validation.Required),
 	)
 }
 
