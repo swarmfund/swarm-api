@@ -7,9 +7,12 @@ import (
 	"encoding/json"
 
 	"github.com/go-chi/chi"
+	. "github.com/go-ozzo/ozzo-validation"
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/ape/problems"
+	"gitlab.com/distributed_lab/logan/v3/errors"
 	"gitlab.com/swarmfund/api/internal/api/resources"
+	"gitlab.com/swarmfund/api/internal/api/urlval"
 	"gitlab.com/swarmfund/api/internal/types"
 	"gitlab.com/swarmfund/go/doorman"
 )
@@ -20,8 +23,33 @@ type (
 		Relationships map[string]string
 		Type          *types.BlobType
 	}
-	// TODO paginate with custom filters
+
+	BlobIndexFilter struct {
+		Page          uint64            `url:"page"`
+		Address       types.Address     `url:"address"`
+		Type          *uint64           `url:"type"`
+		Relationships map[string]string `url:"relationships"`
+	}
 )
+
+func NewBlobIndexFilter(r *http.Request) (BlobIndexFilter, error) {
+	filters := BlobIndexFilter{
+		Page:    1,
+		Address: types.Address(chi.URLParam(r, "address")),
+	}
+
+	if err := urlval.Decode(r.URL.Query(), &filters); err != nil {
+		return filters, errors.Wrap(err, "failed to populate")
+	}
+	return filters, filters.Validate()
+}
+
+func (r BlobIndexFilter) Validate() error {
+	return ValidateStruct(&r,
+		Field(&r.Page, Min(uint64(1))),
+		Field(&r.Type, Min(uint64(1))),
+	)
+}
 
 func NewBlobIndexRequest(r *http.Request) (BlobIndexRequest, error) {
 	request := BlobIndexRequest{
