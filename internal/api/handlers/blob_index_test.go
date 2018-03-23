@@ -5,32 +5,37 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"gitlab.com/swarmfund/api/internal/api/handlers"
-	"gitlab.com/swarmfund/api/internal/types"
 )
 
-func TestNewBlobIndexFilter(t *testing.T) {
+func TestNewBlobIndexRequest(t *testing.T) {
 	params := map[string]string{"address": "GAHOOHZTJDHYMLV5HP3GSUPWUOERGEOAWB52NBSV2IKR2225SB3SW2QK"}
 	request := handlers.RequestWithURLParams([]byte(``), params)
 
 	query := request.URL.Query()
 
+	//this values should set filter and then delete himself from query
+	query.Set("page", "42")
 	query.Set("type", "2048")
-	query.Set("TBE", "5000")
 
+	//this should set in relationships
+	query.Set("TBE", "5000")
+	query.Set("NUMBER", "42")
 	request.URL.RawQuery = query.Encode()
 
-	got, err := handlers.NewBlobIndexFilter(request)
+	got, err := handlers.NewBlobIndexRequest(request)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	blobType := types.BlobTypeKYCForm
+	blobType := uint64(2048)
 
-	expected := handlers.BlobIndexFilter{
-		Page:          1,
+	expected := handlers.BlobIndexRequest{
+		Filter: handlers.BlobIndexFilter{
+			Page: 42,
+			Type: &blobType,
+		},
 		Address:       "GAHOOHZTJDHYMLV5HP3GSUPWUOERGEOAWB52NBSV2IKR2225SB3SW2QK",
-		Type:          &blobType,
-		Relationships: map[string]string{"TBE": "5000"},
+		Relationships: map[string]string{"TBE": "5000", "NUMBER": "42"},
 	}
 
 	assert.EqualValues(t, expected, got)

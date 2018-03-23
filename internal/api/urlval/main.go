@@ -11,7 +11,8 @@ import (
 )
 
 // Populate parses fields from url.Values according to `url` struct tag on dest
-//DEPRECATED
+// When values is set to dest, we delete it from values
+// After execution function you need to check residual from values
 func Decode(values url.Values, dest interface{}) error {
 	rval := reflect.Indirect(reflect.ValueOf(dest))
 	rtyp := rval.Type()
@@ -23,44 +24,6 @@ func Decode(values url.Values, dest interface{}) error {
 		if values.Get(tag) == "" {
 			continue
 		}
-		switch rval.Field(i).Interface().(type) {
-		case uint64:
-			uint, err := strconv.ParseUint(values.Get(tag), 0, 64)
-			if err != nil {
-				return errors.Wrapf(err, "failed to parse %s to uint64", tag)
-			}
-			rval.Field(i).Set(reflect.ValueOf(uint))
-		case *uint64:
-			uint, err := strconv.ParseUint(values.Get(tag), 0, 64)
-			if err != nil {
-				return errors.Wrapf(err, "failed to parse %s to uint64", tag)
-			}
-			rval.Field(i).Set(reflect.ValueOf(&uint))
-		case *string:
-			str := values.Get(tag)
-			rval.Field(i).Set(reflect.ValueOf(&str))
-		default:
-			panic(fmt.Sprintf("unknown type %T", rval.Field(i).Interface()))
-		}
-	}
-	return nil
-}
-
-// Populate parses fields from url.Values according to `url` struct tag on dest
-// When values is set to dest, we delete it from values
-// After execution function you need to check residual from values
-func DecodeWithValues(values *url.Values, dest interface{}) error {
-	rval := reflect.Indirect(reflect.ValueOf(dest))
-	rtyp := rval.Type()
-	for i := 0; i < rval.NumField(); i++ {
-		tag := rtyp.Field(i).Tag.Get("url")
-		if tag == "" {
-			continue
-		}
-		if values.Get(tag) == "" {
-			continue
-		}
-
 		isSet := false
 		switch rval.Field(i).Interface().(type) {
 		case uint64:
@@ -82,6 +45,7 @@ func DecodeWithValues(values *url.Values, dest interface{}) error {
 			rval.Field(i).Set(reflect.ValueOf(&str))
 			isSet = true
 		}
+
 		if isSet {
 			values.Del(tag)
 		}
