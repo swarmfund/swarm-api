@@ -53,24 +53,3 @@ func TestEncode(t *testing.T) {
 		})
 	}
 }
-
-func TestDecodeWithValue(t *testing.T) {
-	type Filter struct {
-		Page          uint64            `url:"page"`
-		Relationships map[string]string `url:"relationships"`
-	}
-
-	var urlValues url.Values = map[string][]string{"page": {"23"}, "relationships": {"U CAN'T SET ME!!!"}}
-	expected := Filter{Page: 23}
-
-	var got Filter
-	if err := DecodeWithValues(&urlValues, &got); err != nil {
-		t.Fatal(err)
-	}
-
-	assert.Equal(t, expected.Page, got.Page)
-	//value have been deleted from map
-	assert.Equal(t, "", urlValues.Get("unvalid"))
-	//check unsupported value
-	assert.Equal(t, "U CAN'T SET ME!!!", urlValues.Get("relationships"))
-}
