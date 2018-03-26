@@ -26,7 +26,12 @@ func TestDecode(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			var got Filters
-			Decode(tc.values, &got)
+
+			err := Decode(tc.values, &got)
+			if err != nil {
+				assert.NoError(t, err)
+			}
+
 			assert.Equal(t, tc.expected, got)
 		})
 	}

@@ -139,7 +139,7 @@
 
 [[constraint]]
   name = "gitlab.com/distributed_lab/figure"
-  version = "v1.2"
+  branch = "feature/SetField"
 
 [[constraint]]
   name = "gitlab.com/distributed_lab/ape"

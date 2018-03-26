@@ -5,10 +5,17 @@ import (
 	"net/http"
 	"net/url"
 	"reflect"
-	"strconv"
 
-	"github.com/pkg/errors"
+	"gitlab.com/distributed_lab/figure"
 )
+
+func parseFieldTag(values url.Values) map[string]interface{} {
+	figValues := make(map[string]interface{})
+	for k, v := range values {
+		figValues[k] = v[0]
+	}
+	return figValues
+}
 
 // Populate parses fields from url.Values according to `url` struct tag on dest
 // When values is set to dest, we delete it from values
@@ -16,37 +23,17 @@ import (
 func Decode(values url.Values, dest interface{}) error {
 	rval := reflect.Indirect(reflect.ValueOf(dest))
 	rtyp := rval.Type()
-	for i := 0; i < rval.NumField(); i++ {
-		tag := rtyp.Field(i).Tag.Get("url")
-		if tag == "" {
-			continue
-		}
-		if values.Get(tag) == "" {
-			continue
-		}
-		isSet := false
-		switch rval.Field(i).Interface().(type) {
-		case uint64:
-			uint, err := strconv.ParseUint(values.Get(tag), 0, 64)
-			if err != nil {
-				return errors.Wrapf(err, "failed to parse %s to uint64", tag)
-			}
-			rval.Field(i).Set(reflect.ValueOf(uint))
-			isSet = true
-		case *uint64:
-			uint, err := strconv.ParseUint(values.Get(tag), 0, 64)
-			if err != nil {
-				return errors.Wrapf(err, "failed to parse %s to uint64", tag)
-			}
-			rval.Field(i).Set(reflect.ValueOf(&uint))
-			isSet = true
-		case *string:
-			str := values.Get(tag)
-			rval.Field(i).Set(reflect.ValueOf(&str))
-			isSet = true
+	for fi := 0; fi < rval.NumField(); fi++ {
+		fieldValue := rval.Field(fi)
+		fieldType := rtyp.Field(fi)
+
+		isSet, err := figure.Out(&dest).With(figure.BaseHooks).From(parseFieldTag(values)).SetField(fieldValue, fieldType, `url`)
+		if err != nil {
+			return err
 		}
 
 		if isSet {
+			tag := fieldType.Tag.Get("url")
 			values.Del(tag)
 		}
 	}
@@ -105,6 +92,8 @@ func encodeUint64Pointer(queries []url.Values, tag string, value reflect.Value) 
 		return
 	}
 	uint := reflect.Indirect(value).Uint()
+	//uint := reflect.Indirect(value).String()
+
 	for _, query := range queries {
 		query.Add(tag, fmt.Sprintf("%d", uint))
 	}

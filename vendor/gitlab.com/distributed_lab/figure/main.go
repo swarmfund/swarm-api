@@ -3,12 +3,18 @@ package figure
 import (
 	"reflect"
 
-	"github.com/pkg/errors"
+	"fmt"
+
+	"gitlab.com/distributed_lab/logan/v3/errors"
 )
 
 const (
-	tag = "fig"
+	keyTag   = "fig"
+	required = "required"
+	ignore   = "-"
 )
+
+var ErrRequiredValue = errors.New("You must set the value in field")
 
 // Hook signature for custom hooks.
 // Takes raw value expected to return target value
@@ -57,27 +63,50 @@ func (f *Figurator) Please() error {
 	if len(f.hooks) == 0 {
 		f.With(BaseHooks)
 	}
-	tpe := reflect.Indirect(reflect.ValueOf(f.target)).Type()
 	vle := reflect.Indirect(reflect.ValueOf(f.target))
+	tpe := vle.Type()
 	for fi := 0; fi < tpe.NumField(); fi++ {
 		fieldType := tpe.Field(fi)
 		fieldValue := vle.Field(fi)
-		figTag := fieldType.Tag.Get(tag)
-		if figTag == "" {
-			figTag = toSnakeCase(fieldType.Name)
-		}
-		raw, hasRaw := f.values[figTag]
-		if !hasRaw {
-			continue
-		}
-		if hook, ok := f.hooks[fieldType.Type.String()]; ok {
-			value, err := hook(raw)
-			if err != nil {
-				return errors.Wrapf(err, "failed to figure out %s", fieldType.Name)
-			}
-			fieldValue.Set(value)
+
+		_, err := f.SetField(fieldValue, fieldType, keyTag)
+		if err != nil {
+			return err
 		}
 	}
 
 	return nil
+}
+
+func (f *Figurator) SetField(fieldValue reflect.Value, field reflect.StructField, keyTag string) (bool, error) {
+
+	tag, err := parseFieldTag(field, keyTag)
+	if err != nil {
+		return false, errors.Wrap(err, "failed to parse tag")
+	}
+
+	if tag == nil {
+		return false, nil
+	}
+
+	raw, hasRaw := f.values[tag.Key]
+
+	isSet := false
+	if hook, ok := f.hooks[field.Type.String()]; ok && hasRaw {
+		value, err := hook(raw)
+		if err != nil {
+			return false, errors.Wrap(err, fmt.Sprintf("failed to figure out %s", field))
+		}
+		fieldValue.Set(value)
+		isSet = true
+	}
+
+	if !isSet {
+		if tag.IsRequired {
+			return false, errors.Wrap(ErrRequiredValue, tag.Key)
+		}
+		return false, nil
+	}
+
+	return true, nil
 }
