@@ -52,51 +52,52 @@ func Encode(r *http.Request, filters interface{}) FilterLinks {
 	queries := []url.Values{
 		{}, {}, {},
 	}
-	for i := 0; i < rval.NumField(); i++ {
-		tag := rtyp.Field(i).Tag.Get("url")
-		if tag == "" {
-			continue
+	for fi := 0; fi < rval.NumField(); fi++ {
+		encodeField(queries, rval.Field(fi), rtyp.Field(fi))
+	}
+	return createLinks(r, queries)
+}
+
+func encodeField(queries []url.Values, fieldValue reflect.Value, fieldType reflect.StructField) {
+	tag := fieldType.Tag.Get("url")
+	if tag == "" {
+		return
+	}
+
+	if tag == "page" {
+		encodePage(queries, tag, fieldValue)
+		return
+	}
+
+	if fieldValue.IsNil() {
+		return
+	}
+
+	uint := reflect.Indirect(fieldValue)
+
+	stringer, ok := uint.Interface().(fmt.Stringer)
+	if ok {
+		for _, query := range queries {
+			query.Add(tag, stringer.String())
 		}
-		if tag == "page" {
-			encodePage(queries, tag, rval.Field(i))
-		}
-		switch rval.Field(i).Interface().(type) {
-		case *uint64:
-			encodeUint64Pointer(queries, tag, rval.Field(i))
-		case *string:
-			encodeStringPointer(queries, tag, rval.Field(i))
+	} else {
+		for _, query := range queries {
+			query.Add(tag, fmt.Sprintf("%v", uint))
 		}
 	}
+}
+
+func createLinks(r *http.Request, queries []url.Values) FilterLinks {
 	links := FilterLinks{
 		Self: fmt.Sprintf("%s?%s", r.URL.Path, queries[1].Encode()),
 		Next: fmt.Sprintf("%s?%s", r.URL.Path, queries[2].Encode()),
 	}
+
 	if queries[0].Get("page") != "	" && queries[1].Get("page") != "" {
 		links.Prev = fmt.Sprintf("%s?%s", r.URL.Path, queries[0].Encode())
 	}
+
 	return links
-}
-
-func encodeStringPointer(queries []url.Values, tag string, value reflect.Value) {
-	if value.IsNil() {
-		return
-	}
-	str := reflect.Indirect(value).String()
-	for _, query := range queries {
-		query.Add(tag, str)
-	}
-}
-
-func encodeUint64Pointer(queries []url.Values, tag string, value reflect.Value) {
-	if value.IsNil() {
-		return
-	}
-	uint := reflect.Indirect(value).Uint()
-	//uint := reflect.Indirect(value).String()
-
-	for _, query := range queries {
-		query.Add(tag, fmt.Sprintf("%d", uint))
-	}
 }
 
 func encodePage(queries []url.Values, tag string, value reflect.Value) {

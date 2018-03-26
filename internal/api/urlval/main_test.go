@@ -39,22 +39,31 @@ func TestDecode(t *testing.T) {
 
 func TestEncode(t *testing.T) {
 	type Fields struct {
-		Page  uint64  `url:"page"`
-		State *uint64 `url:"state"`
+		Page    uint64  `url:"page"`
+		State   *uint64 `url:"state"`
+		Name    *string `url:"name"`
+		Allowed *bool   `url:"allowed"`
 	}
+
+	state := uint64(42)
+	name := "yoba"
+	allowed := true
 	cases := []struct {
 		name     string
 		fields   Fields
 		expected FilterLinks
 	}{
-		{"page", Fields{10, nil}, FilterLinks{"/users?page=10", "/users?page=11", "/users?page=9"}},
-		{"first page", Fields{1, nil}, FilterLinks{"/users?page=1", "/users?page=2", "/users?"}},
+		{"page", Fields{Page: 10}, FilterLinks{"/users?page=10", "/users?page=11", "/users?page=9"}},
+		{"first page", Fields{Page: 1}, FilterLinks{"/users?page=1", "/users?page=2", "/users?"}},
+		{"state", Fields{Page: 5, State: &state}, FilterLinks{"/users?page=5&state=42", "/users?page=6&state=42", "/users?page=4&state=42"}},
+		{"string encode", Fields{Page: 5, Name: &name}, FilterLinks{"/users?name=yoba&page=5", "/users?name=yoba&page=6", "/users?name=yoba&page=4"}},
+		{"bool encode", Fields{Page: 5, Allowed: &allowed}, FilterLinks{"/users?allowed=true&page=5", "/users?allowed=true&page=6", "/users?allowed=true&page=4"}},
 	}
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			got := Encode(&http.Request{URL: &url.URL{Path: "/users"}}, tc.fields)
-			assert.Equal(t, got, tc.expected)
+			assert.Equal(t, tc.expected, got)
 		})
 	}
 }
