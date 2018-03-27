@@ -51,3 +51,6 @@ storage:
 wallet_cleaner:
   enabled: true
   expiration: 128h
+
+metrics:
+  url: http://localhost:2323

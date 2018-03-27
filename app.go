@@ -106,7 +106,6 @@ func (a *App) Serve() {
 		a.APIRepo(a.ctx),
 		a.config.Wallets(),
 	)
-
 	r.Mount("/", a.web.router)
 	http.Handle("/", r)
 
@@ -131,7 +130,6 @@ func (a *App) Serve() {
 	log.Infof("Starting horizon on %s", addr)
 
 	go a.run()
-
 	if err := srv.ListenAndServe(); err != nil {
 		log.Panic(err)
 	}

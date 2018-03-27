@@ -26,6 +26,7 @@ type Config interface {
 	Horizon() *horizon.Connector
 	Discourse() *discourse.Connector
 	Mixpanel() *mixpanel.Connector
+	Metric() Metric
 
 	Get(string) map[string]interface{}
 }
@@ -42,6 +43,7 @@ type ViperConfig struct {
 	logan       *logan.Entry
 	mixpanel    *mixpanel.Connector
 	wallets     *Wallets
+	metric      *Metric
 }
 
 func NewViperConfig(fn string) Config {
