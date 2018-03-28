@@ -16,12 +16,21 @@ func GetDocument(w http.ResponseWriter, r *http.Request) {
 	address := chi.URLParam(r, "address")
 	document := chi.URLParam(r, "document")
 
-	if err := Doorman(r,
-		doorman.SignerOf(address),
-		doorman.SignerOf(CoreInfo(r).GetMasterAccountID()),
-	); err != nil {
-		movetoape.RenderDoormanErr(w, err)
-		return
+	if address == "" {
+		if err := Doorman(r,
+			doorman.SignerOf(CoreInfo(r).GetMasterAccountID()),
+		); err != nil {
+			movetoape.RenderDoormanErr(w, err)
+			return
+		}
+	} else {
+		if err := Doorman(r,
+			doorman.SignerOf(address),
+			doorman.SignerOf(CoreInfo(r).GetMasterAccountID()),
+		); err != nil {
+			movetoape.RenderDoormanErr(w, err)
+			return
+		}
 	}
 
 	url, err := Storage(r).DocumentURL(document)

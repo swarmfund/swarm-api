@@ -127,8 +127,8 @@ func Router(
 		r.Route("/{address}/favorites", favorites.Router(repo))
 	})
 
-	r.Get("/blobs/{blob}", handlers.GetDirectBlob)
-	r.Get("/documents/{documents}", handlers.GetDirectDocument)
+	r.Get("/blobs/{blob}", handlers.GetBlob)
+	r.Get("/documents/{document}", handlers.GetDocument)
 
 	r.Route("/integrations", func(r chi.Router) {
 		// discourse ping-pong
