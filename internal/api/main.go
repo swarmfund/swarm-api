@@ -57,6 +57,7 @@ func Router(
 			handlers.CtxUserBusDispatch(userDispatch),
 			handlers.CtxNotificator(notificator),
 			handlers.CtxWallets(wallets),
+			handlers.CtxBlobQ(blobQ),
 		),
 	)
 
@@ -116,9 +117,7 @@ func Router(
 
 		// blobs
 		r.Route("/{address}/blobs", func(r chi.Router) {
-			r.Use(middlewares.Ctx(
-				handlers.CtxBlobQ(blobQ),
-			))
+
 			r.Post("/", handlers.CreateBlob)
 			r.Get("/", handlers.BlobIndex)
 			r.Get("/{blob}", handlers.GetBlob)
@@ -127,6 +126,9 @@ func Router(
 		// favorites
 		r.Route("/{address}/favorites", favorites.Router(repo))
 	})
+
+	r.Get("/blobs/{blob}", handlers.GetDirectBlob)
+	r.Get("/documents/{documents}", handlers.GetDirectDocument)
 
 	r.Route("/integrations", func(r chi.Router) {
 		// discourse ping-pong

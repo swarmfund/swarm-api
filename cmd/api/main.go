@@ -22,6 +22,11 @@ var (
 	runCmd = &cobra.Command{
 		Use: "run",
 		Run: func(cmd *cobra.Command, args []string) {
+			defer func() {
+				if rvr := recover(); rvr != nil {
+					configInstance.Log().WithRecover(rvr).Error("app panicked")
+				}
+			}()
 			app, err := api.NewApp(configInstance)
 			if err != nil {
 				log.WithField("service", "init").WithError(err).Fatal("failed to init app")
