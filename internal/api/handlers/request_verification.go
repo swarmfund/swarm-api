@@ -33,5 +33,11 @@ func RequestVerification(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if err := EmailTokensQ(r).MarkUnsent(token.ID); err != nil {
+		Log(r).WithError(err).Error("failed to update token")
+		ape.RenderErr(w, problems.InternalError())
+		return
+	}
+
 	w.WriteHeader(204)
 }
