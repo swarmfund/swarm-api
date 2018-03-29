@@ -31,11 +31,15 @@ func NewGetBlobRequest(r *http.Request) (GetBlobRequest, error) {
 }
 
 func (r GetBlobRequest) Validate() error {
-	return ValidateStruct(&r,
-		Field(&r.Address),
-		Field(&r.BlobID, Required),
-	)
+	err := Errors{
+		"blob": Validate(&r.BlobID, Required),
+	}
+	if r.Address != "" {
+		err["address"] = Validate(&r.Address)
+	}
+	return err.Filter()
 }
+
 func GetBlob(w http.ResponseWriter, r *http.Request) {
 	request, err := NewGetBlobRequest(r)
 	if err != nil {
