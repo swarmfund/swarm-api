@@ -32,7 +32,7 @@ func NewGetBlobRequest(r *http.Request) (GetBlobRequest, error) {
 
 func (r GetBlobRequest) Validate() error {
 	return ValidateStruct(&r,
-		Field(&r.Address, Required),
+		Field(&r.Address),
 		Field(&r.BlobID, Required),
 	)
 }
@@ -56,11 +56,15 @@ func GetBlob(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if !types.IsPublicBlob(blob.Type) {
-		err := Doorman(r, doorman.SignerOf(string(request.Address)), doorman.SignerOf(CoreInfo(r).GetMasterAccountID()))
-		if err != nil {
+		constrains := []doorman.SignerConstraint{doorman.SignerOf(CoreInfo(r).GetMasterAccountID())}
+		if request.Address != "" {
+			constrains = append(constrains, doorman.SignerOf(string(request.Address)))
+		}
+		if err := Doorman(r, constrains...); err != nil {
 			movetoape.RenderDoormanErr(w, err)
 			return
 		}
+
 	}
 
 	response := CreateBlobResponse{
