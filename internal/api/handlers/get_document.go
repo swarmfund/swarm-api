@@ -16,10 +16,12 @@ func GetDocument(w http.ResponseWriter, r *http.Request) {
 	address := chi.URLParam(r, "address")
 	document := chi.URLParam(r, "document")
 
-	if err := Doorman(r,
-		doorman.SignerOf(address),
-		doorman.SignerOf(CoreInfo(r).GetMasterAccountID()),
-	); err != nil {
+	constrains := []doorman.SignerConstraint{doorman.SignerOf(CoreInfo(r).GetMasterAccountID())}
+	if address != "" {
+		constrains = append(constrains, doorman.SignerOf(address))
+	}
+
+	if err := Doorman(r, constrains...); err != nil {
 		movetoape.RenderDoormanErr(w, err)
 		return
 	}

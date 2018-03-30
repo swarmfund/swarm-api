@@ -1,6 +1,8 @@
 package txwatcher
 
 import (
+	"time"
+
 	"gitlab.com/distributed_lab/logan/v3"
 	"gitlab.com/swarmfund/api/internal/hose"
 	"gitlab.com/swarmfund/horizon-connector/v2"
@@ -21,12 +23,17 @@ func NewWatcher(log *logan.Entry, connector *horizon.Connector, dispatch hose.Tr
 }
 
 func (w *Watcher) Run() {
+	// ticker to slow down requests leaving quota for other API requests
+	// FIXME find a better way to prioritise requests from API
+	ticker := time.NewTicker(3 * time.Second)
 	defer func() {
-		// TODO recover
+		if rvr := recover(); rvr != nil {
+			w.log.WithRecover(rvr).Error("watcher panicked")
+		}
+		ticker.Stop()
 	}()
 	events := make(chan horizon.TransactionEvent)
 	errs := w.horizon.Listener().Transactions(events)
-
 	for {
 		select {
 		case event := <-events:
@@ -34,6 +41,7 @@ func (w *Watcher) Run() {
 				w.log.WithField("tx", event.Transaction.PagingToken).Debug("received tx")
 				w.dispatch(event)
 			}
+			<-ticker.C
 		case err := <-errs:
 			w.log.WithError(err).Warn("failed to get transaction")
 		}
