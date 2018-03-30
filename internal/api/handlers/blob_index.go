@@ -2,53 +2,78 @@ package handlers
 
 import (
 	"net/http"
-	"strconv"
 
 	"encoding/json"
 
+	"net/url"
+
 	"github.com/go-chi/chi"
+	. "github.com/go-ozzo/ozzo-validation"
+	"github.com/spf13/cast"
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/ape/problems"
+	"gitlab.com/distributed_lab/logan/v3/errors"
 	"gitlab.com/swarmfund/api/internal/api/resources"
+	"gitlab.com/swarmfund/api/internal/api/urlval"
 	"gitlab.com/swarmfund/api/internal/types"
 	"gitlab.com/swarmfund/go/doorman"
 )
 
 type (
 	BlobIndexRequest struct {
+		Filter        BlobIndexFilter
 		Address       types.Address
 		Relationships map[string]string
-		Type          *types.BlobType
 	}
-	// TODO paginate with custom filters
+
+	BlobIndexFilter struct {
+		Page uint64  `url:"page"`
+		Type *uint64 `url:"type"`
+	}
 )
 
 func NewBlobIndexRequest(r *http.Request) (BlobIndexRequest, error) {
+	values := r.URL.Query()
+	filter, err := NewBlobIndexFilter(values)
+	if err != nil {
+		return BlobIndexRequest{}, err
+	}
+
 	request := BlobIndexRequest{
+		Filter:        filter,
 		Address:       types.Address(chi.URLParam(r, "address")),
 		Relationships: make(map[string]string),
 	}
-	values := r.URL.Query()
-	{
-		if values.Get("type") != "" {
-			raw, err := strconv.ParseInt(values.Get("type"), 0, 32)
-			if err != nil {
-				return request, err
-			}
-			tpe := types.BlobType(raw)
-			request.Type = &tpe
-		}
-		values.Del("type")
-	}
+
 	for k := range values {
 		request.Relationships[k] = values.Get(k)
 	}
+
 	return request, request.Validate()
 }
 
 func (r BlobIndexRequest) Validate() error {
 	// TODO implement
 	return nil
+}
+
+func NewBlobIndexFilter(values url.Values) (BlobIndexFilter, error) {
+	filter := BlobIndexFilter{
+		Page: 1,
+	}
+
+	if err := urlval.Decode(values, &filter); err != nil {
+		return filter, errors.Wrap(err, "failed to populate")
+	}
+
+	return filter, filter.Validate()
+}
+
+func (r BlobIndexFilter) Validate() error {
+	return ValidateStruct(&r,
+		Field(&r.Page, Min(uint64(1))),
+		Field(&r.Type, Min(uint64(1))),
+	)
 }
 
 func BlobIndex(w http.ResponseWriter, r *http.Request) {
@@ -58,17 +83,14 @@ func BlobIndex(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	filters := map[string]string{}
-	for k := range r.URL.Query() {
-		filters[k] = r.URL.Query().Get(k)
-	}
-
 	q := BlobQ(r).
 		ByOwner(request.Address).
 		ByRelationships(request.Relationships)
 
-	if request.Type != nil {
-		q = q.ByType(*request.Type)
+	filter := request.Filter
+	if filter.Type != nil {
+		blobType := types.BlobType(cast.ToInt32(filter.Type))
+		q = q.ByType(blobType)
 	}
 
 	records, err := q.Select()
