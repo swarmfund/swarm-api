@@ -68,7 +68,6 @@ func GetBlob(w http.ResponseWriter, r *http.Request) {
 			movetoape.RenderDoormanErr(w, err)
 			return
 		}
-
 	}
 
 	response := CreateBlobResponse{

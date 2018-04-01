@@ -87,7 +87,7 @@ func (q *Blobs) Select() (result []types.Blob, err error) {
 	return result, err
 }
 
-func (q *Blobs) Create(address types.Address, blob *types.Blob) error {
+func (q *Blobs) Create(address *types.Address, blob *types.Blob) error {
 	stmt := squirrel.Insert(blobsTable).SetMap(map[string]interface{}{
 		"owner_address": address,
 		"id":            blob.ID,

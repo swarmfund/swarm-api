@@ -25,7 +25,7 @@ import (
 
 type (
 	CreateBlobRequest struct {
-		Address types.Address         `json:"-"`
+		Address *types.Address        `json:"-"`
 		Data    CreateBlobRequestData `json:"data"`
 	}
 	CreateBlobRequestData struct {
@@ -69,8 +69,10 @@ func (r Relationships) Validate() error {
 }
 
 func NewCreateBlobRequest(r *http.Request) (CreateBlobRequest, error) {
-	request := CreateBlobRequest{
-		Address: types.Address(chi.URLParam(r, "address")),
+	request := CreateBlobRequest{}
+	address := types.Address(chi.URLParam(r, "address"))
+	if address != "" {
+		request.Address = &address
 	}
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
 		return request, errors.Wrap(err, "failed to unmarshal")
@@ -79,10 +81,10 @@ func NewCreateBlobRequest(r *http.Request) (CreateBlobRequest, error) {
 }
 
 func (r CreateBlobRequest) Validate() error {
-	return ValidateStruct(&r,
-		Field(&r.Address, Required),
-		Field(&r.Data, Required),
-	)
+	return Errors{
+		"address": Validate(&r.Address),
+		"/data":   Validate(&r.Data, Required),
+	}.Filter()
 }
 
 func (r CreateBlobRequestData) Validate() error {
@@ -99,7 +101,11 @@ func (r CreateBlobRequestAttributes) Validate() error {
 }
 
 func (r CreateBlobRequest) Blob() *types.Blob {
-	msg := fmt.Sprintf("%s%d%s", r.Address, r.Data.Type, r.Data.Attributes.Value)
+	var address types.Address
+	if r.Address != nil {
+		address = *r.Address
+	}
+	msg := fmt.Sprintf("%s%d%s", address, r.Data.Type, r.Data.Attributes.Value)
 	hash := hash.Hash([]byte(msg))
 
 	relationships := types.BlobRelationships{}
@@ -122,7 +128,15 @@ func CreateBlob(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := Doorman(r, doorman.SignerOf(string(request.Address))); err != nil {
+	var constraint doorman.SignerConstraint
+	if request.Address != nil {
+		// if address is set blob has an owner
+		constraint = doorman.SignerOf(string(*request.Address))
+	} else {
+		// nil address means blob is not bound to any user
+		constraint = doorman.SignerOf(CoreInfo(r).GetMasterAccountID())
+	}
+	if err := Doorman(r, constraint); err != nil {
 		movetoape.RenderDoormanErr(w, err)
 		return
 	}
@@ -131,8 +145,12 @@ func CreateBlob(w http.ResponseWriter, r *http.Request) {
 
 	err = BlobQ(r).Transaction(func(blobs data.Blobs) error {
 		if blob.Type == types.BlobTypeNavUpdate {
+			if request.Address == nil {
+				// not sure why NavUpdate case even exists but master should not use it anyways
+				return errors.New("master not allowed to create nav update")
+			}
 			existing, err := blobs.
-				ByOwner(request.Address).
+				ByOwner(*request.Address).
 				ByType(blob.Type).
 				ByRelationships(blob.Relationships).
 				Select()
