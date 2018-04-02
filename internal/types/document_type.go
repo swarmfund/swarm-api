@@ -16,8 +16,9 @@ const (
 	DocumentTypeTokenMetrics
 	DocumentTypeKYCIdDocument
 	DocumentTypeKYCPoa
+	DocumentTypeKYCSelfie
 )
 
 func IsPublicDocument(t DocumentType) bool {
-	return t != DocumentTypeKYCIdDocument && t != DocumentTypeKYCPoa
+	return t != DocumentTypeKYCIdDocument && t != DocumentTypeKYCPoa && t != DocumentTypeKYCSelfie
 }

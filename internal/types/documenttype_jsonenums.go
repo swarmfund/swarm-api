@@ -33,6 +33,7 @@ func init() {
 			interface{}(DocumentTypeTokenMetrics).(fmt.Stringer).String():  DocumentTypeTokenMetrics,
 			interface{}(DocumentTypeKYCIdDocument).(fmt.Stringer).String(): DocumentTypeKYCIdDocument,
 			interface{}(DocumentTypeKYCPoa).(fmt.Stringer).String():        DocumentTypeKYCPoa,
+			interface{}(DocumentTypeKYCSelfie).(fmt.Stringer).String():     DocumentTypeKYCSelfie,
 		}
 	}
 }
@@ -50,6 +51,7 @@ var _DocumentTypeNameToValue = map[string]DocumentType{
 	"token_metrics":   DocumentTypeTokenMetrics,
 	"kyc_id_document": DocumentTypeKYCIdDocument,
 	"kyc_poa":         DocumentTypeKYCPoa,
+	"kyc_selfie":      DocumentTypeKYCSelfie,
 }
 
 var _DocumentTypeValueToName = map[DocumentType]string{
@@ -65,6 +67,7 @@ var _DocumentTypeValueToName = map[DocumentType]string{
 	DocumentTypeTokenMetrics:  "token_metrics",
 	DocumentTypeKYCIdDocument: "kyc_id_document",
 	DocumentTypeKYCPoa:        "kyc_poa",
+	DocumentTypeKYCSelfie:     "kyc_selfie",
 }
 
 // String is generated so DocumentType satisfies fmt.Stringer.
