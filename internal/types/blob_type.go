@@ -18,6 +18,7 @@ const (
 	BlobTypeKYCForm
 	BlobTypeKYCIdDocument
 	BlobTypeKYCPoa
+	BlobTypeIdentityMindReject
 )
 
 func IsPublicBlob(t BlobType) bool {
