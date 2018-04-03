@@ -16,7 +16,6 @@ package ini_test
 
 import (
 	"bytes"
-	"flag"
 	"io/ioutil"
 	"testing"
 
@@ -47,8 +46,6 @@ const (
 	_FULL_CONF      = "testdata/full.ini"
 	_NOT_FOUND_CONF = "testdata/404.ini"
 )
-
-var update = flag.Bool("update", false, "Update .golden files")
 
 func TestLoad(t *testing.T) {
 	Convey("Load from good data sources", t, func() {

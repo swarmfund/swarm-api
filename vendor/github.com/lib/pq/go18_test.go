@@ -228,9 +228,7 @@ func TestContextCancelBegin(t *testing.T) {
 			cancel()
 			if err != nil {
 				t.Fatal(err)
-			} else if err := tx.Rollback(); err != nil &&
-				err.Error() != "pq: canceling statement due to user request" &&
-				err != sql.ErrTxDone {
+			} else if err := tx.Rollback(); err != nil && err != sql.ErrTxDone {
 				t.Fatal(err)
 			}
 		}()

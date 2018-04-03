@@ -36,7 +36,7 @@ func castFireFn(fire func(*Entry) error) func(*logrus.Entry) error {
 }
 
 func (e *Entry) AddHook(hook Hook) {
-	hooks := e.entry.Logger.Hooks
+	hooks := e.Entry.Logger.Hooks
 	connector := &hookConnector{
 		levels: castLevels(hook.Levels()),
 		fireFn: castFireFn(hook.Fire),
@@ -48,5 +48,5 @@ func (e *Entry) AddHook(hook Hook) {
 }
 
 func (e *Entry) AddLogrusHook(hook logrus.Hook) {
-	e.entry.Logger.Hooks.Add(hook)
+	e.Entry.Logger.Hooks.Add(hook)
 }

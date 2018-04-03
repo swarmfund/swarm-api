@@ -37,7 +37,7 @@ type testNested struct {
 	Unused      int `ini:"-"`
 }
 
-type TestEmbeded struct {
+type testEmbeded struct {
 	GPA float64
 }
 
@@ -49,7 +49,7 @@ type testStruct struct {
 	Born         time.Time
 	Time         time.Duration `ini:"Duration"`
 	Others       testNested
-	*TestEmbeded `ini:"grade"`
+	*testEmbeded `ini:"grade"`
 	Unused       int `ini:"-"`
 	Unsigned     uint
 	Omitted      bool     `ini:"omitthis,omitempty"`
@@ -97,12 +97,12 @@ type unsupport2 struct {
 	}
 }
 
-type Unsupport3 struct {
+type unsupport3 struct {
 	Cities byte
 }
 
 type unsupport4 struct {
-	*Unsupport3 `ini:"Others"`
+	*unsupport3 `ini:"Others"`
 }
 
 type defaultValue struct {
@@ -155,7 +155,7 @@ func Test_MapToStruct(t *testing.T) {
 			So(fmt.Sprint(ts.Others.Populations), ShouldEqual, "[12345678 98765432]")
 			So(fmt.Sprint(ts.Others.Coordinates), ShouldEqual, "[192.168 10.11]")
 			So(ts.Others.Note, ShouldEqual, "Hello world!")
-			So(ts.TestEmbeded.GPA, ShouldEqual, 2.8)
+			So(ts.testEmbeded.GPA, ShouldEqual, 2.8)
 		})
 
 		Convey("Map section to struct", func() {

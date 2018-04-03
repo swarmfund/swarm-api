@@ -167,31 +167,17 @@ type Catalog interface {
 	// Languages returns all languages for which the Catalog contains variants.
 	Languages() []language.Tag
 
-	// Matcher returns a Matcher for languages from this Catalog.
-	Matcher() language.Matcher
-
 	// A Context is used for evaluating Messages.
 	Context(tag language.Tag, r catmsg.Renderer) *Context
 
-	// This method also makes Catalog a private interface.
 	lookup(tag language.Tag, key string) (data string, ok bool)
 }
 
 // NewFromMap creates a Catalog from the given map. If a Dictionary is
 // underspecified the entry is retrieved from a parent language.
 func NewFromMap(dictionaries map[string]Dictionary, opts ...Option) (Catalog, error) {
-	options := options{}
-	for _, o := range opts {
-		o(&options)
-	}
 	c := &catalog{
 		dicts: map[language.Tag]Dictionary{},
-	}
-	_, hasFallback := dictionaries[options.fallback.String()]
-	if hasFallback {
-		// TODO: Should it be okay to not have a fallback language?
-		// Catalog generators could enforce there is always a fallback.
-		c.langs = append(c.langs, options.fallback)
 	}
 	for lang, dict := range dictionaries {
 		tag, err := language.Parse(lang)
@@ -202,16 +188,9 @@ func NewFromMap(dictionaries map[string]Dictionary, opts ...Option) (Catalog, er
 			return nil, fmt.Errorf("catalog: duplicate entry for tag %q after normalization", tag)
 		}
 		c.dicts[tag] = dict
-		if !hasFallback || tag != options.fallback {
-			c.langs = append(c.langs, tag)
-		}
+		c.langs = append(c.langs, tag)
 	}
-	if hasFallback {
-		internal.SortTags(c.langs[1:])
-	} else {
-		internal.SortTags(c.langs)
-	}
-	c.matcher = language.NewMatcher(c.langs)
+	internal.SortTags(c.langs)
 	return c, nil
 }
 
@@ -223,14 +202,12 @@ type Dictionary interface {
 }
 
 type catalog struct {
-	langs   []language.Tag
-	dicts   map[language.Tag]Dictionary
-	macros  store
-	matcher language.Matcher
+	langs  []language.Tag
+	dicts  map[language.Tag]Dictionary
+	macros store
 }
 
 func (c *catalog) Languages() []language.Tag { return c.langs }
-func (c *catalog) Matcher() language.Matcher { return c.matcher }
 
 func (c *catalog) lookup(tag language.Tag, key string) (data string, ok bool) {
 	for ; ; tag = tag.Parent() {
@@ -259,23 +236,15 @@ func (c *catalog) Context(tag language.Tag, r catmsg.Renderer) *Context {
 // A Builder allows building a Catalog programmatically.
 type Builder struct {
 	options
-	matcher language.Matcher
 
 	index  store
 	macros store
 }
 
-type options struct {
-	fallback language.Tag
-}
+type options struct{}
 
 // An Option configures Catalog behavior.
 type Option func(*options)
-
-// Fallback specifies the default fallback language. The default is Und.
-func Fallback(tag language.Tag) Option {
-	return func(o *options) { o.fallback = tag }
-}
 
 // TODO:
 // // Catalogs specifies one or more sources for a Catalog.
@@ -297,6 +266,11 @@ func NewBuilder(opts ...Option) *Builder {
 		o(&c.options)
 	}
 	return c
+}
+
+// Languages returns all languages for which the Catalog contains variants.
+func (c *Builder) Languages() []language.Tag {
+	return c.index.languages()
 }
 
 // SetString is shorthand for Set(tag, key, String(msg)).

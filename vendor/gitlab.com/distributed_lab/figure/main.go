@@ -3,18 +3,12 @@ package figure
 import (
 	"reflect"
 
-	"fmt"
-
-	"gitlab.com/distributed_lab/logan/v3/errors"
+	"github.com/pkg/errors"
 )
 
 const (
-	keyTag   = "fig"
-	required = "required"
-	ignore   = "-"
+	tag = "fig"
 )
-
-var ErrRequiredValue = errors.New("You must set the value in field")
 
 // Hook signature for custom hooks.
 // Takes raw value expected to return target value
@@ -68,33 +62,21 @@ func (f *Figurator) Please() error {
 	for fi := 0; fi < tpe.NumField(); fi++ {
 		fieldType := tpe.Field(fi)
 		fieldValue := vle.Field(fi)
-
-		tag, err := parseFieldTag(fieldType)
-		if err != nil {
-			return errors.Wrap(err, "failed to parse tag")
+		figTag := fieldType.Tag.Get(tag)
+		if figTag == "" {
+			figTag = toSnakeCase(fieldType.Name)
 		}
-
-		if tag == nil {
+		raw, hasRaw := f.values[figTag]
+		if !hasRaw {
 			continue
 		}
-
-		raw, hasRaw := f.values[tag.Key]
-
-		var isFieldSet bool
-		if hook, ok := f.hooks[fieldType.Type.String()]; ok && hasRaw {
+		if hook, ok := f.hooks[fieldType.Type.String()]; ok {
 			value, err := hook(raw)
 			if err != nil {
-				return errors.Wrap(err, fmt.Sprintf("failed to figure out %s", fieldType.Name))
+				return errors.Wrapf(err, "failed to figure out %s", fieldType.Name)
 			}
-
 			fieldValue.Set(value)
-			isFieldSet = true
 		}
-
-		if !isFieldSet && tag.IsRequired {
-			return errors.Wrap(ErrRequiredValue, tag.Key)
-		}
-
 	}
 
 	return nil

@@ -1,7 +1,6 @@
 package pq
 
 import (
-	"context"
 	"database/sql"
 	"database/sql/driver"
 	"fmt"
@@ -29,7 +28,7 @@ func forceBinaryParameters() bool {
 	}
 }
 
-func testConninfo(conninfo string) string {
+func openTestConnConninfo(conninfo string) (*sql.DB, error) {
 	defaultTo := func(envvar string, value string) {
 		if os.Getenv(envvar) == "" {
 			os.Setenv(envvar, value)
@@ -44,11 +43,8 @@ func testConninfo(conninfo string) string {
 		!strings.HasPrefix(conninfo, "postgresql://") {
 		conninfo = conninfo + " binary_parameters=yes"
 	}
-	return conninfo
-}
 
-func openTestConnConninfo(conninfo string) (*sql.DB, error) {
-	return sql.Open("postgres", testConninfo(conninfo))
+	return sql.Open("postgres", conninfo)
 }
 
 func openTestConn(t Fatalistic) *sql.DB {
@@ -641,57 +637,6 @@ func TestErrorDuringStartup(t *testing.T) {
 	}
 }
 
-type testConn struct {
-	closed bool
-	net.Conn
-}
-
-func (c *testConn) Close() error {
-	c.closed = true
-	return c.Conn.Close()
-}
-
-type testDialer struct {
-	conns []*testConn
-}
-
-func (d *testDialer) Dial(ntw, addr string) (net.Conn, error) {
-	c, err := net.Dial(ntw, addr)
-	if err != nil {
-		return nil, err
-	}
-	tc := &testConn{Conn: c}
-	d.conns = append(d.conns, tc)
-	return tc, nil
-}
-
-func (d *testDialer) DialTimeout(ntw, addr string, timeout time.Duration) (net.Conn, error) {
-	c, err := net.DialTimeout(ntw, addr, timeout)
-	if err != nil {
-		return nil, err
-	}
-	tc := &testConn{Conn: c}
-	d.conns = append(d.conns, tc)
-	return tc, nil
-}
-
-func TestErrorDuringStartupClosesConn(t *testing.T) {
-	// Don't use the normal connection setup, this is intended to
-	// blow up in the startup packet from a non-existent user.
-	var d testDialer
-	c, err := DialOpen(&d, testConninfo("user=thisuserreallydoesntexist"))
-	if err == nil {
-		c.Close()
-		t.Fatal("expected dial error")
-	}
-	if len(d.conns) != 1 {
-		t.Fatalf("got len(d.conns) = %d, want = %d", len(d.conns), 1)
-	}
-	if !d.conns[0].closed {
-		t.Error("connection leaked")
-	}
-}
-
 func TestBadConn(t *testing.T) {
 	var err error
 
@@ -1264,8 +1209,8 @@ func TestParseComplete(t *testing.T) {
 
 // Test interface conformance.
 var (
-	_ driver.ExecerContext  = (*conn)(nil)
-	_ driver.QueryerContext = (*conn)(nil)
+	_ driver.Execer  = (*conn)(nil)
+	_ driver.Queryer = (*conn)(nil)
 )
 
 func TestNullAfterNonNull(t *testing.T) {
@@ -1610,10 +1555,10 @@ func TestRowsResultTag(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer conn.Close()
-	q := conn.(driver.QueryerContext)
+	q := conn.(driver.Queryer)
 
 	for _, test := range tests {
-		if rows, err := q.QueryContext(context.Background(), test.query, nil); err != nil {
+		if rows, err := q.Query(test.query, nil); err != nil {
 			t.Fatalf("%s: %s", test.query, err)
 		} else {
 			r := rows.(ResultTag)

@@ -35,10 +35,3 @@ func (tx *Transaction) Envelope() *xdr.TransactionEnvelope {
 	}
 	return &envelope
 }
-
-func (tx Transaction) GetLoganFields() map[string]interface{} {
-	return map[string]interface{} {
-		"created_at": tx.CreatedAt,
-		"paging_token": tx.PagingToken,
-	}
-}

@@ -8,9 +8,6 @@ import (
 	"io"
 	"os"
 
-	// Include features to facilitate generated catalogs.
-	_ "golang.org/x/text/feature/plural"
-
 	"golang.org/x/text/internal/number"
 	"golang.org/x/text/language"
 	"golang.org/x/text/message/catalog"

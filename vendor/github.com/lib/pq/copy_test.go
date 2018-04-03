@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"database/sql"
 	"database/sql/driver"
-	"net"
 	"strings"
 	"testing"
 )
@@ -401,19 +400,15 @@ func TestCopyRespLoopConnectionError(t *testing.T) {
 	if err == nil {
 		t.Fatalf("expected error")
 	}
-	switch pge := err.(type) {
-	case *Error:
-		if pge.Code.Name() != "admin_shutdown" {
-			t.Fatalf("expected admin_shutdown, got %s", pge.Code.Name())
-		}
-	case *net.OpError:
-		// ignore
-	default:
+	pge, ok := err.(*Error)
+	if !ok {
 		if err == driver.ErrBadConn {
 			// likely an EPIPE
 		} else {
-			t.Fatalf("unexpected error, got %+#v", err)
+			t.Fatalf("expected *pq.Error or driver.ErrBadConn, got %+#v", err)
 		}
+	} else if pge.Code.Name() != "admin_shutdown" {
+		t.Fatalf("expected admin_shutdown, got %s", pge.Code.Name())
 	}
 
 	_ = stmt.Close()
