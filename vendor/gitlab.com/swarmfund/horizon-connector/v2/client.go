@@ -18,8 +18,9 @@ import (
 func throttle() chan time.Time {
 	burst := 2 << 10
 	ch := make(chan time.Time, burst)
+
 	go func() {
-		tick := time.Tick(3 * time.Second)
+		tick := time.Tick(1 * time.Second)
 		// prefill buffer
 		for i := 0; i < burst; i++ {
 			ch <- time.Now()
@@ -82,7 +83,7 @@ func (c *Client) Do(request *http.Request) ([]byte, error) {
 	switch response.StatusCode {
 	case http.StatusOK:
 		return bytes, nil
-	case http.StatusNotFound:
+	case http.StatusNotFound, http.StatusNoContent:
 		return nil, nil
 	case http.StatusTooManyRequests:
 		// TODO look at x-rate-limit headers and slow down
@@ -152,6 +153,24 @@ func (c *Client) Post(endpoint string, body io.Reader) ([]byte, error) {
 	}
 
 	request, err := http.NewRequest("POST", endpoint, body)
+	if err != nil {
+		return nil, errors.E(
+			"failed to build request",
+			err,
+			errors.Runtime,
+		)
+	}
+
+	return c.Do(request)
+}
+
+func (c *Client) Put(endpoint string, body io.Reader) ([]byte, error) {
+	endpoint, err := c.prepareURL(endpoint)
+	if err != nil {
+		return nil, err
+	}
+
+	request, err := http.NewRequest("PUT", endpoint, body)
 	if err != nil {
 		return nil, errors.E(
 			"failed to build request",
