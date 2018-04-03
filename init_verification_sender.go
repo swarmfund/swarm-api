@@ -2,16 +2,17 @@ package api
 
 import (
 	"time"
-	"gitlab.com/swarmfund/api/internal/clienturl"
+
 	"gitlab.com/distributed_lab/logan/v3"
 	"gitlab.com/distributed_lab/logan/v3/errors"
+	"gitlab.com/swarmfund/api/internal/clienturl"
 )
 
 func initVerificationSender(app *App) {
 	go func() {
 		log := logan.New()
 		ticker := time.NewTicker(5 * time.Second)
-		for ; ; <-ticker.C  {
+		for ; ; <-ticker.C {
 			err := sendVerifications(app, log)
 			if err != nil {
 				log.WithError(err).Error("Failed to send verifications")
@@ -35,7 +36,7 @@ func sendVerifications(app *App, log *logan.Entry) error {
 
 	for _, token := range tokens {
 		payload := clienturl.EmailVerification(token.WalletID, token.Token)
-		err = app.Config().Notificator().SendVerificationLink(token.Email, payload)
+		err = app.notificator.SendVerificationLink(token.Email, payload)
 		if err != nil {
 			log.WithError(err).WithField("email", token.Email).Warn("failed to send verification link")
 			continue

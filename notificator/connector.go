@@ -9,6 +9,7 @@ import (
 	"github.com/pkg/errors"
 	"gitlab.com/distributed_lab/notificator"
 	"gitlab.com/swarmfund/api/internal/clienturl"
+	"gitlab.com/swarmfund/horizon-connector/v2"
 )
 
 const (
@@ -46,6 +47,41 @@ func NewConnector(conf Config) *Connector {
 		),
 		conf: conf,
 	}
+}
+
+func (c *Connector) Init(connector *horizon.Connector) error {
+	emailConfirmation, err := getTemplate("email_confirm", connector)
+	if err != nil {
+		return errors.Wrap(err, "failed to get template")
+	}
+	c.conf.EmailConfirmation = emailConfirmation
+
+	kycApprove, err := getTemplate("kyc_approve", connector)
+	if err != nil {
+		return errors.Wrap(err, "failed to get template")
+	}
+
+	c.conf.KYCApprove = kycApprove
+
+	kycReject, err := getTemplate("kyc_reject", connector)
+	if err != nil {
+		return errors.Wrap(err, "failed to get template")
+	}
+
+	c.conf.KYCReject = kycReject
+
+	return nil
+}
+
+func getTemplate(name string, connector *horizon.Connector) (*template.Template, error) {
+	q := connector.Templates()
+
+	body, err := q.Get(name)
+	if err != nil {
+		return nil, errors.Wrap(err, fmt.Sprintf("unable to download %s", name))
+	}
+
+	return template.New(name).Parse(string(body))
 }
 
 func (c *Connector) SendVerificationLink(email string, payload clienturl.Payload) error {

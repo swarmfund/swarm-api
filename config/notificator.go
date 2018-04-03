@@ -3,7 +3,6 @@ package config
 import (
 	"github.com/pkg/errors"
 	"gitlab.com/distributed_lab/figure"
-	"gitlab.com/swarmfund/api/assets"
 	"gitlab.com/swarmfund/api/notificator"
 )
 
@@ -11,6 +10,8 @@ const (
 	notificatorConfigKey = "notificator"
 )
 
+//Warning: Do not call the Notificator directly,
+//use instead of it the notificator that is in api.API
 func (c *ViperConfig) Notificator() *notificator.Connector {
 	c.Lock()
 	defer c.Unlock()
@@ -24,10 +25,6 @@ func (c *ViperConfig) Notificator() *notificator.Connector {
 		if err != nil {
 			panic(errors.Wrap(err, "failed to figure out notificator"))
 		}
-
-		config.EmailConfirmation = assets.Templates.Lookup("email_confirm")
-		config.KYCApprove = assets.Templates.Lookup("kyc_approve")
-		config.KYCReject = assets.Templates.Lookup("kyc_reject")
 
 		c.notificator = notificator.NewConnector(config)
 	}

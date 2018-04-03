@@ -18,6 +18,7 @@ import (
 	"gitlab.com/swarmfund/api/internal/data/postgres"
 	"gitlab.com/swarmfund/api/internal/hose"
 	"gitlab.com/swarmfund/api/log"
+	"gitlab.com/swarmfund/api/notificator"
 	"gitlab.com/swarmfund/api/storage"
 	"gitlab.com/swarmfund/go/doorman"
 	"gitlab.com/swarmfund/horizon-connector/v2"
@@ -42,16 +43,23 @@ type App struct {
 	memoryCache    *cache.Cache
 	storage        *storage.Connector
 	// DEPRECATED
-	horizon *horizon.Connector
-	txBus   *hose.TransactionBus
-	userBus *hose.UserBus
+	horizon     *horizon.Connector
+	txBus       *hose.TransactionBus
+	userBus     *hose.UserBus
+	notificator *notificator.Connector
 }
 
 // NewApp constructs an new App instance from the provided config.
 func NewApp(config config.Config) (*App, error) {
+	notificator := config.Notificator()
+	if err := notificator.Init(config.Horizon()); err != nil {
+		return nil, errors.Wrap(err, "failed to init notificator")
+	}
+
 	result := &App{
-		config:  config,
-		horizon: config.Horizon(),
+		config:      config,
+		horizon:     config.Horizon(),
+		notificator: notificator,
 	}
 	result.ticks = time.NewTicker(10 * time.Second)
 	result.init()
@@ -102,7 +110,7 @@ func (a *App) Serve() {
 		a.Blobs(),
 		a.Config().Sentry(),
 		a.userBus.Dispatch,
-		a.Config().Notificator(),
+		a.notificator,
 		a.APIRepo(a.ctx),
 		a.config.Wallets(),
 	)
