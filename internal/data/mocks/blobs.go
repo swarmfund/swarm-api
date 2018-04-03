@@ -59,11 +59,11 @@ func (_m *Blobs) ByType(_a0 types.BlobType) data.Blobs {
 }
 
 // Create provides a mock function with given fields: address, blob
-func (_m *Blobs) Create(address types.Address, blob *types.Blob) error {
+func (_m *Blobs) Create(address *types.Address, blob *types.Blob) error {
 	ret := _m.Called(address, blob)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(types.Address, *types.Blob) error); ok {
+	if rf, ok := ret.Get(0).(func(*types.Address, *types.Blob) error); ok {
 		r0 = rf(address, blob)
 	} else {
 		r0 = ret.Error(0)

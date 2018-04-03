@@ -9,7 +9,7 @@ type Blobs interface {
 	New() Blobs
 	Transaction(fn func(Blobs) error) error
 	Delete(...types.Blob) error
-	Create(address types.Address, blob *types.Blob) error
+	Create(address *types.Address, blob *types.Blob) error
 	Get(id string) (*types.Blob, error)
 
 	// filter
