@@ -417,15 +417,21 @@
     "v2/internal",
     "v2/internal/account",
     "v2/internal/asset",
+    "v2/internal/balance",
+    "v2/internal/blob",
+    "v2/internal/document",
     "v2/internal/errors",
     "v2/internal/listener",
     "v2/internal/operation",
     "v2/internal/resources",
     "v2/internal/responses",
+    "v2/internal/sale",
+    "v2/internal/templates",
     "v2/internal/transaction",
+    "v2/internal/user",
     "v2/types"
   ]
-  revision = "6cbe31566de2ccec2b7ea83b841ee5ce86f0223d"
+  revision = "56f75ea32aaedf41d28d02cc4d175c533f80234c"
 
 [[projects]]
   branch = "master"
