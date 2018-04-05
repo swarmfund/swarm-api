@@ -44,6 +44,9 @@ type User struct {
 	RecoveryAddress types.Address `db:"recovery_address"`
 	// AirdropState treat nils as valid undefined value, comes from json on airdrops
 	AirdropState *types.AirdropState `db:"airdrop_state"`
+
+	//Relationships
+	KYCBlobValue *[]byte `db:"value"`
 }
 
 func (user *User) IsAirdropEligible() bool {
