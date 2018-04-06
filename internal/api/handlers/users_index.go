@@ -32,6 +32,7 @@ type (
 		//Relationships
 		FirstName *string `url:"first_name"`
 		LastName  *string `url:"last_name"`
+		Country   *string `url:"country"`
 	}
 )
 
@@ -91,6 +92,10 @@ func UsersIndex(w http.ResponseWriter, r *http.Request) {
 
 	if filters.LastName != nil {
 		q = q.ByLastName(*filters.LastName)
+	}
+
+	if filters.Country != nil {
+		q = q.ByCountry(*filters.Country)
 	}
 
 	if err := q.Select(&records); err != nil {

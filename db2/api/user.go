@@ -45,8 +45,7 @@ type User struct {
 	// AirdropState treat nils as valid undefined value, comes from json on airdrops
 	AirdropState *types.AirdropState `db:"airdrop_state"`
 
-	//Relationships
-	//TODO ADD DESCRIPTION
+	//KYCBlobValue this is addition value comes from blobs.Value for specific user
 	KYCBlobValue *string `db:"kyc_blob_value"`
 }
 
