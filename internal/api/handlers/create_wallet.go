@@ -111,6 +111,10 @@ func CreateWallet(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
+		if err := EmailTokensQ(r).Create(wallet.WalletId, lorem.Token(), Wallet(r).DisableConfirm); err != nil {
+			return errors.Wrap(err, "failed to create email token")
+		}
+
 		return nil
 	})
 	if err != nil {
@@ -121,15 +125,20 @@ func CreateWallet(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		if cause == api.ErrWalletsKDFViolated {
+		switch cause {
+		case api.ErrWalletsKDFViolated:
 			ape.RenderErr(w, problems.BadRequest(Errors{
 				"/data/relationships/kdf/data/id": errors.New("invalid kdf version"),
 			})...)
-			return
+		case api.ErrReferrerConstraintViolated:
+			ape.RenderErr(w, problems.BadRequest(Errors{
+				"/data/relationships/referrer": errors.New("account doesn't exists"),
+			})...)
+		default:
+			Log(r).WithError(err).Error("failed to save wallet")
+			ape.RenderErr(w, problems.InternalError())
 		}
 
-		Log(r).WithError(err).Error("failed to save wallet")
-		ape.RenderErr(w, problems.InternalError())
 		return
 	}
 
@@ -139,11 +148,4 @@ func CreateWallet(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(&resource)
 	}
 
-	// wallet has been saved, so technically request has succeeded
-	// no errors should be rendered from now on
-	// TODO move token create to transaction
-	if err := EmailTokensQ(r).Create(wallet.WalletId, lorem.Token(), Wallet(r).DisableConfirm); err != nil {
-		Log(r).WithError(err).Error("failed to save token")
-		return
-	}
 }
