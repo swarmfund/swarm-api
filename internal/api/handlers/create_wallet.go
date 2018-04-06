@@ -111,10 +111,6 @@ func CreateWallet(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
-		if err := EmailTokensQ(r).Create(wallet.WalletId, lorem.Token(), Wallet(r).DisableConfirm); err != nil {
-			return errors.Wrap(err, "failed to create email token")
-		}
-
 		return nil
 	})
 	if err != nil {
@@ -148,4 +144,11 @@ func CreateWallet(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(&resource)
 	}
 
+	// wallet has been saved, so technically request has succeeded
+	// no errors should be rendered from now on
+	// TODO move token create to transaction
+	if err := EmailTokensQ(r).Create(wallet.WalletId, lorem.Token(), Wallet(r).DisableConfirm); err != nil {
+		Log(r).WithError(err).Error("failed to save token")
+		return
+	}
 }
