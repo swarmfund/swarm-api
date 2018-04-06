@@ -23,7 +23,7 @@ var (
 		"r.address as recovery_address",
 		"a.state as airdrop_state",
 		"(select json_agg(kyc) from kyc_entities kyc where kyc.user_id=u.id) as kyc_entities",
-		"u.address, b.value",
+		"b.value as kyc_blob_value",
 	).
 		Join("recoveries r on r.wallet=u.email").
 		// joining left since it's optional due to late migration
@@ -42,10 +42,10 @@ var (
 
 //UsersQ is a helper struct to aid in configuring queries that loads users
 type UsersQ struct {
-	Err           error
-	parent        *Q
-	sql           sq.SelectBuilder
-	relationships bool
+	Err         error
+	parent      *Q
+	sql         sq.SelectBuilder
+	isKYCJoined bool
 }
 
 type UsersQI interface {
@@ -400,9 +400,9 @@ func (q *UsersQ) Participants(ops map[int64][]Participant) error {
 }
 
 func (q *UsersQ) setRelationships() {
-	if !q.relationships {
+	if !q.isKYCJoined {
 		q.sql = q.sql.Where("CAST( b.relationships->>'kyc_sequence' AS INT) = u.kyc_sequence AND b.type = ?", types.BlobTypeKYCForm)
-		q.relationships = true
+		q.isKYCJoined = true
 	}
 }
 

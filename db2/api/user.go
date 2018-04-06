@@ -46,7 +46,8 @@ type User struct {
 	AirdropState *types.AirdropState `db:"airdrop_state"`
 
 	//Relationships
-	KYCBlobValue *[]byte `db:"value"`
+	//TODO ADD DESCRIPTION
+	KYCBlobValue *string `db:"kyc_blob_value"`
 }
 
 func (user *User) IsAirdropEligible() bool {

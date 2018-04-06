@@ -25,15 +25,7 @@ type (
 	}
 
 	UserRelationships struct {
-		KYC *UserKYC `json:"kyc"`
-	}
-
-	UserKYC struct {
-		Data *UserData `json:"data"`
-	}
-
-	UserData struct {
-		Value *string `json:"value"`
+		KYC *Blob `json:"kyc,omitempty"`
 	}
 )
 
@@ -52,15 +44,9 @@ func NewUser(user *api.User) User {
 	relationships := &UserRelationships{}
 
 	if user.KYCBlobValue != nil {
-		value := string(*user.KYCBlobValue)
-
-		data := &UserData{Value: &value}
-
-		kyc := &UserKYC{
-			Data: data,
-		}
-
-		relationships.KYC = kyc
+		blob := &Blob{}
+		blob.Attributes.Value = *user.KYCBlobValue
+		relationships.KYC = blob
 	}
 
 	return User{
