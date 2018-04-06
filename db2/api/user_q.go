@@ -22,10 +22,13 @@ var (
 		"u.*",
 		"r.address as recovery_address",
 		"a.state as airdrop_state",
-		"(select json_agg(kyc) from kyc_entities kyc where kyc.user_id=u.id) as kyc_entities").
+		"(select json_agg(kyc) from kyc_entities kyc where kyc.user_id=u.id) as kyc_entities",
+		"b.value as kyc_blob_value",
+	).
 		Join("recoveries r on r.wallet=u.email").
 		// joining left since it's optional due to late migration
 		LeftJoin("airdrops a on a.owner=u.address").
+		LeftJoin("blobs b ON u.address = b.owner_address AND CAST( b.relationships->>'kyc_sequence' AS INT) = u.kyc_sequence AND b.type = ?", types.BlobTypeKYCForm).
 		From(tableUserAliased)
 
 	insertUser = sq.Insert(tableUser)
@@ -87,6 +90,11 @@ type UsersQI interface {
 
 	Documents(version int64) DocumentsQI
 	KYC() KYCQI
+
+	//Relationships
+	ByFirstName(firstName string) UsersQI
+	ByLastName(lastName string) UsersQI
+	ByCountry(country string) UsersQI
 }
 
 func (q *Q) Users() UsersQI {
@@ -389,4 +397,22 @@ func (q *UsersQ) Participants(ops map[int64][]Participant) error {
 	}
 
 	return nil
+}
+
+func (q *UsersQ) ByFirstName(firstName string) UsersQI {
+	q.sql = q.sql.Where("b.value::jsonb->>'first_name' = ?", firstName)
+
+	return q
+}
+
+func (q *UsersQ) ByLastName(lastName string) UsersQI {
+	q.sql = q.sql.Where("b.value::jsonb->>'last_name' = ?", lastName)
+
+	return q
+}
+
+func (q *UsersQ) ByCountry(country string) UsersQI {
+	q.sql = q.sql.Where("b.value::jsonb->'address'->>'country' = ?", country)
+
+	return q
 }
