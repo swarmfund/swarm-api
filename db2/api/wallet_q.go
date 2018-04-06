@@ -37,14 +37,16 @@ const (
 	tableWalletsLimit               = 10
 	walletsKDFFkeyConstraint        = `wallets_kdf_fkey`
 	walletsWalletIDKeyConstraint    = `wallets_wallet_id_key`
+	referralsReferrerFkeyConstraint = `referrals_referrer_wallets_fkey`
 	recoveriesWalletIDKeyConstraint = `recoveries_wallet_id_unique_constraint`
 )
 
 var (
-	ErrWalletsKDFViolated      = errors.New("wallets_kdf_fkey violated")
-	ErrWalletsWalletIDViolated = errors.New("wallets_wallet_id_key violated")
-	ErrWalletsConflict         = errors.New("wallet already exists")
-	ErrRecoveriesConflict      = errors.New("recovery already exists")
+	ErrWalletsKDFViolated         = errors.New("wallets_kdf_fkey violated")
+	ErrWalletsWalletIDViolated    = errors.New("wallets_wallet_id_key violated")
+	ErrWalletsConflict            = errors.New("wallet already exists")
+	ErrRecoveriesConflict         = errors.New("recovery already exists")
+	ErrReferrerConstraintViolated = errors.New("referrer does not exists")
 )
 
 type RecoveryKeychain struct {
@@ -149,6 +151,15 @@ func (q *WalletQ) CreateReferral(referrer types.Address, referral types.Address)
 	})
 
 	_, err := q.parent.Exec(stmt)
+
+	if err != nil {
+		pqerr, ok := errors.Cause(err).(*pq.Error)
+		if ok {
+			if pqerr.Constraint == referralsReferrerFkeyConstraint {
+				return ErrReferrerConstraintViolated
+			}
+		}
+	}
 	return err
 }
 
