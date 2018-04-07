@@ -71,6 +71,7 @@ func Router(
 	r.Route("/wallets", func(r chi.Router) {
 		// admin endpoints
 		r.Get("/", handlers.WalletsIndex)
+		r.Delete("/{wallet-id}", handlers.DeleteWallets)
 
 		// signup
 		r.Post("/", handlers.CreateWallet)

@@ -21,14 +21,15 @@ type (
 		Links urlval.FilterLinks `json:"links"`
 	}
 	WalletsIndexData    []resources.WalletData
-	WalletsIndexFitlers struct {
-		Page  uint64  `url:"page"`
-		State *uint64 `url:"state"`
+	WalletsIndexFilters struct {
+		Page     uint64  `url:"page"`
+		State    *uint64 `url:"state"`
+		Verified *bool   `url:"verified"`
 	}
 )
 
-func NewWalletsFilters(r *http.Request) (WalletsIndexFitlers, error) {
-	filters := WalletsIndexFitlers{
+func NewWalletsFilters(r *http.Request) (WalletsIndexFilters, error) {
+	filters := WalletsIndexFilters{
 		Page: 1,
 	}
 	if err := urlval.Decode(r.URL.Query(), &filters); err != nil {
@@ -37,7 +38,7 @@ func NewWalletsFilters(r *http.Request) (WalletsIndexFitlers, error) {
 	return filters, filters.Validate()
 }
 
-func (r WalletsIndexFitlers) Validate() error {
+func (r WalletsIndexFilters) Validate() error {
 	return ValidateStruct(&r,
 		Field(&r.Page, Min(uint64(1))),
 		Field(&r.State, Min(uint64(1))),
@@ -60,6 +61,12 @@ func WalletsIndex(w http.ResponseWriter, r *http.Request) {
 
 	if filters.State != nil {
 		q = q.ByState(*filters.State)
+	}
+
+	if filters.Verified != nil {
+		if !*filters.Verified {
+			q = q.Unverified()
+		}
 	}
 
 	wallets, err := q.Select()
