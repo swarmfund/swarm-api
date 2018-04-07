@@ -9,9 +9,10 @@ import (
 
 type (
 	User struct {
-		Type       types.UserType `json:"type"`
-		ID         types.Address  `json:"id"`
-		Attributes UserAttributes `json:"attributes"`
+		Type          types.UserType     `json:"type"`
+		ID            types.Address      `json:"id"`
+		Attributes    UserAttributes     `json:"attributes"`
+		Relationships *UserRelationships `json:"relationships,omitempty"`
 	}
 	UserAttributes struct {
 		Email           string             `json:"email"`
@@ -21,6 +22,10 @@ type (
 		RecoveryAddress types.Address      `json:"recovery_address"`
 		CreatedAt       time.Time          `json:"created_at"`
 		AirdropState    types.AirdropState `json:"airdrop_state"`
+	}
+
+	UserRelationships struct {
+		KYC *Blob `json:"kyc,omitempty"`
 	}
 )
 
@@ -35,6 +40,15 @@ func NewUser(user *api.User) User {
 		}
 		user.AirdropState = &state
 	}
+
+	relationships := &UserRelationships{}
+
+	if user.KYCBlobValue != nil {
+		blob := &Blob{}
+		blob.Attributes.Value = *user.KYCBlobValue
+		relationships.KYC = blob
+	}
+
 	return User{
 		Type: user.UserType,
 		ID:   user.Address,
@@ -47,5 +61,6 @@ func NewUser(user *api.User) User {
 			AirdropState:    *user.AirdropState,
 			CreatedAt:       user.CreatedAt,
 		},
+		Relationships: relationships,
 	}
 }
