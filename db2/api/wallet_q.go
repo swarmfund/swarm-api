@@ -97,14 +97,10 @@ type WalletQI interface {
 
 	Update(w *Wallet) error
 
-	// DEPRECATED
 	Page(uint64) WalletQI
-	// DEPRECATED
 	ByState(uint64) WalletQI
-	// DEPRECATED
 	Select() ([]Wallet, error)
 
-	Unverified() WalletQI
 	Delete(walletID string) error
 }
 
@@ -414,11 +410,6 @@ func (q *WalletQ) Update(w *Wallet) error {
 	}
 
 	return err
-}
-
-func (q *WalletQ) Unverified() WalletQI {
-	q.sql = q.sql.Where("confirmed = FALSE")
-	return q
 }
 
 func (q *WalletQ) Delete(walletID string) error {

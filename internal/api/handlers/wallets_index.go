@@ -22,9 +22,9 @@ type (
 	}
 	WalletsIndexData    []resources.WalletData
 	WalletsIndexFilters struct {
-		Page     uint64  `url:"page"`
-		State    *uint64 `url:"state"`
-		Verified *bool   `url:"verified"`
+		Page  uint64  `url:"page"`
+		State *uint64 `url:"state"`
+		//TODO ADD LAST SENT AFTER URLVAL
 	}
 )
 
@@ -61,12 +61,6 @@ func WalletsIndex(w http.ResponseWriter, r *http.Request) {
 
 	if filters.State != nil {
 		q = q.ByState(*filters.State)
-	}
-
-	if filters.Verified != nil {
-		if !*filters.Verified {
-			q = q.Unverified()
-		}
 	}
 
 	wallets, err := q.Select()
