@@ -81,31 +81,40 @@ func checkKYC(change xdr.LedgerEntryChange) *api.UserStateUpdate {
 }
 
 func checkType(change xdr.LedgerEntryChange) *api.UserStateUpdate {
+	var account *xdr.AccountEntry
 	switch change.Type {
 	case xdr.LedgerEntryChangeTypeUpdated:
 		entry := change.Updated.Data
 		switch entry.Type {
 		case xdr.LedgerEntryTypeAccount:
-			account := entry.Account
-			var tpe types.UserType
-			switch account.AccountType {
-			case xdr.AccountTypeNotVerified:
-				tpe = types.UserTypeNotVerified
-			case xdr.AccountTypeGeneral:
-				tpe = types.UserTypeGeneral
-			case xdr.AccountTypeSyndicate:
-				tpe = types.UserTypeSyndicate
-			case xdr.AccountTypeCommission, xdr.AccountTypeExchange, xdr.AccountTypeMaster, xdr.AccountTypeOperational:
-				return nil
-			default:
-				panic(errors.From(errors.New("unexpected account type"), logan.F{
-					"account": account.AccountId.Address(),
-				}))
-			}
-			return &api.UserStateUpdate{
-				Address: types.Address(account.AccountId.Address()),
-				Type:    &tpe,
-			}
+			account = entry.Account
+		}
+	case xdr.LedgerEntryChangeTypeCreated:
+		entry := change.Created.Data
+		switch entry.Type {
+		case xdr.LedgerEntryTypeAccount:
+			account = entry.Account
+		}
+	}
+	if account != nil {
+		var tpe types.UserType
+		switch account.AccountType {
+		case xdr.AccountTypeNotVerified:
+			tpe = types.UserTypeNotVerified
+		case xdr.AccountTypeGeneral:
+			tpe = types.UserTypeGeneral
+		case xdr.AccountTypeSyndicate:
+			tpe = types.UserTypeSyndicate
+		case xdr.AccountTypeCommission, xdr.AccountTypeExchange, xdr.AccountTypeMaster, xdr.AccountTypeOperational:
+			return nil
+		default:
+			panic(errors.From(errors.New("unexpected account type"), logan.F{
+				"account": account.AccountId.Address(),
+			}))
+		}
+		return &api.UserStateUpdate{
+			Address: types.Address(account.AccountId.Address()),
+			Type:    &tpe,
 		}
 	}
 	return nil
