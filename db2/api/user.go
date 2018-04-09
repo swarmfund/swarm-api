@@ -19,20 +19,19 @@ import (
 // * remove DeletedAt
 // * UpdatedAt probably useless because of joins
 type User struct {
+	// DEPRECATED
 	ID      int64         `db:"id"`
 	Address types.Address `db:"address"`
 	// TODO join from wallets address->account_id
-	Email             string               `db:"email"`
-	UserType          types.UserType       `db:"type"`
-	State             types.UserState      `db:"state"`
-	KYCSequence       int64                `db:"kyc_sequence"`
-	RejectReason      string               `db:"reject_reason"`
-	Documents         Documents            `db:"documents"`
-	DocumentsVersion  int64                `db:"documents_version"`
-	LimitReviewStatue UserLimitReviewState `db:"limit_review_state"`
-	CreatedAt         time.Time            `db:"created_at"`
-	UpdatedAt         string               `db:"updated_at"`
-	DeletedAt         sql.NullString       `db:"deleted_at"`
+	Email        string `db:"email"`
+	KYCSequence  int64  `db:"kyc_sequence"`
+	RejectReason string `db:"reject_reason"`
+
+	CreatedAt time.Time `db:"created_at"`
+	UpdatedAt string    `db:"updated_at"`
+
+	// DEPRECATED
+	DeletedAt sql.NullString `db:"deleted_at"`
 
 	// Nickname comes from join on contacts table when needed
 	Nickname null.String `db:"nickname"`
