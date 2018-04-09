@@ -329,12 +329,6 @@
 
 [[projects]]
   branch = "master"
-  name = "github.com/streadway/amqp"
-  packages = ["."]
-  revision = "ff791c2d22d3f1588b4e2cc71a9fba5e1da90654"
-
-[[projects]]
-  branch = "master"
   name = "github.com/stretchr/objx"
   packages = ["."]
   revision = "1a9d0bb9f541897e62256577b352fdbc1fb4fd94"
@@ -407,7 +401,7 @@
     "xdrbuild",
     "xdrbuild/internal"
   ]
-  revision = "2c8e0dfa264e645fb01fba44ec1a84e37b9bfea3"
+  revision = "df01be5b24e03f9eb4022f501480bdc10b26dc57"
 
 [[projects]]
   branch = "master"
@@ -417,15 +411,21 @@
     "v2/internal",
     "v2/internal/account",
     "v2/internal/asset",
+    "v2/internal/balance",
+    "v2/internal/blob",
+    "v2/internal/document",
     "v2/internal/errors",
     "v2/internal/listener",
     "v2/internal/operation",
     "v2/internal/resources",
     "v2/internal/responses",
+    "v2/internal/sale",
+    "v2/internal/templates",
     "v2/internal/transaction",
+    "v2/internal/user",
     "v2/types"
   ]
-  revision = "6cbe31566de2ccec2b7ea83b841ee5ce86f0223d"
+  revision = "56f75ea32aaedf41d28d02cc4d175c533f80234c"
 
 [[projects]]
   branch = "master"
@@ -511,6 +511,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "76a28f1c16da02f62aa60dfaaf3f5af8fcca8af0d0d39596659c333065b051a9"
+  inputs-digest = "1d41a423924440dcd8269fe8c56a776c379cfaa6c09384f4bda7292e161aff6f"
   solver-name = "gps-cdcl"
   solver-version = 1
