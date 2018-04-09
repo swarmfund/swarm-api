@@ -203,10 +203,10 @@ func (q *UsersQ) SetState(update UserStateUpdate) error {
 		clauses["kyc_blob"] = *update.KYCBlob
 	}
 
-	stmt := sq.Insert("user_states").SetMap(clauses).Suffix(`
+	stmt := sq.Insert("user_states as us").SetMap(clauses).Suffix(`
 		ON CONFLICT (address) DO UPDATE
-			SET state = coalesce(excluded.state, state), type = coalesce(excluded.type, type), updated_at = coalesce(excluded.updated_at, updated_at)
-			WHERE user_states.updated_at <= excluded.updated_at
+			SET state = coalesce(excluded.state, us.state), type = coalesce(excluded.type, us.type), updated_at = coalesce(excluded.updated_at, us.updated_at)
+			WHERE us.updated_at <= excluded.updated_at
 	`)
 	_, err := q.parent.Exec(stmt)
 	return err
