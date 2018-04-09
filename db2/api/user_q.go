@@ -130,12 +130,12 @@ func (q *UsersQ) WithIntegration(exchange string) UsersQI {
 }
 
 func (q *UsersQ) ByState(state types.UserState) UsersQI {
-	q.sql = q.sql.Where("u.state & ? != 0", state)
+	q.sql = q.sql.Where("us.state & ? != 0", state)
 	return q
 }
 
 func (q *UsersQ) ByType(tpe types.UserType) UsersQI {
-	q.sql = q.sql.Where("u.type & ? != 0", tpe)
+	q.sql = q.sql.Where("us.type & ? != 0", tpe)
 	return q
 }
 
