@@ -95,6 +95,8 @@ func checkType(change xdr.LedgerEntryChange) *api.UserStateUpdate {
 				tpe = types.UserTypeGeneral
 			case xdr.AccountTypeSyndicate:
 				tpe = types.UserTypeSyndicate
+			case xdr.AccountTypeCommission, xdr.AccountTypeExchange, xdr.AccountTypeMaster, xdr.AccountTypeOperational:
+				return nil
 			default:
 				panic(errors.From(errors.New("unexpected account type"), logan.F{
 					"account": account.AccountId.Address(),
@@ -121,8 +123,15 @@ func init() {
 			}
 			for _, change := range event.Transaction.LedgerChanges() {
 				for _, mutator := range mutators {
-					// TODO defer on mutator call
-					if update := mutator(change); update != nil {
+					update := func() *api.UserStateUpdate {
+						defer func() {
+							if rvr := recover(); rvr != nil {
+								entry.WithRecover(rvr).Error("mutator panicked")
+							}
+						}()
+						return mutator(change)
+					}()
+					if update != nil {
 						update.Timestamp = event.Transaction.CreatedAt
 						err := app.apiQ.Users().SetState(*update)
 						if err != nil {
