@@ -3,8 +3,6 @@ package handlers
 import (
 	"net/http"
 
-	"time"
-
 	"github.com/go-chi/chi"
 	. "github.com/go-ozzo/ozzo-validation"
 	"gitlab.com/distributed_lab/ape"
@@ -50,16 +48,18 @@ func performUserCreate(r *http.Request, wallet *api.Wallet) error {
 		user := &api.User{
 			Address: wallet.AccountID,
 			Email:   wallet.Username,
-			// everybody is created equal
-			UserType: types.UserTypeNotVerified,
-			State:    types.UserStateNil,
+		}
+		state := api.UserStateUpdate{
+			Address: wallet.AccountID,
+			Type:    &types.DefaultUserType,
+			State:   &types.DefaultUserState,
 		}
 
 		if err := q.Create(user); err != nil {
 			return errors.Wrap(err, "failed to insert user")
 		}
 
-		if err := q.SetState(time.Time{}, user); err != nil {
+		if err := q.SetState(state); err != nil {
 			return errors.Wrap(err, "failed to insert user state")
 		}
 

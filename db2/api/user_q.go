@@ -55,6 +55,8 @@ type UsersQ struct {
 }
 
 type UsersQI interface {
+	UserStateQ
+
 	New() UsersQI
 	Transaction(func(UsersQI) error) error
 
@@ -82,7 +84,6 @@ type UsersQI interface {
 
 	// Create expected to set inserted record ID on u
 	Create(u *User) error
-	SetState(ts time.Time, u *User) error
 	Update(u *User) error
 
 	KYC() KYCQI
@@ -160,14 +161,6 @@ func (q *UsersQ) Update(user *User) error {
 	return err
 }
 
-func (q *UsersQ) LimitReviewState(address string, state UserLimitReviewState) error {
-	sql := updateUser(address).
-		Set("limit_review_state", state)
-
-	_, err := q.parent.Exec(sql)
-	return err
-}
-
 // ByAddress loads a row from `users`, by address
 func (q *UsersQ) ByAddress(address string) (*User, error) {
 	dest := new(User)
@@ -195,13 +188,26 @@ func (q *UsersQ) ByEmail(email string) (*User, error) {
 	return dest, err
 }
 
-func (q *UsersQ) SetState(updatedAt time.Time, u *User) error {
-	stmt := sq.Insert("user_states").SetMap(map[string]interface{}{
-		"address":    u.Address,
-		"state":      u.State,
-		"type":       u.UserType,
-		"updated_at": updatedAt,
-	}).Suffix("ON CONFLICT (address) DO UPDATE SET state = excluded.state, TYPE = excluded.type, updated_at = excluded.updated_at")
+func (q *UsersQ) SetState(update UserStateUpdate) error {
+	clauses := map[string]interface{}{
+		"address":    update.Address,
+		"updated_at": update.Timestamp,
+	}
+	if update.State != nil {
+		clauses["state"] = *update.State
+	}
+	if update.Type != nil {
+		clauses["type"] = *update.Type
+	}
+	if update.KYCBlob != nil {
+		clauses["kyc_blob"] = *update.KYCBlob
+	}
+
+	stmt := sq.Insert("user_states").SetMap(clauses).Suffix(`
+		ON CONFLICT (address) DO UPDATE
+			SET state = excluded.state, TYPE = excluded.type, updated_at = excluded.updated_at
+			WHERE user_states.updated_at <= excluded.updated_at
+	`)
 	_, err := q.parent.Exec(stmt)
 	return err
 }
@@ -210,8 +216,6 @@ func (q *UsersQ) Create(u *User) error {
 	sql := insertUser.SetMap(map[string]interface{}{
 		"address": u.Address,
 		"email":   u.Email,
-		"type":    u.UserType,
-		"state":   u.State,
 	}).Suffix("returning id")
 
 	err := q.parent.Get(&(u.ID), sql)
