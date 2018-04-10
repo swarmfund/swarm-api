@@ -9,7 +9,22 @@ import (
 	"gitlab.com/swarmfund/go/xdr"
 )
 
-func checkState(change xdr.LedgerEntryChange) *api.UserStateUpdate {
+type KYCUpdateRequest struct {
+	Requestor types.Address
+}
+
+type StateChecker struct {
+	requests map[xdr.Uint64]KYCUpdateRequest
+}
+
+func NewCheckState() func(change xdr.LedgerEntryChange) *api.UserStateUpdate {
+	s := StateChecker{
+		requests: map[xdr.Uint64]KYCUpdateRequest{},
+	}
+	return s.checkState
+}
+
+func (s *StateChecker) checkState(change xdr.LedgerEntryChange) *api.UserStateUpdate {
 	switch change.Type {
 	case xdr.LedgerEntryChangeTypeCreated:
 		entry := change.Created.Data
@@ -18,6 +33,11 @@ func checkState(change xdr.LedgerEntryChange) *api.UserStateUpdate {
 			request := entry.ReviewableRequest
 			switch entry.ReviewableRequest.Body.Type {
 			case xdr.ReviewableRequestTypeUpdateKyc:
+				// track kyc update requests once created,
+				// so we could determine it's details once it deleted
+				s.requests[request.RequestId] = KYCUpdateRequest{
+					Requestor: types.Address(request.Requestor.Address()),
+				}
 				state := types.UserStateWaitingForApproval
 				return &api.UserStateUpdate{
 					Address: types.Address(request.Requestor.Address()),
@@ -49,7 +69,14 @@ func checkState(change xdr.LedgerEntryChange) *api.UserStateUpdate {
 	case xdr.LedgerEntryChangeTypeRemoved:
 		switch change.Removed.Type {
 		case xdr.LedgerEntryTypeReviewableRequest:
-			// TODO track requests state locally
+			// relying on request tracking on create entry
+			request, ok := s.requests[change.Removed.ReviewableRequest.RequestId]
+			if ok {
+				return &api.UserStateUpdate{
+					Address: request.Requestor,
+					State:   &types.DefaultUserState,
+				}
+			}
 		}
 	}
 	return nil
@@ -124,7 +151,7 @@ func init() {
 	appInit.Add("user-state-watcher", func(app *App) {
 		entry := app.Config().Log().WithField("service", "user-state-watcher")
 		mutators := []func(xdr.LedgerEntryChange) *api.UserStateUpdate{
-			checkState, checkKYC, checkType,
+			NewCheckState(), checkKYC, checkType,
 		}
 		app.txBus.Subscribe(func(event hose.TransactionEvent) {
 			if event.Transaction == nil {
