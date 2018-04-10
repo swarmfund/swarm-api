@@ -33,7 +33,7 @@ var (
 		"coalesce(us.state, 0) as user_state",
 		"coalesce(us.type, 0) as user_type",
 	).
-		Join("user_states us on us.address=u.address").
+		LeftJoin("user_states us on us.address=u.address").
 		Join("recoveries r on r.wallet=u.email").
 		// joining left since it's optional due to late migration
 		LeftJoin("airdrops a on a.owner=u.address").
