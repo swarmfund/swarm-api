@@ -8,7 +8,8 @@ var (
 )
 
 const (
-	UserTypeNotVerified UserType = 1 << iota
+	UserTypeUndefined UserType = 1<<iota - 1
+	UserTypeNotVerified
 	UserTypeSyndicate
 	UserTypeGeneral
 )

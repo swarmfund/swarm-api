@@ -8,7 +8,8 @@ var (
 )
 
 const (
-	UserStateNil UserState = 1 << iota
+	UserStateUndefined UserState = 1<<iota - 1
+	UserStateNil
 	UserStateWaitingForApproval
 	UserStateApproved
 	UserStateRejected

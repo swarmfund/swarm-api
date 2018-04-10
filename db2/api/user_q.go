@@ -28,8 +28,10 @@ var (
 		"a.state as airdrop_state",
 		"(select json_agg(kyc) from kyc_entities kyc where kyc.user_id=u.id) as kyc_entities",
 		"b.value as kyc_blob_value",
-		"us.state as user_state",
-		"us.type as user_type",
+		// state and type might be nil if ingestion is still in progress,
+		// make sure resources render some meaningful stub values that will not break clients
+		"coalesce(us.state, 0) as user_state",
+		"coalesce(us.type, 0) as user_type",
 	).
 		Join("user_states us on us.address=u.address").
 		Join("recoveries r on r.wallet=u.email").
