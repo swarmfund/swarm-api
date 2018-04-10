@@ -8,8 +8,8 @@ var (
 )
 
 const (
-	UserTypeUndefined UserType = 1<<iota - 1
-	UserTypeNotVerified
-	UserTypeSyndicate
-	UserTypeGeneral
+	UserTypeUndefined   UserType = 0
+	UserTypeNotVerified UserType = 1
+	UserTypeSyndicate   UserType = 2
+	UserTypeGeneral     UserType = 4
 )

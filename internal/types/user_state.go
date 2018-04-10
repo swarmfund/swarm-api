@@ -8,9 +8,9 @@ var (
 )
 
 const (
-	UserStateUndefined UserState = 1<<iota - 1
-	UserStateNil
-	UserStateWaitingForApproval
-	UserStateApproved
-	UserStateRejected
+	UserStateUndefined          UserState = 0
+	UserStateNil                UserState = 1
+	UserStateWaitingForApproval UserState = 2
+	UserStateApproved           UserState = 4
+	UserStateRejected           UserState = 8
 )
