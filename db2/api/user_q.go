@@ -207,7 +207,10 @@ func (q *UsersQ) SetState(update UserStateUpdate) error {
 
 	stmt := sq.Insert("user_states as us").SetMap(clauses).Suffix(`
 		ON CONFLICT (address) DO UPDATE
-			SET state = coalesce(excluded.state, us.state), type = coalesce(excluded.type, us.type), updated_at = excluded.updated_at
+			SET state = coalesce(excluded.state, us.state),
+				type = coalesce(excluded.type, us.type),
+				updated_at = excluded.updated_at,
+				kyc_blob = coalesce(excluded.kyc_blob, us.kyc_blob)
 			WHERE us.updated_at <= excluded.updated_at
 	`)
 	_, err := q.parent.Exec(stmt)
