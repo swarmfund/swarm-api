@@ -1,6 +1,8 @@
 package api
 
 import (
+	"encoding/json"
+
 	"gitlab.com/distributed_lab/logan/v3"
 	"gitlab.com/distributed_lab/logan/v3/errors"
 	"gitlab.com/swarmfund/api/db2/api"
@@ -99,9 +101,15 @@ func checkKYC(change xdr.LedgerEntryChange) *api.UserStateUpdate {
 		}
 	}
 	if kyc != nil {
+		var kycdata struct {
+			BlobID string `json:"blob_id"`
+		}
+		if err := json.Unmarshal([]byte(kyc.KycData), &kycdata); err != nil {
+			panic(errors.Wrap(err, "failed to unmarshal KYC data"))
+		}
 		return &api.UserStateUpdate{
 			Address: types.Address(kyc.AccountId.Address()),
-			KYCBlob: (*string)(&kyc.KycData),
+			KYCBlob: &kycdata.BlobID,
 		}
 	}
 	return nil
