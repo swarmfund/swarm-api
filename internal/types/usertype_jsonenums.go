@@ -21,6 +21,7 @@ func init() {
 	var v UserType
 	if _, ok := interface{}(v).(fmt.Stringer); ok {
 		_UserTypeNameToValue = map[string]UserType{
+			interface{}(UserTypeUndefined).(fmt.Stringer).String():   UserTypeUndefined,
 			interface{}(UserTypeNotVerified).(fmt.Stringer).String(): UserTypeNotVerified,
 			interface{}(UserTypeSyndicate).(fmt.Stringer).String():   UserTypeSyndicate,
 			interface{}(UserTypeGeneral).(fmt.Stringer).String():     UserTypeGeneral,
@@ -29,12 +30,14 @@ func init() {
 }
 
 var _UserTypeNameToValue = map[string]UserType{
+	"undefined":    UserTypeUndefined,
 	"not_verified": UserTypeNotVerified,
 	"syndicate":    UserTypeSyndicate,
 	"general":      UserTypeGeneral,
 }
 
 var _UserTypeValueToName = map[UserType]string{
+	UserTypeUndefined:   "undefined",
 	UserTypeNotVerified: "not_verified",
 	UserTypeSyndicate:   "syndicate",
 	UserTypeGeneral:     "general",

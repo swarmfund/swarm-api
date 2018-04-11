@@ -38,7 +38,10 @@ func (w *Watcher) Run() {
 		select {
 		case event := <-events:
 			if event.Transaction != nil {
-				w.log.WithField("tx", event.Transaction.PagingToken).Debug("received tx")
+				w.log.WithFields(logan.F{
+					"tx":     event.Transaction.PagingToken,
+					"ledger": event.Transaction.CreatedAt,
+				}).Debug("received tx")
 				w.dispatch(event)
 			}
 			<-ticker.C

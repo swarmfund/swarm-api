@@ -79,6 +79,36 @@ func TestConnectorV2(t *testing.T) {
 	}
 
 	{
+		q := connector.Templates()
+		{
+			body := strings.NewReader(`<!DOCTYPE html>
+			<html>
+			<body>
+
+			<h1>My First Heading</h1>
+
+			<p>My first paragraph.</p>
+
+			</body>
+			</html>
+			`)
+
+			_, err := q.Put("test", body)
+			if err != nil {
+				t.Fatal(err)
+			}
+		}
+		{
+			body, err := q.Get("test")
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			t.Log(string(body))
+		}
+	}
+
+	{
 		r, err := connector.Client().Post("/participants", strings.NewReader(`{
 			"for_account": "GDHK26UFBGC63UBQCVQLHJD6RAQXLAS7RKJAR5FZQAWMCUBFHRNKFSKC",
 			"participants": {"1": [

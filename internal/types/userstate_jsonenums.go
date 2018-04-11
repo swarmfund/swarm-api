@@ -21,6 +21,7 @@ func init() {
 	var v UserState
 	if _, ok := interface{}(v).(fmt.Stringer); ok {
 		_UserStateNameToValue = map[string]UserState{
+			interface{}(UserStateUndefined).(fmt.Stringer).String():          UserStateUndefined,
 			interface{}(UserStateNil).(fmt.Stringer).String():                UserStateNil,
 			interface{}(UserStateWaitingForApproval).(fmt.Stringer).String(): UserStateWaitingForApproval,
 			interface{}(UserStateApproved).(fmt.Stringer).String():           UserStateApproved,
@@ -30,13 +31,15 @@ func init() {
 }
 
 var _UserStateNameToValue = map[string]UserState{
-	"nil": UserStateNil,
+	"undefined": UserStateUndefined,
+	"nil":       UserStateNil,
 	"waiting_for_approval": UserStateWaitingForApproval,
 	"approved":             UserStateApproved,
 	"rejected":             UserStateRejected,
 }
 
 var _UserStateValueToName = map[UserState]string{
+	UserStateUndefined:          "undefined",
 	UserStateNil:                "nil",
 	UserStateWaitingForApproval: "waiting_for_approval",
 	UserStateApproved:           "approved",

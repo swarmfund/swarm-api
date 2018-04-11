@@ -1,6 +1,10 @@
 package api
 
-import "gitlab.com/swarmfund/api/internal/types"
+import (
+	"time"
+
+	"gitlab.com/swarmfund/api/internal/types"
+)
 
 type Wallet struct {
 	Id                int64         `db:"id"`
@@ -19,4 +23,7 @@ type Wallet struct {
 	RecoverySalt     string `db:"recovery_salt"`
 	// Referrer comes from join on referrals add shows who referred this wallet
 	Referrer *string `db:"referrer"`
+
+	//LastSentAt comes from join on email_tokens  and shows when verified letter was send
+	LastSentAt *time.Time `db:"last_sent_at"`
 }
