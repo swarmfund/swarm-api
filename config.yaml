@@ -7,6 +7,7 @@ api:
 
 horizon:
   url: http://localhost:8000
+  signer: SB73STJOWULYZNPGDLNRBAYGMROB47ATNKM723XORFBLI356U3SKMARZ
 
 notificator:
   client_router: http://localhost:8888/hredir
