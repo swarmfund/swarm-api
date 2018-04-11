@@ -170,7 +170,7 @@ func init() {
 					update := func() *api.UserStateUpdate {
 						defer func() {
 							if rvr := recover(); rvr != nil {
-								entry.WithRecover(rvr).Error("mutator panicked")
+								entry.WithRecover(rvr).WithFields(event.Transaction.GetLoganFields()).Error("mutator panicked")
 							}
 						}()
 						return mutator(change)
@@ -179,7 +179,7 @@ func init() {
 						update.Timestamp = event.Transaction.CreatedAt
 						err := app.apiQ.Users().SetState(*update)
 						if err != nil {
-							entry.WithError(err).Error("failed to set user state")
+							entry.WithError(err).WithFields(event.Transaction.GetLoganFields()).Error("failed to set user state")
 						}
 					}
 				}
