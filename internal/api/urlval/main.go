@@ -8,6 +8,7 @@ import (
 	"strconv"
 
 	"github.com/pkg/errors"
+	"github.com/spf13/cast"
 )
 
 // Populate parses fields from url.Values according to `url` struct tag on dest
@@ -44,6 +45,13 @@ func Decode(values url.Values, dest interface{}) error {
 			str := values.Get(tag)
 			rval.Field(i).Set(reflect.ValueOf(&str))
 			isSet = true
+		case *bool:
+			boolean, err := cast.ToBoolE(values.Get(tag))
+			if err != nil {
+				return errors.Wrapf(err, "failed to cast %s to bool", tag)
+			}
+			rval.Field(i).Set(reflect.ValueOf(&boolean))
+			isSet = true
 		}
 
 		if isSet {
@@ -78,6 +86,8 @@ func Encode(r *http.Request, filters interface{}) FilterLinks {
 			encodeUint64Pointer(queries, tag, rval.Field(i))
 		case *string:
 			encodeStringPointer(queries, tag, rval.Field(i))
+		case *bool:
+			encodeBoolPointer(queries, tag, rval.Field(i))
 		}
 	}
 	links := FilterLinks{
@@ -107,6 +117,16 @@ func encodeUint64Pointer(queries []url.Values, tag string, value reflect.Value) 
 	uint := reflect.Indirect(value).Uint()
 	for _, query := range queries {
 		query.Add(tag, fmt.Sprintf("%d", uint))
+	}
+}
+
+func encodeBoolPointer(queries []url.Values, tag string, value reflect.Value) {
+	if value.IsNil() {
+		return
+	}
+	boolean := reflect.Indirect(value).Bool()
+	for _, query := range queries {
+		query.Add(tag, fmt.Sprintf("%t", boolean))
 	}
 }
 

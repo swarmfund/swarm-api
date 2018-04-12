@@ -121,15 +121,20 @@ func CreateWallet(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		if cause == api.ErrWalletsKDFViolated {
+		switch cause {
+		case api.ErrWalletsKDFViolated:
 			ape.RenderErr(w, problems.BadRequest(Errors{
 				"/data/relationships/kdf/data/id": errors.New("invalid kdf version"),
 			})...)
-			return
+		case api.ErrReferrerConstraintViolated:
+			ape.RenderErr(w, problems.BadRequest(Errors{
+				"/data/relationships/referrer": errors.New("account doesn't exists"),
+			})...)
+		default:
+			Log(r).WithError(err).Error("failed to save wallet")
+			ape.RenderErr(w, problems.InternalError())
 		}
 
-		Log(r).WithError(err).Error("failed to save wallet")
-		ape.RenderErr(w, problems.InternalError())
 		return
 	}
 

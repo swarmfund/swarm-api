@@ -7,54 +7,19 @@ import (
 )
 
 type Q struct {
-	tx *transaction.Q
-	op *operation.Q
+	txQ *transaction.Q
+	// TODO Rename - it'a actually RequestQ
+	opQ *operation.Q
 }
 
 func NewQ(tx *transaction.Q, op *operation.Q) *Q {
 	return &Q{
-		tx, op,
+		tx,
+		op,
 	}
 }
 
-func (q *Q) Transactions(result chan<- resources.TransactionEvent) <-chan error {
-	errs := make(chan error)
-	go func() {
-		defer func() {
-			close(errs)
-		}()
-		cursor := ""
-		for {
-			transactions, meta, err := q.tx.Transactions(cursor)
-			if err != nil {
-				errs <- err
-				continue
-			}
-			for _, tx := range transactions {
-				ohaigo := tx
-				result <- resources.TransactionEvent{
-					Transaction: &ohaigo,
-					// emulating discrete transactions stream by spoofing meta
-					// to not let bump cursor too much before actually consuming all transactions
-					Meta: resources.PageMeta{
-						LatestLedger: resources.LedgerMeta{
-							ClosedAt: tx.CreatedAt,
-						},
-					},
-				}
-				cursor = tx.PagingToken
-			}
-			// letting consumer know about current ledger cursor
-			result <- resources.TransactionEvent{
-				Transaction: nil,
-				Meta:        *meta,
-			}
-		}
-	}()
-	return errs
-}
-
-// DEPRECATED Does not work any more. Can now only stream WithdrawalRequests.
+// DEPRECATED use StreamAllReviewableRequests instead
 func (q *Q) Requests(result chan<- resources.Request) <-chan error {
 	errs := make(chan error)
 	go func() {
@@ -63,7 +28,7 @@ func (q *Q) Requests(result chan<- resources.Request) <-chan error {
 		}()
 		cursor := ""
 		for {
-			requests, err := q.op.Requests(cursor)
+			requests, err := q.opQ.AllRequests(cursor)
 			if err != nil {
 				errs <- err
 				continue
@@ -78,6 +43,7 @@ func (q *Q) Requests(result chan<- resources.Request) <-chan error {
 }
 
 // TODO Consider working with *Withdrawal* specific types.
+// DEPRECATED Use StreamWithdrawalRequests instead
 func (q *Q) WithdrawalRequests(result chan<- resources.Request) <-chan error {
 	errs := make(chan error)
 
@@ -88,7 +54,7 @@ func (q *Q) WithdrawalRequests(result chan<- resources.Request) <-chan error {
 
 		cursor := ""
 		for {
-			requests, err := q.op.WithdrawalRequests(cursor)
+			requests, err := q.opQ.WithdrawalRequests(cursor)
 			if err != nil {
 				errs <- err
 				continue

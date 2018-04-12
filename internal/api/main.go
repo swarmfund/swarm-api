@@ -71,6 +71,7 @@ func Router(
 	r.Route("/wallets", func(r chi.Router) {
 		// admin endpoints
 		r.Get("/", handlers.WalletsIndex)
+		r.Delete("/{wallet-id}", handlers.DeleteWallets)
 
 		// signup
 		r.Post("/", handlers.CreateWallet)
@@ -115,10 +116,12 @@ func Router(
 			r.Put("/{entity}", handlers.PatchKYCEntity)
 		})
 
-		// blobs
+		// DEPRECATED use /blobs family instead
 		r.Route("/{address}/blobs", func(r chi.Router) {
-
 			r.Post("/", handlers.CreateBlob)
+			// DEPRECATED
+			// at this point everything should have reference in core
+			// and blobs index is not needed anymore
 			r.Get("/", handlers.BlobIndex)
 			r.Get("/{blob}", handlers.GetBlob)
 		})
@@ -127,8 +130,15 @@ func Router(
 		r.Route("/{address}/favorites", favorites.Router(repo))
 	})
 
-	r.Get("/blobs/{blob}", handlers.GetBlob)
-	r.Get("/documents/{document}", handlers.GetDocument)
+	// blobs
+	r.Route("/blobs", func(r chi.Router) {
+		r.Post("/", handlers.CreateBlob)
+		r.Get("/{blob}", handlers.GetBlob)
+	})
+
+	r.Route("/documents", func(r chi.Router) {
+		r.Get("/{document}", handlers.GetDocument)
+	})
 
 	r.Route("/integrations", func(r chi.Router) {
 		// discourse ping-pong

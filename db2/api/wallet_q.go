@@ -21,7 +21,8 @@ var walletSelect = sq.Select(
 	"r.address as recovery_address",
 	"r.wallet_id as recovery_wallet_id",
 	"r.salt as recovery_salt",
-	"ref.referrer").
+	"ref.referrer",
+	"et.last_sent_at").
 	From("wallets w").
 	// TODO make just join
 	LeftJoin("recoveries r on w.email = r.wallet").
@@ -37,14 +38,16 @@ const (
 	tableWalletsLimit               = 10
 	walletsKDFFkeyConstraint        = `wallets_kdf_fkey`
 	walletsWalletIDKeyConstraint    = `wallets_wallet_id_key`
+	referralsReferrerFkeyConstraint = `referrals_referrer_wallets_fkey`
 	recoveriesWalletIDKeyConstraint = `recoveries_wallet_id_unique_constraint`
 )
 
 var (
-	ErrWalletsKDFViolated      = errors.New("wallets_kdf_fkey violated")
-	ErrWalletsWalletIDViolated = errors.New("wallets_wallet_id_key violated")
-	ErrWalletsConflict         = errors.New("wallet already exists")
-	ErrRecoveriesConflict      = errors.New("recovery already exists")
+	ErrWalletsKDFViolated         = errors.New("wallets_kdf_fkey violated")
+	ErrWalletsWalletIDViolated    = errors.New("wallets_wallet_id_key violated")
+	ErrWalletsConflict            = errors.New("wallet already exists")
+	ErrRecoveriesConflict         = errors.New("recovery already exists")
+	ErrReferrerConstraintViolated = errors.New("referrer does not exists")
 )
 
 type RecoveryKeychain struct {
@@ -94,12 +97,11 @@ type WalletQI interface {
 
 	Update(w *Wallet) error
 
-	// DEPRECATED
 	Page(uint64) WalletQI
-	// DEPRECATED
 	ByState(uint64) WalletQI
-	// DEPRECATED
 	Select() ([]Wallet, error)
+
+	Delete(walletID string) error
 }
 
 type WalletQ struct {
@@ -149,6 +151,15 @@ func (q *WalletQ) CreateReferral(referrer types.Address, referral types.Address)
 	})
 
 	_, err := q.parent.Exec(stmt)
+
+	if err != nil {
+		pqerr, ok := errors.Cause(err).(*pq.Error)
+		if ok {
+			if pqerr.Constraint == referralsReferrerFkeyConstraint {
+				return ErrReferrerConstraintViolated
+			}
+		}
+	}
 	return err
 }
 
@@ -398,5 +409,11 @@ func (q *WalletQ) Update(w *Wallet) error {
 		}
 	}
 
+	return err
+}
+
+func (q *WalletQ) Delete(walletID string) error {
+	stmt := sq.Delete(tableWallets).Where(sq.Eq{"wallet_id": walletID})
+	_, err := q.parent.Exec(stmt)
 	return err
 }

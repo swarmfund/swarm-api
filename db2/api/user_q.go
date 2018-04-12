@@ -19,13 +19,25 @@ const (
 var (
 	tableUserAliased = fmt.Sprintf("%s u", tableUser)
 	selectUser       = sq.Select(
-		"u.*",
+		"u.id",
+		"u.email",
+		"u.address",
+		"u.kyc_sequence",
+		"u.reject_reason",
 		"r.address as recovery_address",
 		"a.state as airdrop_state",
-		"(select json_agg(kyc) from kyc_entities kyc where kyc.user_id=u.id) as kyc_entities").
+		"(select json_agg(kyc) from kyc_entities kyc where kyc.user_id=u.id) as kyc_entities",
+		"b.value as kyc_blob_value",
+		// state and type might be nil if ingestion is still in progress,
+		// make sure resources render some meaningful stub values that will not break clients
+		"coalesce(us.state, 0) as user_state",
+		"coalesce(us.type, 0) as user_type",
+	).
+		LeftJoin("user_states us on us.address=u.address").
 		Join("recoveries r on r.wallet=u.email").
 		// joining left since it's optional due to late migration
 		LeftJoin("airdrops a on a.owner=u.address").
+		LeftJoin("blobs b ON u.address = b.owner_address AND CAST( b.relationships->>'kyc_sequence' AS INT) = u.kyc_sequence AND b.type = ?", types.BlobTypeKYCForm).
 		From(tableUserAliased)
 
 	insertUser = sq.Insert(tableUser)
@@ -45,12 +57,14 @@ type UsersQ struct {
 }
 
 type UsersQI interface {
+	UserStateQ
+
 	New() UsersQI
 	Transaction(func(UsersQI) error) error
 
 	UpdateAirdropState(address types.Address, state types.AirdropState) error
 
-	// Participants
+	// DEPRECATED
 	Participants(participants map[int64][]Participant) error
 
 	// Select methods
@@ -58,34 +72,22 @@ type UsersQI interface {
 	ByType(tpe types.UserType) UsersQI
 	EmailMatches(string) UsersQI
 	AddressMatches(string) UsersQI
-
-	LimitReviewRequests() UsersQI
+	ByFirstName(firstName string) UsersQI
+	ByLastName(lastName string) UsersQI
+	ByCountry(country string) UsersQI
+	Select(dest interface{}) error
+	Page(page uint64) UsersQI
 
 	ByAddress(address string) (*User, error)
+	// DEPRECATED
 	ByAddresses(addresses []string) ([]User, error)
+	// DEPRECATED
 	ByEmail(email string) (*User, error)
-	ByID(uid int64) (*User, error)
-	Select(dest interface{}) error
 
 	// Create expected to set inserted record ID on u
 	Create(u *User) error
 	Update(u *User) error
-	Delete(accountID string) error
 
-	// Change state methods
-	Approve(user *User) error
-	Reject(user *User) error
-	ChangeState(address types.Address, state types.UserState) error
-	LimitReviewState(address string, state UserLimitReviewState) error
-
-	// Update methods
-	SetEmail(address, email string) error
-
-	WithAddress(addresses ...string) UsersQI
-	Page(page uint64) UsersQI
-	First() (*User, error)
-
-	Documents(version int64) DocumentsQI
 	KYC() KYCQI
 }
 
@@ -129,22 +131,13 @@ func (q *UsersQ) WithIntegration(exchange string) UsersQI {
 	return q
 }
 
-func (q *UsersQ) WithAddress(addresses ...string) UsersQI {
-	if q.Err != nil {
-		return q
-	}
-	q.sql = q.sql.
-		Where(sq.Eq{"u.address": addresses})
-	return q
-}
-
 func (q *UsersQ) ByState(state types.UserState) UsersQI {
-	q.sql = q.sql.Where("u.state & ? != 0", state)
+	q.sql = q.sql.Where("us.state & ? != 0", state)
 	return q
 }
 
 func (q *UsersQ) ByType(tpe types.UserType) UsersQI {
-	q.sql = q.sql.Where("u.type & ? != 0", tpe)
+	q.sql = q.sql.Where("us.type & ? != 0", tpe)
 	return q
 }
 
@@ -158,14 +151,6 @@ func (q *UsersQ) AddressMatches(str string) UsersQI {
 	return q
 }
 
-func (q *UsersQ) LimitReviewRequests() UsersQI {
-	if q.Err != nil {
-		return q
-	}
-	q.sql = q.sql.Where("limit_review_state = ?", UserLimitReviewPending)
-	return q
-}
-
 func (q *UsersQ) Update(user *User) error {
 	stmt := updateUser(string(user.Address)).
 		SetMap(map[string]interface{}{
@@ -175,50 +160,6 @@ func (q *UsersQ) Update(user *User) error {
 			"reject_reason": user.RejectReason,
 		})
 	_, err := q.parent.Exec(stmt)
-	return err
-}
-
-func (q *UsersQ) SetEmail(address, email string) error {
-	sql := updateUser(address).
-		Set("email", email)
-	_, err := q.parent.Exec(sql)
-	return err
-}
-
-//Approve updates row in `users`, set 'state' == approved
-func (q *UsersQ) Approve(user *User) error {
-	sql := updateUser(string(user.Address)).
-		Where("documents_version = ?", user.DocumentsVersion).
-		Set("documents_version", user.DocumentsVersion+1).
-		Set("state", types.UserStateApproved).
-		Set("documents", user.Documents)
-	result, err := q.parent.Exec(sql)
-	if err != nil {
-		return err
-	}
-	rows, err := result.RowsAffected()
-	if err != nil {
-		return err
-	}
-	if rows == 0 {
-		err = ErrBadDocumentVersion
-	}
-	return err
-}
-
-func (q *UsersQ) ChangeState(address types.Address, state types.UserState) error {
-	sql := updateUser(string(address)).
-		Set("state", state)
-
-	_, err := q.parent.Exec(sql)
-	return err
-}
-
-func (q *UsersQ) LimitReviewState(address string, state UserLimitReviewState) error {
-	sql := updateUser(address).
-		Set("limit_review_state", state)
-
-	_, err := q.parent.Exec(sql)
 	return err
 }
 
@@ -249,22 +190,37 @@ func (q *UsersQ) ByEmail(email string) (*User, error) {
 	return dest, err
 }
 
-func (q *UsersQ) ByID(uid int64) (*User, error) {
-	var user User
-	stmt := selectUser.Limit(1).Where("u.id = ?", uid)
-	err := q.parent.Get(&user, stmt)
-	if err == sql.ErrNoRows {
-		return nil, nil
+func (q *UsersQ) SetState(update UserStateUpdate) error {
+	clauses := map[string]interface{}{
+		"address":    update.Address,
+		"updated_at": update.Timestamp,
 	}
-	return &user, err
+	if update.State != nil {
+		clauses["state"] = *update.State
+	}
+	if update.Type != nil {
+		clauses["type"] = *update.Type
+	}
+	if update.KYCBlob != nil {
+		clauses["kyc_blob"] = *update.KYCBlob
+	}
+
+	stmt := sq.Insert("user_states as us").SetMap(clauses).Suffix(`
+		ON CONFLICT (address) DO UPDATE
+			SET state = coalesce(excluded.state, us.state),
+				type = coalesce(excluded.type, us.type),
+				updated_at = excluded.updated_at,
+				kyc_blob = coalesce(excluded.kyc_blob, us.kyc_blob)
+			WHERE us.updated_at <= excluded.updated_at
+	`)
+	_, err := q.parent.Exec(stmt)
+	return err
 }
 
 func (q *UsersQ) Create(u *User) error {
 	sql := insertUser.SetMap(map[string]interface{}{
 		"address": u.Address,
 		"email":   u.Email,
-		"type":    u.UserType,
-		"state":   u.State,
 	}).Suffix("returning id")
 
 	err := q.parent.Get(&(u.ID), sql)
@@ -277,31 +233,6 @@ func (q *UsersQ) Create(u *User) error {
 			}
 		}
 	}
-	return err
-}
-
-func (q *UsersQ) Reject(user *User) error {
-	sql := fmt.Sprintf(`update %s
-		set documents = $1,
-			documents_version = $2,
-		 	state = $3,
-		    updated_at = timestamp 'now'
-		where address = $4
-		  and documents_version = $5`, tableUser)
-
-	result, err := q.parent.DB.Exec(sql, user.Documents, user.DocumentsVersion+1, types.UserStateRejected, user.Address, user.DocumentsVersion)
-	if err != nil {
-		return err
-	}
-
-	rows, err := result.RowsAffected()
-	if err != nil {
-		return err
-	}
-	if rows == 0 {
-		err = ErrBadDocumentVersion
-	}
-
 	return err
 }
 
@@ -333,24 +264,6 @@ func (q *UsersQ) Select(dest interface{}) error {
 
 	q.Err = q.parent.Select(dest, q.sql)
 	return q.Err
-}
-
-func (q *UsersQ) First() (*User, error) {
-	if q.Err != nil {
-		return nil, q.Err
-	}
-	var result User
-	err := q.parent.Get(&result, q.sql.Limit(1))
-	if err == sql.ErrNoRows {
-		return nil, nil
-	}
-	return &result, err
-}
-
-func (q *UsersQ) Delete(accountID string) error {
-	stmt := sq.Delete(tableUser).Where("address = ?", accountID)
-	_, err := q.parent.Exec(stmt)
-	return err
 }
 
 func (q *UsersQ) Participants(ops map[int64][]Participant) error {
@@ -389,4 +302,19 @@ func (q *UsersQ) Participants(ops map[int64][]Participant) error {
 	}
 
 	return nil
+}
+
+func (q *UsersQ) ByFirstName(firstName string) UsersQI {
+	q.sql = q.sql.Where("b.value::jsonb->>'first_name' = ?", firstName)
+	return q
+}
+
+func (q *UsersQ) ByLastName(lastName string) UsersQI {
+	q.sql = q.sql.Where("b.value::jsonb->>'last_name' = ?", lastName)
+	return q
+}
+
+func (q *UsersQ) ByCountry(country string) UsersQI {
+	q.sql = q.sql.Where("b.value::jsonb->'address'->>'country' = ?", country)
+	return q
 }

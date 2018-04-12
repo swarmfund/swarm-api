@@ -1,6 +1,8 @@
 package resources
 
 import (
+	"time"
+
 	"github.com/go-ozzo/ozzo-validation"
 	"gitlab.com/swarmfund/api/db2/api"
 	"gitlab.com/swarmfund/api/internal/types"
@@ -111,6 +113,7 @@ type WalletAttributes struct {
 	KeychainData string        `json:"keychain_data"`
 	Verified     bool          `json:"verified"`
 	Salt         string        `json:"salt,omitempty"`
+	LastSentAt   *time.Time    `json:"last_sent_at,omitempty"`
 }
 
 func (r WalletAttributes) Validate() error {
@@ -132,6 +135,7 @@ func NewWallet(w *api.Wallet) Wallet {
 				Email:        w.Username,
 				KeychainData: w.KeychainData,
 				Verified:     w.Verified,
+				LastSentAt:   w.LastSentAt,
 			},
 		},
 	}
