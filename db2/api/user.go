@@ -19,20 +19,19 @@ import (
 // * remove DeletedAt
 // * UpdatedAt probably useless because of joins
 type User struct {
+	// DEPRECATED
 	ID      int64         `db:"id"`
 	Address types.Address `db:"address"`
 	// TODO join from wallets address->account_id
-	Email             string               `db:"email"`
-	UserType          types.UserType       `db:"type"`
-	State             types.UserState      `db:"state"`
-	KYCSequence       int64                `db:"kyc_sequence"`
-	RejectReason      string               `db:"reject_reason"`
-	Documents         Documents            `db:"documents"`
-	DocumentsVersion  int64                `db:"documents_version"`
-	LimitReviewStatue UserLimitReviewState `db:"limit_review_state"`
-	CreatedAt         time.Time            `db:"created_at"`
-	UpdatedAt         string               `db:"updated_at"`
-	DeletedAt         sql.NullString       `db:"deleted_at"`
+	Email        string `db:"email"`
+	KYCSequence  int64  `db:"kyc_sequence"`
+	RejectReason string `db:"reject_reason"`
+
+	CreatedAt time.Time `db:"created_at"`
+	UpdatedAt string    `db:"updated_at"`
+
+	// DEPRECATED
+	DeletedAt sql.NullString `db:"deleted_at"`
 
 	// Nickname comes from join on contacts table when needed
 	Nickname null.String `db:"nickname"`
@@ -44,6 +43,12 @@ type User struct {
 	RecoveryAddress types.Address `db:"recovery_address"`
 	// AirdropState treat nils as valid undefined value, comes from json on airdrops
 	AirdropState *types.AirdropState `db:"airdrop_state"`
+	//KYCBlobValue this is addition value comes from blobs.Value for specific user
+	KYCBlobValue *string `db:"kyc_blob_value"`
+	// State comes from join on user_states
+	State types.UserState `db:"user_state"`
+	// UserType comes from join on user_states
+	UserType types.UserType `db:"user_type"`
 }
 
 func (user *User) IsAirdropEligible() bool {
