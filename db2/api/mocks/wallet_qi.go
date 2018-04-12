@@ -220,6 +220,20 @@ func (_m *WalletQI) CreateWalletKDF(_a0 data.WalletKDF) error {
 	return r0
 }
 
+// Delete provides a mock function with given fields: walletID
+func (_m *WalletQI) Delete(walletID string) error {
+	ret := _m.Called(walletID)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(string) error); ok {
+		r0 = rf(walletID)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // DeletePasswordFactor provides a mock function with given fields: walletID
 func (_m *WalletQI) DeletePasswordFactor(walletID string) error {
 	ret := _m.Called(walletID)

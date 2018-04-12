@@ -45,15 +45,22 @@ func performUserCreate(r *http.Request, wallet *api.Wallet) error {
 	}
 
 	err := UsersQ(r).Transaction(func(q api.UsersQI) error {
-		err := q.Create(&api.User{
+		user := &api.User{
 			Address: wallet.AccountID,
 			Email:   wallet.Username,
-			// everybody is created equal
-			UserType: types.UserTypeNotVerified,
-			State:    types.UserStateNil,
-		})
-		if err != nil {
+		}
+		state := api.UserStateUpdate{
+			Address: wallet.AccountID,
+			Type:    &types.DefaultUserType,
+			State:   &types.DefaultUserState,
+		}
+
+		if err := q.Create(user); err != nil {
 			return errors.Wrap(err, "failed to insert user")
+		}
+
+		if err := q.SetState(state); err != nil {
+			return errors.Wrap(err, "failed to insert user state")
 		}
 
 		envelope, err := Transaction(r).

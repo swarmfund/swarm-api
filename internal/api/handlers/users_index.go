@@ -28,6 +28,11 @@ type (
 		Type    *uint64 `url:"type"`
 		Email   *string `url:"email"`
 		Address *string `url:"address"`
+
+		//Relationships
+		FirstName *string `url:"first_name"`
+		LastName  *string `url:"last_name"`
+		Country   *string `url:"country"`
 	}
 )
 
@@ -79,6 +84,18 @@ func UsersIndex(w http.ResponseWriter, r *http.Request) {
 
 	if filters.Address != nil {
 		q = q.AddressMatches(*filters.Address)
+	}
+
+	if filters.FirstName != nil {
+		q = q.ByFirstName(*filters.FirstName)
+	}
+
+	if filters.LastName != nil {
+		q = q.ByLastName(*filters.LastName)
+	}
+
+	if filters.Country != nil {
+		q = q.ByCountry(*filters.Country)
 	}
 
 	if err := q.Select(&records); err != nil {

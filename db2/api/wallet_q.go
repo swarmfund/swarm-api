@@ -21,7 +21,8 @@ var walletSelect = sq.Select(
 	"r.address as recovery_address",
 	"r.wallet_id as recovery_wallet_id",
 	"r.salt as recovery_salt",
-	"ref.referrer").
+	"ref.referrer",
+	"et.last_sent_at").
 	From("wallets w").
 	// TODO make just join
 	LeftJoin("recoveries r on w.email = r.wallet").
@@ -96,12 +97,11 @@ type WalletQI interface {
 
 	Update(w *Wallet) error
 
-	// DEPRECATED
 	Page(uint64) WalletQI
-	// DEPRECATED
 	ByState(uint64) WalletQI
-	// DEPRECATED
 	Select() ([]Wallet, error)
+
+	Delete(walletID string) error
 }
 
 type WalletQ struct {
@@ -409,5 +409,11 @@ func (q *WalletQ) Update(w *Wallet) error {
 		}
 	}
 
+	return err
+}
+
+func (q *WalletQ) Delete(walletID string) error {
+	stmt := sq.Delete(tableWallets).Where(sq.Eq{"wallet_id": walletID})
+	_, err := q.parent.Exec(stmt)
 	return err
 }
