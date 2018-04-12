@@ -5,7 +5,6 @@ import (
 
 	"github.com/pkg/errors"
 	"gitlab.com/distributed_lab/figure"
-	"gitlab.com/swarmfund/go/xdr"
 	"gitlab.com/swarmfund/horizon-connector/v2"
 	"gitlab.com/tokend/keypair"
 )
@@ -41,9 +40,9 @@ func (c *ViperConfig) Horizon() *horizon.Connector {
 			panic(errors.Wrap(err, "Failed to get horizon info"))
 		}
 
-		if err := accountQ.IsSigner(info.MasterAccountID, config.Signer.Address(), xdr.SignerTypeNotVerifiedAccManager); err != nil {
-			panic(errors.Wrap(err, "Check signer failed"))
-		}
+		//if err := accountQ.IsSigner(info.MasterAccountID, config.Signer.Address(), xdr.SignerTypeNotVerifiedAccManager); err != nil {
+		//	panic(errors.Wrap(err, "Check signer failed"))
+		//}
 	}
 
 	return c.horizon
