@@ -34,11 +34,11 @@ func (c *ViperConfig) Horizon() *horizon.Connector {
 
 		c.horizon = horizon.NewConnector(&config.URL).WithSigner(config.Signer)
 
-		accountQ := c.horizon.Accounts()
-		info, err := c.horizon.Info()
-		if err != nil {
-			panic(errors.Wrap(err, "Failed to get horizon info"))
-		}
+		//accountQ := c.horizon.Accounts()
+		//info, err := c.horizon.Info()
+		//if err != nil {
+		//	panic(errors.Wrap(err, "Failed to get horizon info"))
+		//}
 
 		//if err := accountQ.IsSigner(info.MasterAccountID, config.Signer.Address(), xdr.SignerTypeNotVerifiedAccManager); err != nil {
 		//	panic(errors.Wrap(err, "Check signer failed"))
