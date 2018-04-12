@@ -17,16 +17,16 @@ ALTER TABLE user_states
 CREATE UNIQUE INDEX user_states_user_unique
   ON user_states (address);
 
-ALTER TABLE users
-  DROP COLUMN state;
-ALTER TABLE users
-  DROP COLUMN type;
+-- ALTER TABLE users
+--   DROP COLUMN state;
+-- ALTER TABLE users
+--   DROP COLUMN type;
 
 -- +migrate Down
 
 DROP TABLE user_states;
 
-ALTER TABLE users
-  ADD COLUMN state INT NOT NULL DEFAULT 1;
-ALTER TABLE users
-  ADD COLUMN type INT NOT NULL DEFAULT 1;
+-- ALTER TABLE users
+--   ADD COLUMN state INT NOT NULL DEFAULT 1;
+-- ALTER TABLE users
+--   ADD COLUMN type INT NOT NULL DEFAULT 1;
