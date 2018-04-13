@@ -7,6 +7,7 @@ includes:
   - documents
   - kyc
   - blobs
+  - balances
 ---
 
 # Overview
