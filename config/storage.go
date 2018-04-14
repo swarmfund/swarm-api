@@ -25,8 +25,7 @@ type Storage struct {
 	ListenerExchange     string        `fig:"listener_exchange"`
 	ListenerExchangeType string        `fig:"listener_exchange_type"`
 	ListenerBindingKey   string        `fig:"listener_binding_key"`
-	Types                []string      `fig:"media_types"`
-	MediaType            map[string]string
+	MediaTypes           []string      `fig:"media_types"`
 }
 
 func (c *ViperConfig) Storage() Storage {
@@ -37,17 +36,11 @@ func (c *ViperConfig) Storage() Storage {
 		return *c.storage
 	}
 
-	config := &Storage{
-		MediaType: make(map[string]string),
-	}
+	config := &Storage{}
 
 	err := figure.Out(config).From(c.GetStringMap(storageConfigKey)).Please()
 	if err != nil {
 		panic(errors.Wrap(err, "failed to figure out storage"))
-	}
-
-	for _, t := range config.Types {
-		config.MediaType[t] = ""
 	}
 
 	c.storage = config

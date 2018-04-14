@@ -24,6 +24,8 @@ func IsContentTypeAllowed(mediaType string) bool {
 	return ok
 }
 
-func SetAllowedMediaTypes(mediaTypes map[string]string) {
-	allowedMediaTypes = mediaTypes
+func SetMediaTypes(mediaTypes []string) {
+	for _, t := range mediaTypes {
+		allowedMediaTypes[t] = ""
+	}
 }
