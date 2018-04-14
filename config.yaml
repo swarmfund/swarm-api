@@ -48,6 +48,12 @@ storage:
   listener_binding_key: "events"
   force_ssl: false
   form_data_expire: 50000
+  media_types:
+    - 'application/pdf'
+    - 'image/jpeg'
+    - 'image/tiff'
+    - 'image/png'
+    - 'image/gif'
 
 wallet_cleaner:
   enabled: true

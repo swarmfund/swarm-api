@@ -84,6 +84,7 @@ func (a *App) Blobs() data.Blobs {
 func (a *App) Serve() {
 	a.web.router.Compile()
 
+	storage.SetAllowedMediaTypes(a.Config().Storage().MediaType)
 	r := api2.Router(
 		a.Config().Log().WithField("service", "api"),
 		a.APIQ().Wallet(),

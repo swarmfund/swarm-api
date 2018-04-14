@@ -42,6 +42,7 @@ type ViperConfig struct {
 	logan       *logan.Entry
 	mixpanel    *mixpanel.Connector
 	wallets     *Wallets
+	storage     *Storage
 }
 
 func NewViperConfig(fn string) Config {
