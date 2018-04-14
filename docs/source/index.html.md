@@ -8,6 +8,7 @@ includes:
   - kyc
   - blobs
   - balances
+  - libraries
 ---
 
 # Overview
