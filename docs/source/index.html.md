@@ -8,7 +8,7 @@ includes:
   - kyc
   - blobs
   - balances
-  - libraries
+  - javascript
 ---
 
 # Overview
@@ -18,7 +18,7 @@ Most important parts of protocol will be included here, but to get better feel o
 
 | Legend | Description                |
 | ------ | -------------------------- |
-| 🔒     | Request requires signature |
+| 🔒     | Request requires signature (See [Get wallet] (#get-wallet), [wallet.js] (#wallet-js), [js-sdk] (#swarm-js-sdk))|
 
 
 
