@@ -8,7 +8,6 @@ import (
 	"github.com/minio/minio-go"
 	"github.com/minio/minio-go/pkg/policy"
 	"github.com/pkg/errors"
-	"gitlab.com/swarmfund/api/config"
 	"gitlab.com/swarmfund/api/log"
 )
 
@@ -18,24 +17,10 @@ const (
 )
 
 type Connector struct {
-	minio *minio.Client
-	log   *log.Entry
-	conf  config.Storage
-}
-
-func New(conf config.Storage) (*Connector, error) {
-	minio, err := minio.New(conf.Host, conf.AccessKey, conf.SecretKey, conf.ForceSSL)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to init client")
-	}
-
-	c := &Connector{
-		minio: minio,
-		log:   log.WithField("service", "storage"),
-		conf:  conf,
-	}
-
-	return c, nil
+	Minio            *minio.Client
+	Log              *log.Entry
+	MinContentLength int64
+	MaxContentLength int64
 }
 
 func (c *Connector) ensureInitialized() error {
@@ -43,7 +28,7 @@ func (c *Connector) ensureInitialized() error {
 		return errors.Wrap(err, "failed to create bucket")
 	}
 
-	err := c.minio.SetBucketPolicy(bucketName, publicPrefix, policy.BucketPolicyReadOnly)
+	err := c.Minio.SetBucketPolicy(bucketName, publicPrefix, policy.BucketPolicyReadOnly)
 	if err != nil {
 		return errors.Wrap(err, "failed to ensure bucket policy")
 	}
@@ -58,9 +43,9 @@ func (c *Connector) UploadFormData(key string) (map[string]string, error) {
 	policy.SetKey(strings.ToLower(key))
 	// TODO investigate expire
 	policy.SetExpires(time.Now().UTC().Add(72 * time.Hour))
-	policy.SetContentLengthRange(c.conf.MinContentLength, c.conf.MaxContentLength)
+	policy.SetContentLengthRange(c.MinContentLength, c.MaxContentLength)
 
-	url, formData, err := c.minio.PresignedPostPolicy(policy)
+	url, formData, err := c.Minio.PresignedPostPolicy(policy)
 	if err != nil {
 		if minioErr, ok := err.(minio.ErrorResponse); ok {
 			if minioErr.Code == "NoSuchBucket" {
@@ -84,7 +69,7 @@ func (c *Connector) UploadFormData(key string) (map[string]string, error) {
 
 func (c *Connector) makeBucket(bucket string) error {
 	bucket = strings.ToLower(bucket)
-	err := c.minio.MakeBucket(bucket, "")
+	err := c.Minio.MakeBucket(bucket, "")
 	if err != nil {
 		if minioErr, ok := err.(minio.ErrorResponse); ok {
 			if minioErr.Code == "BucketAlreadyOwnedByYou" {
@@ -102,19 +87,19 @@ func (c *Connector) makeBucket(bucket string) error {
 }
 
 func (c *Connector) DocumentURL(key string) (*url.URL, error) {
-	return c.minio.PresignedGetObject(strings.ToLower(bucketName), strings.ToLower(key), 3600*time.Second, nil)
+	return c.Minio.PresignedGetObject(strings.ToLower(bucketName), strings.ToLower(key), 3600*time.Second, nil)
 }
 
 func (c *Connector) Delete(bucket, key string) error {
-	return c.minio.RemoveObject(strings.ToLower(bucket), strings.ToLower(key))
+	return c.Minio.RemoveObject(strings.ToLower(bucket), strings.ToLower(key))
 }
 
 func (c *Connector) Get(bucket, key string) (*minio.Object, error) {
-	return c.minio.GetObject(strings.ToLower(bucket), strings.ToLower(key))
+	return c.Minio.GetObject(strings.ToLower(bucket), strings.ToLower(key))
 }
 
 func (c *Connector) Exists(bucket, key string) (bool, error) {
-	object, err := c.minio.GetObject(strings.ToLower(bucket), strings.ToLower(key))
+	object, err := c.Minio.GetObject(strings.ToLower(bucket), strings.ToLower(key))
 	if err != nil {
 		return false, err
 	}
@@ -135,7 +120,7 @@ func (q *Connector) Bucket(bucket string) ([]minio.ObjectInfo, error) {
 	doneCh := make(chan struct{})
 	defer close(doneCh)
 	result := []minio.ObjectInfo{}
-	for message := range q.minio.ListObjects(strings.ToLower(bucket), "", false, doneCh) {
+	for message := range q.Minio.ListObjects(strings.ToLower(bucket), "", false, doneCh) {
 		if message.Err != nil {
 			return nil, message.Err
 		}
@@ -157,7 +142,7 @@ func (c *Connector) DeleteBucket(bucket string) error {
 		return err
 	}
 	rmCh := make(chan string)
-	errCh := c.minio.RemoveObjects(bucket, rmCh)
+	errCh := c.Minio.RemoveObjects(bucket, rmCh)
 	for _, object := range objects {
 		rmCh <- object.Key
 	}
@@ -166,5 +151,5 @@ func (c *Connector) DeleteBucket(bucket string) error {
 	if mErr.Err != nil {
 		return mErr.Err
 	}
-	return c.minio.RemoveBucket(bucket)
+	return c.Minio.RemoveBucket(bucket)
 }

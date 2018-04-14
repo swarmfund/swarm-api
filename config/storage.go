@@ -1,10 +1,11 @@
 package config
 
 import (
-	"time"
-
+	"github.com/minio/minio-go"
 	"github.com/pkg/errors"
 	"gitlab.com/distributed_lab/figure"
+	"gitlab.com/swarmfund/api/log"
+	"gitlab.com/swarmfund/api/storage"
 )
 
 const (
@@ -12,28 +13,21 @@ const (
 )
 
 type Storage struct {
-	Disabled             bool          `fig:"disable"`
-	AccessKey            string        `fig:"access_key"`
-	SecretKey            string        `fig:"secret_key"`
-	Host                 string        `fig:"host"`
-	ForceSSL             bool          `fig:"force_ssl"`
-	FormDataExpire       time.Duration `fig:"form_data_expire"`
-	MinContentLength     int64         `fig:"min_content_length"`
-	MaxContentLength     int64         `fig:"max_content_length"`
-	ObjectCreateARN      string        `fig:"object_create_arn"`
-	ListenerBrokerURL    string        `fig:"listener_broker_url"`
-	ListenerExchange     string        `fig:"listener_exchange"`
-	ListenerExchangeType string        `fig:"listener_exchange_type"`
-	ListenerBindingKey   string        `fig:"listener_binding_key"`
-	MediaTypes           []string      `fig:"media_types"`
+	AccessKey        string   `fig:"access_key"`
+	SecretKey        string   `fig:"secret_key"`
+	Host             string   `fig:"host"`
+	ForceSSL         bool     `fig:"force_ssl"`
+	MinContentLength int64    `fig:"min_content_length"`
+	MaxContentLength int64    `fig:"max_content_length"`
+	MediaTypes       []string `fig:"media_types"`
 }
 
-func (c *ViperConfig) Storage() Storage {
+func (c *ViperConfig) Storage() *storage.Connector {
 	c.Lock()
 	defer c.Unlock()
 
 	if c.storage != nil {
-		return *c.storage
+		return c.storage
 	}
 
 	config := &Storage{}
@@ -43,7 +37,21 @@ func (c *ViperConfig) Storage() Storage {
 		panic(errors.Wrap(err, "failed to figure out storage"))
 	}
 
-	c.storage = config
+	storage.SetMediaTypes(config.MediaTypes)
 
-	return *c.storage
+	minio, err := minio.New(config.Host, config.AccessKey, config.SecretKey, config.ForceSSL)
+	if err != nil {
+		panic(errors.Wrap(err, "failed to init client"))
+	}
+
+	connector := &storage.Connector{
+		Minio:            minio,
+		Log:              log.WithField("service", "storage"),
+		MinContentLength: config.MinContentLength,
+		MaxContentLength: config.MaxContentLength,
+	}
+
+	c.storage = connector
+
+	return c.storage
 }

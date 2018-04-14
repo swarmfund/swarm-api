@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/patrickmn/go-cache"
-	"github.com/pkg/errors"
 	"gitlab.com/swarmfund/api/config"
 	"gitlab.com/swarmfund/api/coreinfo"
 	"gitlab.com/swarmfund/api/db2"
@@ -84,7 +83,6 @@ func (a *App) Blobs() data.Blobs {
 func (a *App) Serve() {
 	a.web.router.Compile()
 
-	storage.SetMediaTypes(a.config.Storage().MediaTypes)
 	r := api2.Router(
 		a.Config().Log().WithField("service", "api"),
 		a.APIQ().Wallet(),
@@ -96,7 +94,7 @@ func (a *App) Serve() {
 		),
 		a.horizon,
 		a.APIQ().TFA(),
-		a.Storage(),
+		a.config.Storage(),
 		a.MasterKP(),
 		a.MasterSignerKP(),
 		a.CoreInfoConn(),
@@ -156,14 +154,6 @@ func (a *App) APIQ() api.QInterface {
 // returned repo is bound to `ctx`.
 func (a *App) APIRepo(ctx context.Context) *db2.Repo {
 	return &db2.Repo{DB: a.apiQ.GetRepo().DB, Ctx: ctx}
-}
-
-func (a *App) Storage() *storage.Connector {
-	connector, err := storage.New(a.Config().Storage())
-	if err != nil {
-		panic(errors.Wrap(err, "failed to init connector"))
-	}
-	return connector
 }
 
 // CoreInfoConn create new instance of coreinfo.Connector.

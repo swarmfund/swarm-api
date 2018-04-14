@@ -5,7 +5,7 @@ import (
 )
 
 var (
-	allowedMediaTypes = map[string]string{}
+	allowedMediaTypes = map[string]struct{}{}
 
 	IsAllowedContentType = func(value interface{}) error {
 		str, ok := value.(string)
@@ -26,6 +26,6 @@ func IsContentTypeAllowed(mediaType string) bool {
 
 func SetMediaTypes(mediaTypes []string) {
 	for _, t := range mediaTypes {
-		allowedMediaTypes[t] = ""
+		allowedMediaTypes[t] = struct{}{}
 	}
 }
