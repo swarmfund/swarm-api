@@ -137,6 +137,7 @@ func Router(
 	})
 
 	r.Route("/documents", func(r chi.Router) {
+		r.Post("/", handlers.PutDocument)
 		r.Get("/{document}", handlers.GetDocument)
 	})
 
