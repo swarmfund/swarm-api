@@ -11,9 +11,9 @@ import (
 	"gitlab.com/swarmfund/api/internal/hose"
 	"gitlab.com/swarmfund/api/notificator"
 	"gitlab.com/swarmfund/api/storage"
-	"gitlab.com/swarmfund/go/doorman"
-	"gitlab.com/swarmfund/go/xdrbuild"
-	"gitlab.com/swarmfund/horizon-connector/v2"
+	"gitlab.com/tokend/go/doorman"
+	"gitlab.com/tokend/go/xdrbuild"
+	"gitlab.com/tokend/horizon-connector"
 	"gitlab.com/tokend/keypair"
 )
 

@@ -14,9 +14,9 @@ import (
 	"gitlab.com/swarmfund/api/geoinfo"
 	"gitlab.com/swarmfund/api/render/problem"
 	"gitlab.com/swarmfund/api/utils"
-	"gitlab.com/swarmfund/go/amount"
-	"gitlab.com/swarmfund/go/strkey"
-	"gitlab.com/swarmfund/go/xdr"
+	"gitlab.com/tokend/go/amount"
+	"gitlab.com/tokend/go/strkey"
+	"gitlab.com/tokend/go/xdr"
 )
 
 const (

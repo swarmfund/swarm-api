@@ -9,7 +9,7 @@ import (
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/ape/problems"
 	"gitlab.com/swarmfund/api/internal/api/movetoape"
-	"gitlab.com/swarmfund/go/doorman"
+	"gitlab.com/tokend/go/doorman"
 )
 
 func GetDocument(w http.ResponseWriter, r *http.Request) {
