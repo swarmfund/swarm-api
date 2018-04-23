@@ -49,10 +49,6 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 
 	// FIXME
 	{
-		if err := Doorman(r, doorman.SignerOf(CoreInfo(r).GetMasterAccountID())); err != nil {
-			return
-		}
-
 		event, err := Tracker(r).GetLast(track.Event{
 			Address: string(user.Address),
 		})
