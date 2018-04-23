@@ -9,6 +9,7 @@ import (
 	"gitlab.com/swarmfund/api/db2/api"
 	"gitlab.com/swarmfund/api/internal/data"
 	"gitlab.com/swarmfund/api/internal/hose"
+	"gitlab.com/swarmfund/api/internal/track"
 	"gitlab.com/swarmfund/api/notificator"
 	"gitlab.com/swarmfund/api/storage"
 	"gitlab.com/tokend/go/doorman"
@@ -35,6 +36,7 @@ const (
 	userBusDispatchCtxKey
 	notificatorCtxKey
 	walletAdditionCtxKey
+	trackerCtxKey
 )
 
 func CtxWalletQ(q api.WalletQI) func(context.Context) context.Context {
@@ -185,4 +187,14 @@ func CtxWallets(disableConfirm config.Wallets) func(context.Context) context.Con
 
 func Wallet(r *http.Request) config.Wallets {
 	return r.Context().Value(walletAdditionCtxKey).(config.Wallets)
+}
+
+func CtxTracker(tracker *track.Tracker) func(context.Context) context.Context {
+	return func(ctx context.Context) context.Context {
+		return context.WithValue(ctx, trackerCtxKey, tracker)
+	}
+}
+
+func Tracker(r *http.Request) *track.Tracker {
+	return r.Context().Value(trackerCtxKey).(*track.Tracker)
 }

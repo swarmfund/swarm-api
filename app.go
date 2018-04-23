@@ -17,6 +17,7 @@ import (
 	horizon2 "gitlab.com/swarmfund/api/internal/data/horizon"
 	"gitlab.com/swarmfund/api/internal/data/postgres"
 	"gitlab.com/swarmfund/api/internal/hose"
+	"gitlab.com/swarmfund/api/internal/track"
 	"gitlab.com/swarmfund/api/log"
 	"gitlab.com/swarmfund/api/storage"
 	"gitlab.com/tokend/go/doorman"
@@ -79,6 +80,10 @@ func (a *App) Blobs() data.Blobs {
 	return postgres.NewBlobs(a.APIRepo(a.ctx))
 }
 
+func (a *App) Tracker() *track.Tracker {
+	return track.NewTracker(a.Config().Log(), postgres.NewTracking(a.APIRepo(a.ctx)))
+}
+
 // Serve starts the horizon web server, binding it to a socket, setting up
 // the shutdown signals.
 func (a *App) Serve() {
@@ -105,6 +110,7 @@ func (a *App) Serve() {
 		a.Config().Notificator(),
 		a.APIRepo(a.ctx),
 		a.config.Wallets(),
+		a.Tracker(),
 	)
 
 	r.Mount("/", a.web.router)
