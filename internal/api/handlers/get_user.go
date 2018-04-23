@@ -10,6 +10,7 @@ import (
 	"gitlab.com/distributed_lab/ape/problems"
 	"gitlab.com/swarmfund/api/internal/api/movetoape"
 	"gitlab.com/swarmfund/api/internal/api/resources"
+	"gitlab.com/swarmfund/api/internal/track"
 	"gitlab.com/tokend/go/doorman"
 )
 
@@ -43,5 +44,26 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 	response := GetUserResponse{
 		Data: resources.NewUser(user),
 	}
-	json.NewEncoder(w).Encode(response)
+
+	defer json.NewEncoder(w).Encode(response)
+
+	// FIXME
+	{
+		if err := Doorman(r, doorman.SignerOf(CoreInfo(r).GetMasterAccountID())); err != nil {
+			return
+		}
+
+		event, err := Tracker(r).GetLast(track.Event{
+			Address: string(user.Address),
+		})
+		if err != nil {
+			Log(r).WithError(err).Error("failed to get event")
+		}
+
+		if event == nil {
+			return
+		}
+		response.Data.Attributes.LastIPAddress = event.Details.Request.IP
+	}
+
 }

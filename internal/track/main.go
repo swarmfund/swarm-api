@@ -3,6 +3,9 @@ package track
 import (
 	"net/http"
 
+	"encoding/json"
+
+	"github.com/pkg/errors"
 	"gitlab.com/distributed_lab/logan/v3"
 	"gitlab.com/tokend/go/signcontrol"
 )
@@ -24,6 +27,19 @@ type EventDetails struct {
 	Request *RequestDetails
 }
 
+func (d *EventDetails) Scan(value interface{}) error {
+	if value == nil {
+		return nil
+	}
+	if bytes, ok := value.([]byte); ok {
+		if err := json.Unmarshal(bytes, &d); err != nil {
+			return errors.Wrap(err, "failed to scan EventDetails")
+		}
+		return nil
+	}
+	return errors.New("failed to scan EventDetails")
+}
+
 type RequestDetails struct {
 	IP        string
 	UserAgent string
@@ -32,6 +48,7 @@ type RequestDetails struct {
 
 type Q interface {
 	Track(Event) error
+	Last(*Event) (*Event, error)
 }
 
 type Tracker struct {
@@ -57,6 +74,7 @@ func (t *Tracker) track(event Event) {
 		}).Error("failed to save event")
 	}
 }
+
 func (t *Tracker) GetWallet(request *http.Request) {
 	sig, _ := signcontrol.IsSigned(request)
 	t.track(Event{
@@ -70,4 +88,8 @@ func (t *Tracker) GetWallet(request *http.Request) {
 			},
 		},
 	})
+}
+
+func (t *Tracker) GetLast(event Event) (*Event, error) {
+	return t.q.Last(&event)
 }
