@@ -182,4 +182,6 @@ func CreateBlob(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(201)
 	json.NewEncoder(w).Encode(&response)
+
+	go Tracker(r).CreateBlob(r)
 }

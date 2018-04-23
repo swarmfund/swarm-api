@@ -75,7 +75,7 @@ func (t *Tracker) track(event Event) {
 	}
 }
 
-func (t *Tracker) GetWallet(request *http.Request) {
+func (t *Tracker) CreateBlob(request *http.Request) {
 	sig, _ := signcontrol.IsSigned(request)
 	t.track(Event{
 		Address: sig.Address,
