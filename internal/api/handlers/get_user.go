@@ -8,6 +8,7 @@ import (
 	"github.com/go-chi/chi"
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/ape/problems"
+	"gitlab.com/distributed_lab/logan/v3"
 	"gitlab.com/swarmfund/api/internal/api/movetoape"
 	"gitlab.com/swarmfund/api/internal/api/resources"
 	"gitlab.com/swarmfund/api/internal/track"
@@ -54,12 +55,18 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 		})
 		if err != nil {
 			Log(r).WithError(err).Error("failed to get event")
+			return
 		}
 
 		if event == nil {
+			Log(r).WithField("address", user.Address).Debug("event not found")
 			return
 		}
 		response.Data.Attributes.LastIPAddress = event.Details.Request.IP
+		Log(r).WithFields(logan.F{
+			"address": user.Address,
+			"ip":      event.Details.Request.IP,
+		}).Debug("found event")
 	}
 
 }
