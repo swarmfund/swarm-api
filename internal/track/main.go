@@ -83,7 +83,7 @@ func (t *Tracker) GetWallet(request *http.Request) {
 		Details: EventDetails{
 			Type: EventTypeGetWallet,
 			Request: &RequestDetails{
-				IP:        request.RemoteAddr,
+				IP:        request.Header.Get("x-real-ip"),
 				UserAgent: request.Header.Get("user-agent"),
 			},
 		},
