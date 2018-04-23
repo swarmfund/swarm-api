@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"gitlab.com/swarmfund/api/internal/lorem"
-	"gitlab.com/swarmfund/go/hash"
+	"gitlab.com/tokend/go/hash"
 )
 
 const DUIDPrefix = "dev_unique_id"

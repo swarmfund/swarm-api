@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"github.com/mssola/user_agent"
-	"gitlab.com/swarmfund/go/hash"
+	"gitlab.com/tokend/go/hash"
 )
 
 type DeviceInfo struct {

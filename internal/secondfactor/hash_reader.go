@@ -11,7 +11,7 @@ import (
 	"bytes"
 	"encoding/hex"
 	"fmt"
-	"gitlab.com/swarmfund/go/signcontrol"
+	"gitlab.com/tokend/go/signcontrol"
 )
 
 type ctxKey int

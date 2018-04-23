@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/url"
 
-	"gitlab.com/swarmfund/go/hash"
+	"gitlab.com/tokend/go/hash"
 )
 
 const TimeLayout = "2006-01-02 15:04:05"

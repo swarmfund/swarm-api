@@ -5,7 +5,7 @@ import (
 
 	"github.com/pkg/errors"
 	"gitlab.com/distributed_lab/figure"
-	"gitlab.com/swarmfund/horizon-connector/v2"
+	"gitlab.com/tokend/horizon-connector"
 	"gitlab.com/tokend/keypair"
 )
 
