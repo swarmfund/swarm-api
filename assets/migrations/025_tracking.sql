@@ -1,7 +1,7 @@
 -- +migrate Up
 
 create table tracking (
-  id primary key
+  id primary key,
   address text,
   signer text,
   details jsonb
