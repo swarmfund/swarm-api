@@ -46,7 +46,7 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 		Data: resources.NewUser(user),
 	}
 
-	defer json.NewEncoder(w).Encode(response)
+	defer json.NewEncoder(w).Encode(&response)
 
 	// FIXME
 	{
