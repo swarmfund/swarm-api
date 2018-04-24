@@ -17,7 +17,7 @@ import (
 	"gitlab.com/swarmfund/api/internal/secondfactor"
 	"gitlab.com/swarmfund/api/internal/types"
 	"gitlab.com/swarmfund/api/tfa"
-	"gitlab.com/swarmfund/go/doorman"
+	"gitlab.com/tokend/go/doorman"
 )
 
 type (

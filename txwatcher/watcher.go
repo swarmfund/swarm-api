@@ -5,7 +5,7 @@ import (
 
 	"gitlab.com/distributed_lab/logan/v3"
 	"gitlab.com/swarmfund/api/internal/hose"
-	"gitlab.com/swarmfund/horizon-connector/v2"
+	"gitlab.com/tokend/horizon-connector"
 )
 
 type Watcher struct {

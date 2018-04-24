@@ -7,7 +7,7 @@ import (
 
 	"github.com/pkg/errors"
 	"gitlab.com/swarmfund/api/internal/types"
-	"gitlab.com/swarmfund/go/keypair"
+	"gitlab.com/tokend/go/keypair"
 )
 
 type PasswordDetails struct {

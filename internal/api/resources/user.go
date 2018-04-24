@@ -22,6 +22,7 @@ type (
 		RecoveryAddress types.Address      `json:"recovery_address"`
 		CreatedAt       time.Time          `json:"created_at"`
 		AirdropState    types.AirdropState `json:"airdrop_state"`
+		LastIPAddress   string             `json:"last_ip_address,omitempty"`
 	}
 
 	UserRelationships struct {

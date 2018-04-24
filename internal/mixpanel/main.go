@@ -4,8 +4,8 @@ import (
 	"time"
 
 	"github.com/dukex/mixpanel"
-	"gitlab.com/swarmfund/go/amount"
-	"gitlab.com/swarmfund/go/xdr"
+	"gitlab.com/tokend/go/amount"
+	"gitlab.com/tokend/go/xdr"
 )
 
 const (

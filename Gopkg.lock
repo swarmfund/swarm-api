@@ -329,12 +329,6 @@
 
 [[projects]]
   branch = "master"
-  name = "github.com/streadway/amqp"
-  packages = ["."]
-  revision = "ff791c2d22d3f1588b4e2cc71a9fba5e1da90654"
-
-[[projects]]
-  branch = "master"
   name = "github.com/stretchr/objx"
   packages = ["."]
   revision = "1a9d0bb9f541897e62256577b352fdbc1fb4fd94"
@@ -380,8 +374,8 @@
     "v3/errors",
     "v3/fields"
   ]
-  revision = "0f4dfbd71ca22492150c91510966d936f434a3eb"
-  version = "v3.3.1"
+  revision = "0c279a3a45143457b569e979e395481778e1ba42"
+  version = "v3.5.0"
 
 [[projects]]
   branch = "master"
@@ -391,7 +385,7 @@
 
 [[projects]]
   branch = "master"
-  name = "gitlab.com/swarmfund/go"
+  name = "gitlab.com/tokend/go"
   packages = [
     "amount",
     "crc16",
@@ -407,32 +401,33 @@
     "xdrbuild",
     "xdrbuild/internal"
   ]
-  revision = "2c8e0dfa264e645fb01fba44ec1a84e37b9bfea3"
+  revision = "9ab0e0408616ee10e8a659bbe65b5ef8ac51765d"
 
 [[projects]]
   branch = "master"
-  name = "gitlab.com/swarmfund/horizon-connector"
+  name = "gitlab.com/tokend/horizon-connector"
   packages = [
-    "v2",
-    "v2/internal",
-    "v2/internal/account",
-    "v2/internal/asset",
-    "v2/internal/balance",
-    "v2/internal/blob",
-    "v2/internal/document",
-    "v2/internal/errors",
-    "v2/internal/listener",
-    "v2/internal/operation",
-    "v2/internal/resources",
-    "v2/internal/responses",
-    "v2/internal/sale",
-    "v2/internal/templates",
-    "v2/internal/transaction",
-    "v2/internal/user",
-    "v2/internal/wallets",
-    "v2/types"
+    ".",
+    "internal",
+    "internal/account",
+    "internal/asset",
+    "internal/balance",
+    "internal/blob",
+    "internal/document",
+    "internal/errors",
+    "internal/listener",
+    "internal/operation",
+    "internal/resources",
+    "internal/resources/operations",
+    "internal/responses",
+    "internal/sale",
+    "internal/templates",
+    "internal/transaction",
+    "internal/user",
+    "internal/wallets",
+    "types"
   ]
-  revision = "ff506d5ff5eaf3248d9e6ae3f04697078781bdb3"
+  revision = "5978826d872bf1e7f379c3978b3c61fff9f5cf42"
 
 [[projects]]
   branch = "master"
@@ -518,6 +513,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "76a28f1c16da02f62aa60dfaaf3f5af8fcca8af0d0d39596659c333065b051a9"
+  inputs-digest = "7f507ca1b14e30e95761bda939878474771d1abe0625006966bc927836b571ad"
   solver-name = "gps-cdcl"
   solver-version = 1
