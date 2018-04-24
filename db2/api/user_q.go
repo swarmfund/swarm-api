@@ -38,7 +38,7 @@ var (
 		Join("recoveries r on r.wallet=u.email").
 		// joining left since it's optional due to late migration
 		LeftJoin("airdrops a on a.owner=u.address").
-		LeftJoin("blobs b ON us.kyc_blob = b.id").
+		LeftJoin("blobs b ON us.kyc_blob = b.id and b.type = ?", types.BlobTypeKYCForm).
 		From(tableUserAliased)
 
 	insertUser = sq.Insert(tableUser)
@@ -315,16 +315,16 @@ func (q *UsersQ) Participants(ops map[int64][]Participant) error {
 }
 
 func (q *UsersQ) ByFirstName(firstName string) UsersQI {
-	q.sql = q.sql.Where("b.value::jsonb->>'first_name' = ?", firstName)
+	q.sql = q.sql.Where("? in (b.value::jsonb#>>'{first_name}', b.value::jsonb#>>'{v2,first_name}')", firstName)
 	return q
 }
 
 func (q *UsersQ) ByLastName(lastName string) UsersQI {
-	q.sql = q.sql.Where("b.value::jsonb->>'last_name' = ?", lastName)
+	q.sql = q.sql.Where("? in (b.value::jsonb#>>'{last_name}', b.value::jsonb#>>'{v2,last_name}')", lastName)
 	return q
 }
 
 func (q *UsersQ) ByCountry(country string) UsersQI {
-	q.sql = q.sql.Where("b.value::jsonb->'address'->>'country' = ?", country)
+	q.sql = q.sql.Where("? in (b.value::jsonb#>>'{address, country}', b.value::jsonb#>>'{v2,address,country}')", country)
 	return q
 }
