@@ -12,9 +12,9 @@ import (
 	"gitlab.com/swarmfund/api/internal/api/movetoape"
 	"gitlab.com/swarmfund/api/internal/hose"
 	"gitlab.com/swarmfund/api/internal/types"
-	"gitlab.com/swarmfund/go/doorman"
-	"gitlab.com/swarmfund/go/xdr"
-	"gitlab.com/swarmfund/go/xdrbuild"
+	"gitlab.com/tokend/go/doorman"
+	"gitlab.com/tokend/go/xdr"
+	"gitlab.com/tokend/go/xdrbuild"
 )
 
 var (

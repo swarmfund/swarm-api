@@ -4,7 +4,7 @@ import (
 	"encoding/base64"
 	"fmt"
 
-	"gitlab.com/swarmfund/go/hash"
+	"gitlab.com/tokend/go/hash"
 )
 
 type Backend interface {

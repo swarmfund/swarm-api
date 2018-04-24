@@ -21,10 +21,11 @@ import (
 	"gitlab.com/swarmfund/api/internal/favorites"
 	"gitlab.com/swarmfund/api/internal/hose"
 	"gitlab.com/swarmfund/api/internal/secondfactor"
+	"gitlab.com/swarmfund/api/internal/track"
 	"gitlab.com/swarmfund/api/notificator"
 	"gitlab.com/swarmfund/api/storage"
-	"gitlab.com/swarmfund/go/doorman"
-	"gitlab.com/swarmfund/horizon-connector/v2"
+	"gitlab.com/tokend/go/doorman"
+	"gitlab.com/tokend/horizon-connector"
 	"gitlab.com/tokend/keypair"
 )
 
@@ -34,7 +35,7 @@ func Router(
 	tfaQ api.TFAQI, storage *storage.Connector, master keypair.Address, signer keypair.Full,
 	coreInfo data.CoreInfoI, blobQ data.Blobs, sentry *raven.Client,
 	userDispatch hose.UserDispatch, notificator *notificator.Connector, repo *db2.Repo,
-	wallets config.Wallets,
+	wallets config.Wallets, tracker *track.Tracker,
 ) chi.Router {
 	r := chi.NewRouter()
 
@@ -58,6 +59,7 @@ func Router(
 			handlers.CtxNotificator(notificator),
 			handlers.CtxWallets(wallets),
 			handlers.CtxBlobQ(blobQ),
+			handlers.CtxTracker(tracker),
 		),
 	)
 
