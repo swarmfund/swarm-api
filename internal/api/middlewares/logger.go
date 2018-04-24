@@ -25,7 +25,7 @@ func Logger(entry *logan.Entry, durationThreshold time.Duration) func(http.Handl
 				lEntry.Info("request finished")
 
 				if dur > durationThreshold {
-					lEntry.WithField("http_request", r).Warning("slow request")
+					lEntry.WithField("http_request", r).Warn("slow request")
 				}
 			}()
 

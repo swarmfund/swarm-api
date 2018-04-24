@@ -22,10 +22,15 @@ type (
 		RecoveryAddress types.Address      `json:"recovery_address"`
 		CreatedAt       time.Time          `json:"created_at"`
 		AirdropState    types.AirdropState `json:"airdrop_state"`
+		LastIPAddress   string             `json:"last_ip_address,omitempty"`
 	}
 
 	UserRelationships struct {
-		KYC *Blob `json:"kyc,omitempty"`
+		KYC *UserKYC `json:"kyc,omitempty"`
+	}
+
+	UserKYC struct {
+		Data Blob `json:"data"`
 	}
 )
 
@@ -44,9 +49,11 @@ func NewUser(user *api.User) User {
 	relationships := &UserRelationships{}
 
 	if user.KYCBlobValue != nil {
-		blob := &Blob{}
+		blob := Blob{}
 		blob.Attributes.Value = *user.KYCBlobValue
-		relationships.KYC = blob
+		relationships.KYC = &UserKYC{
+			Data: blob,
+		}
 	}
 
 	return User{

@@ -7,6 +7,8 @@ includes:
   - documents
   - kyc
   - blobs
+  - balances
+  - javascript
 ---
 
 # Overview
@@ -16,7 +18,7 @@ Most important parts of protocol will be included here, but to get better feel o
 
 | Legend | Description                |
 | ------ | -------------------------- |
-| 🔒     | Request requires signature |
+| 🔒     | Request requires signature (See [Get wallet] (#get-wallet), [wallet.js] (#wallet-js), [js-sdk] (#swarm-js-sdk))|
 
 
 
@@ -51,7 +53,8 @@ If not stated otherwise client should expect one of the following status codes:
 
 # Wallets
 
-Used to store encrypted user keys used for signing requests.
+Wallet is used to store encrypted user keys used for signing requests. Wallet is identified by wallet id: a unique string
+composed from email and password.
 
 ## Get KDF params
 
@@ -167,6 +170,9 @@ Create wallet requests should contain following resources:
 | Field | Description                              |
 | ----- | ---------------------------------------- |
 | `id`  | version of KDF parameters used to derive wallet data |
+|       | 1 - means that wallet id should be calculated as is, without any formatting |
+|       | 2 - means that wallet id should be calculated with lowercased email |
+
 
 #### Factor
 
@@ -209,6 +215,7 @@ Client then should send request to `PUT /wallets/{wallet-id}/verification` to co
 
 ## Requesting email resend
 
+
 ```ruby
 POST /wallets/5xkxn3nfjmfx9p58geo5stt9/verification HTTP/1.1
 
@@ -243,7 +250,20 @@ Content-Type: application/vnd.api+json
 
 <aside class="notice">Previously knows as <code>POST /wallets/show</code></aside>
 
+### Request params
 
+| Param                 | Description                              |
+| --------------------- | ---------------------------------------- |
+| `id`                  | lowercase, hex-encoded string with key derived from password, email and salt using KDF parameters |
+
+### Response fields
+
+| Field                 | Description                              |
+| --------------------- | ---------------------------------------- |
+| `account_id`          | unique identifier of user account |
+| `keychain_data`       | encrypted JSON string contains user's secret seed and it's public key (may be different from account id). Use `walletKey` to derive it |
+
+Derived secret seed now allows you to sign transactions and private requests
 
 ## Update wallet 🔒 
 
