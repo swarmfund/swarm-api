@@ -6,11 +6,10 @@ import (
 
 var (
 	allowedMediaTypes = map[string]string{
-		"application/pdf": "pdf",
-		"image/jpeg":      "jpeg",
-		"image/tiff":      "tiff",
-		"image/png":       "png",
-		"image/gif":       "gif",
+		"image/jpeg": "jpeg",
+		"image/tiff": "tiff",
+		"image/png":  "png",
+		"image/gif":  "gif",
 	}
 
 	IsAllowedContentType = func(value interface{}) error {

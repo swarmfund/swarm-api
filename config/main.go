@@ -10,7 +10,7 @@ import (
 	"gitlab.com/swarmfund/api/internal/discourse"
 	"gitlab.com/swarmfund/api/internal/mixpanel"
 	"gitlab.com/swarmfund/api/notificator"
-	"gitlab.com/swarmfund/horizon-connector/v2"
+	"gitlab.com/tokend/horizon-connector"
 )
 
 type Config interface {

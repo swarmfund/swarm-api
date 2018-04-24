@@ -1,5 +1,5 @@
 package hose
 
-import "gitlab.com/swarmfund/horizon-connector/v2"
+import "gitlab.com/tokend/horizon-connector"
 
 type TransactionEvent = horizon.TransactionEvent

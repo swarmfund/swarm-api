@@ -19,8 +19,8 @@ import (
 	"gitlab.com/swarmfund/api/internal/data"
 	"gitlab.com/swarmfund/api/internal/data/postgres"
 	"gitlab.com/swarmfund/api/internal/types"
-	"gitlab.com/swarmfund/go/doorman"
-	"gitlab.com/swarmfund/go/hash"
+	"gitlab.com/tokend/go/doorman"
+	"gitlab.com/tokend/go/hash"
 )
 
 type (
@@ -182,4 +182,9 @@ func CreateBlob(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(201)
 	json.NewEncoder(w).Encode(&response)
+
+	if request.Address != nil {
+		go Tracker(r).CreateBlob(string(*request.Address), r)
+	}
+
 }
