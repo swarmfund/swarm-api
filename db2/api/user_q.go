@@ -28,6 +28,7 @@ var (
 		"a.state as airdrop_state",
 		"(select json_agg(kyc) from kyc_entities kyc where kyc.user_id=u.id) as kyc_entities",
 		"b.value as kyc_blob_value",
+		"b.id as kyc_blob_id",
 		// state and type might be nil if ingestion is still in progress,
 		// make sure resources render some meaningful stub values that will not break clients
 		"coalesce(us.state, 0) as user_state",
@@ -37,7 +38,7 @@ var (
 		Join("recoveries r on r.wallet=u.email").
 		// joining left since it's optional due to late migration
 		LeftJoin("airdrops a on a.owner=u.address").
-		LeftJoin("blobs b ON u.address = b.owner_address AND CAST( b.relationships->>'kyc_sequence' AS INT) = u.kyc_sequence AND b.type = ?", types.BlobTypeKYCForm).
+		LeftJoin("blobs b ON us.kyc_blob = b.id").
 		From(tableUserAliased)
 
 	insertUser = sq.Insert(tableUser)
@@ -214,6 +215,15 @@ func (q *UsersQ) SetState(update UserStateUpdate) error {
 			WHERE us.updated_at <= excluded.updated_at
 	`)
 	_, err := q.parent.Exec(stmt)
+	if err != nil {
+		cause := errors.Cause(err)
+		pqerr, ok := cause.(*pq.Error)
+		if ok {
+			if pqerr.Constraint == "user_states_users_fkey" {
+				return ErrUsersConflict
+			}
+		}
+	}
 	return err
 }
 

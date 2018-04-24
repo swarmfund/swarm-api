@@ -23,8 +23,10 @@ type User struct {
 	ID      int64         `db:"id"`
 	Address types.Address `db:"address"`
 	// TODO join from wallets address->account_id
-	Email        string `db:"email"`
-	KYCSequence  int64  `db:"kyc_sequence"`
+	Email string `db:"email"`
+	// DEPRECATED
+	KYCSequence int64 `db:"kyc_sequence"`
+	// DEPRECATED
 	RejectReason string `db:"reject_reason"`
 
 	CreatedAt time.Time `db:"created_at"`
@@ -43,6 +45,8 @@ type User struct {
 	RecoveryAddress types.Address `db:"recovery_address"`
 	// AirdropState treat nils as valid undefined value, comes from json on airdrops
 	AirdropState *types.AirdropState `db:"airdrop_state"`
+	// KYCBlobID comes from join on user_states
+	KYCBlobID *string `db:"kyc_blob_id"`
 	//KYCBlobValue this is addition value comes from blobs.Value for specific user
 	KYCBlobValue *string `db:"kyc_blob_value"`
 	// State comes from join on user_states
