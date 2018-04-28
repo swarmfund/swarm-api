@@ -39,8 +39,12 @@ func (r *CreateWalletRequest) Validate(approver Rule) error {
 		"/data/relationships/kdf":      Validate(r.Data.Relationships.KDF, Required),
 		"/data/relationships/factor":   Validate(r.Data.Relationships.Factor, Required),
 		"/data/relationships/recovery": Validate(r.Data.Relationships.Recovery, Required),
-		"/data/attributes/email":       Validate(r.Data.Attributes.Email, approver, is.Email),
 	}
+
+	if r.Data.Attributes.Email != "" {
+		errs["/data/attributes/email"] = Validate(r.Data.Attributes.Email, approver, is.Email)
+	}
+
 	if r.Data.Relationships.Recovery != nil {
 		errs["/data/relationships/recovery/account_id"] = Validate(
 			r.Data.Relationships.Recovery.Data.Attributes.AccountID, Required)
