@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	. "github.com/go-ozzo/ozzo-validation"
+	"github.com/go-ozzo/ozzo-validation/is"
 	"github.com/pkg/errors"
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/ape/problems"
@@ -26,15 +27,19 @@ func NewCreateWalletRequest(r *http.Request) (CreateWalletRequest, error) {
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
 		return request, errors.Wrap(err, "failed to unmarshal")
 	}
-	return request, request.Validate()
+	return request, request.Validate(DomainApprover(r))
 }
 
-func (r *CreateWalletRequest) Validate() error {
+//Validate takes rule to do validate emails domains
+//so to avoid misunderstanding of CreateWalletRequest structure
+//approver located in args, and not a part of CreateWalletRequest
+func (r *CreateWalletRequest) Validate(approver Rule) error {
 	errs := Errors{
 		"/data/":                       Validate(r.Data, Required),
 		"/data/relationships/kdf":      Validate(r.Data.Relationships.KDF, Required),
 		"/data/relationships/factor":   Validate(r.Data.Relationships.Factor, Required),
 		"/data/relationships/recovery": Validate(r.Data.Relationships.Recovery, Required),
+		"/data/attributes/email":       Validate(r.Data.Attributes.Email, approver, is.Email),
 	}
 	if r.Data.Relationships.Recovery != nil {
 		errs["/data/relationships/recovery/account_id"] = Validate(
