@@ -38,7 +38,7 @@ var (
 		// joining left since it's optional due to late migration
 		LeftJoin("airdrops a on a.owner=u.address").
 		LeftJoin("blobs b ON u.address = b.owner_address AND CAST( b.relationships->>'kyc_sequence' AS INT) = u.kyc_sequence AND b.type = ?", types.BlobTypeKYCForm).
-		OrderBy("address").
+		OrderBy("id").
 		From(tableUserAliased)
 
 	insertUser = sq.Insert(tableUser)
