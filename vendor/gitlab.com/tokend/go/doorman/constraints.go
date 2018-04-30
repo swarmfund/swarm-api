@@ -22,14 +22,17 @@ func SignerOf(address string) SignerConstraint {
 		}
 
 		for _, accountSigner := range signers {
-			if accountSigner.AccountID == signer && accountSigner.Weight > 0 {
-				return nil
+			if accountSigner.AccountID != signer {
+				continue
 			}
+			if accountSigner.Weight == 0 {
+				continue
+			}
+			return nil
 		}
 		return signcontrol.ErrNotAllowed
 	}
 }
-
 
 func SignatureOf(address string) SignerConstraint {
 	return func(r *http.Request, doorman Doorman) error {
@@ -45,4 +48,3 @@ func SignatureOf(address string) SignerConstraint {
 		return signcontrol.ErrNotAllowed
 	}
 }
-
