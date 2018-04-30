@@ -8,7 +8,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"gitlab.com/swarmfund/go/signcontrol"
+	"gitlab.com/tokend/go/signcontrol"
 )
 
 func TestRequestHash(t *testing.T) {

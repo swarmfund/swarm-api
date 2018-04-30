@@ -6,7 +6,7 @@ import (
 
 	"encoding/hex"
 
-	"gitlab.com/swarmfund/go/hash"
+	"gitlab.com/tokend/go/hash"
 )
 
 // TODO move to ape

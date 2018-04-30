@@ -3,7 +3,7 @@ package types
 import (
 	"errors"
 
-	"gitlab.com/swarmfund/go/strkey"
+	"gitlab.com/tokend/go/strkey"
 )
 
 var (

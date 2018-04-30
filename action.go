@@ -12,7 +12,7 @@ import (
 	"gitlab.com/swarmfund/api/log"
 	"gitlab.com/swarmfund/api/render/problem"
 	"gitlab.com/swarmfund/api/tfa"
-	"gitlab.com/swarmfund/go/xdr"
+	"gitlab.com/tokend/go/xdr"
 )
 
 // Action is the "base type" for all actions in horizon.  It provides
