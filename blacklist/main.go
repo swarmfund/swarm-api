@@ -17,19 +17,18 @@ type Approver struct {
 }
 
 func NewApprover(unallowed ...string) *Approver {
-	unallowed = append(unallowed, "") //default value of type string is also unallowed for domain
 	return &Approver{
 		blacklist: unallowed,
 	}
 }
 
-func getDomain(email string) (domain string) {
+func getDomain(email string) (string, error) {
 	splitted := strings.Split(email, "@")
-	if len(splitted) > 1 {
-		domain = splitted[1]
+	if len(splitted) != 2 {
+		return "", ErrUnallowedValue
 	}
 
-	return domain
+	return splitted[1], nil
 }
 
 func (a Approver) Validate(value interface{}) error {
@@ -38,7 +37,10 @@ func (a Approver) Validate(value interface{}) error {
 		return errors.Wrap(ErrUnallowedType, "value should be of type string")
 	}
 
-	domain := getDomain(str)
+	domain, err := getDomain(str)
+	if err != nil {
+		return errors.Wrap(err, "failed to get domain")
+	}
 	for _, unallowed := range a.blacklist {
 		if domain == unallowed {
 			return errors.Wrap(ErrUnallowedValue, "failed to approve email, domain in blacklist ", logan.F{"domain": unallowed})
