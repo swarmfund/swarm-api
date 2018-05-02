@@ -48,8 +48,11 @@ func NewUser(user *api.User) User {
 
 	relationships := &UserRelationships{}
 
-	if user.KYCBlobValue != nil {
-		blob := Blob{}
+	if user.KYCBlobValue != nil && user.KYCBlobID != nil {
+		blob := Blob{
+			ID:   *user.KYCBlobID,
+			Type: types.BlobTypeKYCForm,
+		}
 		blob.Attributes.Value = *user.KYCBlobValue
 		relationships.KYC = &UserKYC{
 			Data: blob,

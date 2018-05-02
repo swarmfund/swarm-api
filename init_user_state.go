@@ -165,21 +165,25 @@ func init() {
 			if event.Transaction == nil {
 				return
 			}
+			entry := entry.WithFields(event.Transaction.GetLoganFields())
+			entry.Debug("got tx")
 			for _, change := range event.Transaction.LedgerChanges() {
 				for _, mutator := range mutators {
 					update := func() *api.UserStateUpdate {
 						defer func() {
 							if rvr := recover(); rvr != nil {
-								entry.WithRecover(rvr).WithFields(event.Transaction.GetLoganFields()).Error("mutator panicked")
+								entry.WithRecover(rvr).Error("mutator panicked")
 							}
 						}()
 						return mutator(change)
 					}()
 					if update != nil {
 						update.Timestamp = event.Transaction.CreatedAt
+						entry := entry.WithFields(update.GetLoganFields())
+						entry.Debug("updating state")
 						err := app.apiQ.Users().SetState(*update)
 						if err != nil {
-							entry.WithError(err).WithFields(event.Transaction.GetLoganFields()).Error("failed to set user state")
+							entry.WithError(err).Error("failed to set user state")
 						}
 					}
 				}
