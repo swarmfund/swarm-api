@@ -1,6 +1,8 @@
 package txwatcher
 
 import (
+	"time"
+
 	"gitlab.com/distributed_lab/logan/v3"
 	"gitlab.com/swarmfund/api/internal/hose"
 	"gitlab.com/tokend/horizon-connector"
@@ -23,12 +25,12 @@ func NewWatcher(log *logan.Entry, connector *horizon.Connector, dispatch hose.Tr
 func (w *Watcher) Run() {
 	// ticker to slow down requests leaving quota for other API requests
 	// FIXME find a better way to prioritise requests from API
-	//ticker := time.NewTicker(3 * time.Second)
+	ticker := time.NewTicker(3)
 	defer func() {
 		if rvr := recover(); rvr != nil {
 			w.log.WithRecover(rvr).Error("watcher panicked")
 		}
-		//ticker.Stop()
+		ticker.Stop()
 	}()
 	events := make(chan horizon.TransactionEvent)
 	errs := w.horizon.Listener().Transactions(events)
