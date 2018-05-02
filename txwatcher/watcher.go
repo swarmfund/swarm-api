@@ -28,7 +28,7 @@ func (w *Watcher) Run() {
 		if rvr := recover(); rvr != nil {
 			w.log.WithRecover(rvr).Error("watcher panicked")
 		}
-		ticker.Stop()
+		//ticker.Stop()
 	}()
 	events := make(chan horizon.TransactionEvent)
 	errs := w.horizon.Listener().Transactions(events)
