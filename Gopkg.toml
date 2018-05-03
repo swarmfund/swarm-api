@@ -98,9 +98,9 @@
   name = "gitlab.com/distributed_lab/sse-go"
   version = "1.0.0"
 
-[[constraint]]
+[[override]]
   name = "gitlab.com/tokend/go"
-  branch = "master"
+  branch = "feature/signcontrol-v2"
 
 [[constraint]]
   name = "gitlab.com/tokend/horizon-connector"
