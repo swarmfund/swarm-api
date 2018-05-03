@@ -331,7 +331,7 @@ func (q *UsersQ) TotalRegistrations() (uint64, error) {
 }
 
 func (q *UsersQ) TotalKYCApplications() (uint64, error) {
-	sql := sq.Select("COUNT(*)").From(tableUserStates).Where("state = ?", types.UserStateNil)
+	sql := sq.Select("COUNT(*)").From(tableUserStates).Where("state = ?", types.UserStateWaitingForApproval)
 
 	var amount uint64
 	err := q.parent.Get(&amount, sql)
@@ -339,7 +339,7 @@ func (q *UsersQ) TotalKYCApplications() (uint64, error) {
 }
 
 func (q *UsersQ) TotalKYCApprovals() (uint64, error) {
-	sql := sq.Select("COUNT(*)").From(tableUserStates).Where("state = ?", types.UserStateApproved)
+	sql := sq.Select("COUNT(*)").From(tableUserStates).Where("type = ?", types.UserTypeGeneral)
 
 	var amount uint64
 	err := q.parent.Get(&amount, sql)
