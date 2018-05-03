@@ -8,7 +8,8 @@ import (
 const walletsConfigkey = "wallets"
 
 type Wallets struct {
-	DisableConfirm bool `fig:"disable_confirm"`
+	DisableConfirm   bool     `fig:"disable_confirm"`
+	DomainsBlacklist []string `fig:"domains_blacklist"`
 }
 
 func (c *ViperConfig) Wallets() Wallets {
