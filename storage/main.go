@@ -8,6 +8,7 @@ import (
 	"github.com/minio/minio-go"
 	"github.com/minio/minio-go/pkg/policy"
 	"github.com/pkg/errors"
+	"gitlab.com/swarmfund/api/internal/types"
 	"gitlab.com/swarmfund/api/log"
 )
 
@@ -17,10 +18,29 @@ const (
 )
 
 type Connector struct {
-	Minio            *minio.Client
-	Log              *log.Entry
-	MinContentLength int64
-	MaxContentLength int64
+	Minio             *minio.Client
+	Log               *log.Entry
+	MinContentLength  int64
+	MaxContentLength  int64
+	AllowedMediaTypes map[types.DocumentType]MediaTypes
+}
+
+func (c Connector) IsContentTypeAllowed(docType types.DocumentType, mediaType string) bool {
+	mediaTyp, ok := c.AllowedMediaTypes[types.DocumentTypeGeneral]
+	if ok {
+		if mediaTyp.IsAllowed(mediaType) {
+			return true
+		}
+	}
+
+	specific, ok := c.AllowedMediaTypes[docType]
+	if ok {
+		if specific.IsAllowed(mediaType) {
+			return true
+		}
+	}
+
+	return false
 }
 
 func (c *Connector) ensureInitialized() error {

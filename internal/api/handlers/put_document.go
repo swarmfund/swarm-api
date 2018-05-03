@@ -14,7 +14,6 @@ import (
 	"gitlab.com/swarmfund/api/internal/api/resources"
 	storage2 "gitlab.com/swarmfund/api/internal/storage"
 	"gitlab.com/swarmfund/api/internal/types"
-	"gitlab.com/swarmfund/api/storage"
 	"gitlab.com/tokend/go/doorman"
 )
 
@@ -53,10 +52,6 @@ func (r PutDocumentRequest) Validate() error {
 }
 
 func (r PutDocumentRequestData) Validate() error {
-	// FIXME
-	if ok := storage.IsContentTypeAllowed(r.Type, r.Attributes.ContentType); !ok {
-		return Errors{"/data/type": errors.New("not allowed")}
-	}
 	return ValidateStruct(&r,
 		Field(&r.Type, Required),
 	)
@@ -91,7 +86,7 @@ func PutDocument(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	if !storage.IsContentTypeAllowed(request.Data.Type, request.Data.Attributes.ContentType) {
+	if !Storage(r).IsContentTypeAllowed(request.Data.Type, request.Data.Attributes.ContentType) {
 		ape.RenderErr(w, problems.BadRequest(Errors{
 			"/data/attributes/content_type": errors.New("not allowed"),
 		})...)
