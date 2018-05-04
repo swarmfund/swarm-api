@@ -132,6 +132,9 @@ func Router(
 
 		// favorites
 		r.Route("/{address}/favorites", favorites.Router(repo))
+
+		//get users statistics
+		r.Get("/stats", handlers.UserStats)
 	})
 
 	// blobs

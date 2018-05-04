@@ -37,4 +37,7 @@ func (u *UserStateUpdate) GetLoganFields() map[string]interface{} {
 
 type UserStateQ interface {
 	SetState(update UserStateUpdate) error
+
+	TotalKYCApplications() (uint64, error)
+	TotalKYCApprovals() (uint64, error)
 }

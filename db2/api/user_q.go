@@ -12,8 +12,9 @@ import (
 )
 
 const (
-	tableUser      = "users"
-	tableUserLimit = 100
+	tableUser       = "users"
+	tableUserLimit  = 100
+	tableUserStates = "user_states"
 )
 
 var (
@@ -93,6 +94,7 @@ type UsersQI interface {
 	Update(u *User) error
 
 	KYC() KYCQI
+	TotalRegistrations() (uint64, error)
 }
 
 func (q *Q) Users() UsersQI {
@@ -305,7 +307,7 @@ func (q *UsersQ) Participants(ops map[int64][]Participant) error {
 	}
 
 	for _, op := range ops {
-		for pi, _ := range op {
+		for pi := range op {
 			participant := op[pi]
 			if user, ok := usersMap[participant.AccountID]; ok {
 				participant.Email = &user.Email
@@ -330,4 +332,29 @@ func (q *UsersQ) ByLastName(lastName string) UsersQI {
 func (q *UsersQ) ByCountry(country string) UsersQI {
 	q.sql = q.sql.Where("? in (b.value::jsonb#>>'{address, country}', b.value::jsonb#>>'{v2,address,country}')", country)
 	return q
+}
+
+func (q *UsersQ) TotalRegistrations() (uint64, error) {
+	sql := sq.Select("COUNT(*)").From(tableUser)
+
+	var amount uint64
+	err := q.parent.Get(&amount, sql)
+
+	return amount, err
+}
+
+func (q *UsersQ) TotalKYCApplications() (uint64, error) {
+	sql := sq.Select("COUNT(*)").From(tableUserStates).Where("state = ?", types.UserStateWaitingForApproval)
+
+	var amount uint64
+	err := q.parent.Get(&amount, sql)
+	return amount, err
+}
+
+func (q *UsersQ) TotalKYCApprovals() (uint64, error) {
+	sql := sq.Select("COUNT(*)").From(tableUserStates).Where("type = ? OR type = ?", types.UserTypeGeneral, types.UserTypeSyndicate)
+
+	var amount uint64
+	err := q.parent.Get(&amount, sql)
+	return amount, err
 }
