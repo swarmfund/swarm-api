@@ -22,25 +22,11 @@ type Connector struct {
 	Log               *log.Entry
 	MinContentLength  int64
 	MaxContentLength  int64
-	AllowedMediaTypes map[types.DocumentType]MediaTypes
+	AllowedMediaTypes MediaTypes
 }
 
 func (c Connector) IsContentTypeAllowed(docType types.DocumentType, mediaType string) bool {
-	mediaTyp, ok := c.AllowedMediaTypes[types.DocumentTypeGeneral]
-	if ok {
-		if mediaTyp.IsAllowed(mediaType) {
-			return true
-		}
-	}
-
-	specific, ok := c.AllowedMediaTypes[docType]
-	if ok {
-		if specific.IsAllowed(mediaType) {
-			return true
-		}
-	}
-
-	return false
+	return c.AllowedMediaTypes.IsAllowed(docType, mediaType)
 }
 
 func (c *Connector) ensureInitialized() error {

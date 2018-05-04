@@ -36,11 +36,16 @@ storage:
   secret_key: "vm7+HyjPijP6xgzzjsxJrUs7dJgim0mj+K/lD2im"
   force_ssl: false
   media_types:
-    - 'application/pdf'
-    - 'image/jpeg'
-    - 'image/tiff'
-    - 'image/png'
-    - 'image/gif'
+    general:
+      - 'image/jpeg'
+      - 'image/tiff'
+      - 'image/png'
+      - 'image/gif'
+    alpha:
+      - 'application/pdf'
+    bravo:
+      - 'application/pdf'
+
 
 wallet_cleaner:
   enabled: true
