@@ -21,6 +21,7 @@ type (
 		RejectReason    string             `json:"reject_reason"`
 		RecoveryAddress types.Address      `json:"recovery_address"`
 		CreatedAt       time.Time          `json:"created_at"`
+		UpdatedAt       *time.Time         `json:"updated_at"`
 		AirdropState    types.AirdropState `json:"airdrop_state"`
 		LastIPAddress   string             `json:"last_ip_address,omitempty"`
 	}
@@ -70,6 +71,7 @@ func NewUser(user *api.User) User {
 			RecoveryAddress: user.RecoveryAddress,
 			AirdropState:    *user.AirdropState,
 			CreatedAt:       user.CreatedAt,
+			UpdatedAt:       user.UpdatedAt,
 		},
 		Relationships: relationships,
 	}

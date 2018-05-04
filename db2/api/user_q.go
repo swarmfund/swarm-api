@@ -22,6 +22,8 @@ var (
 		"u.id",
 		"u.email",
 		"u.address",
+		"u.created_at",
+		"us.updated_at",
 		"u.kyc_sequence",
 		"u.reject_reason",
 		"r.address as recovery_address",
