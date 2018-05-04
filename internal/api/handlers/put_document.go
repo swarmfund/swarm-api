@@ -36,14 +36,14 @@ type (
 	}
 )
 
-func NewPutDocumentRequest(r *http.Request, storageConnector *storage.Connector) (PutDocumentRequest, error) {
+func NewPutDocumentRequest(r *http.Request) (PutDocumentRequest, error) {
 	request := PutDocumentRequest{
 		AccountID: types.Address(chi.URLParam(r, "address")),
 	}
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
 		return request, errors.Wrap(err, "failed to unmarshal")
 	}
-	request.Data.Storage = storageConnector
+	request.Data.Storage = Storage(r)
 	return request, request.Validate()
 }
 
