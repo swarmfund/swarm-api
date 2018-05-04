@@ -339,7 +339,7 @@ func (q *UsersQ) TotalKYCApplications() (uint64, error) {
 }
 
 func (q *UsersQ) TotalKYCApprovals() (uint64, error) {
-	sql := sq.Select("COUNT(*)").From(tableUserStates).Where("type = ?", types.UserTypeGeneral)
+	sql := sq.Select("COUNT(*)").From(tableUserStates).Where("type = ? OR type = ?", types.UserTypeGeneral, types.UserTypeSyndicate)
 
 	var amount uint64
 	err := q.parent.Get(&amount, sql)
