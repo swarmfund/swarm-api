@@ -118,12 +118,12 @@ func ChangeWalletID(w http.ResponseWriter, r *http.Request) {
 	// TODO transaction is not working. Error on horizon submition still makes commit!!!!!!!!!!
 	err = WalletQ(r).Transaction(func(q api.WalletQI) error {
 		// update wallet
-		if err = WalletQ(r).Update(wallet); err != nil {
+		if err = q.Update(wallet); err != nil {
 			return errors.Wrap(err, "failed to update wallet")
 		}
 
 		// update wallet kdf
-		if err := WalletQ(r).UpdateWalletKDF(data.WalletKDF{
+		if err := q.UpdateWalletKDF(data.WalletKDF{
 			Wallet:  wallet.Username,
 			Version: request.Data.Relationships.KDF.Data.ID,
 			Salt:    request.Data.Attributes.Salt,
