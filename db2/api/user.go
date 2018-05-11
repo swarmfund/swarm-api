@@ -29,8 +29,8 @@ type User struct {
 	// DEPRECATED
 	RejectReason string `db:"reject_reason"`
 
-	CreatedAt time.Time `db:"created_at"`
-	UpdatedAt string    `db:"updated_at"`
+	CreatedAt time.Time  `db:"created_at"`
+	UpdatedAt *time.Time `db:"updated_at"`
 
 	// DEPRECATED
 	DeletedAt sql.NullString `db:"deleted_at"`
