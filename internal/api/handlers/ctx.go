@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"gitlab.com/distributed_lab/logan/v3"
+	"gitlab.com/swarmfund/api/blacklist"
 	"gitlab.com/swarmfund/api/config"
 	"gitlab.com/swarmfund/api/db2/api"
 	"gitlab.com/swarmfund/api/internal/data"
@@ -37,6 +38,7 @@ const (
 	notificatorCtxKey
 	walletAdditionCtxKey
 	trackerCtxKey
+	domainApproverCtxKey
 )
 
 func CtxWalletQ(q api.WalletQI) func(context.Context) context.Context {
@@ -197,4 +199,14 @@ func CtxTracker(tracker *track.Tracker) func(context.Context) context.Context {
 
 func Tracker(r *http.Request) *track.Tracker {
 	return r.Context().Value(trackerCtxKey).(*track.Tracker)
+}
+
+func CtxDomainApprover(approver *blacklist.Approver) func(context.Context) context.Context {
+	return func(ctx context.Context) context.Context {
+		return context.WithValue(ctx, domainApproverCtxKey, approver)
+	}
+}
+
+func DomainApprover(r *http.Request) *blacklist.Approver {
+	return r.Context().Value(domainApproverCtxKey).(*blacklist.Approver)
 }

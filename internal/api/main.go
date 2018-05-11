@@ -11,6 +11,7 @@ import (
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/ape/problems"
 	"gitlab.com/distributed_lab/logan/v3"
+	"gitlab.com/swarmfund/api/blacklist"
 	"gitlab.com/swarmfund/api/config"
 	"gitlab.com/swarmfund/api/db2"
 	"gitlab.com/swarmfund/api/db2/api"
@@ -60,6 +61,7 @@ func Router(
 			handlers.CtxWallets(wallets),
 			handlers.CtxBlobQ(blobQ),
 			handlers.CtxTracker(tracker),
+			handlers.CtxDomainApprover(blacklist.NewApprover(wallets.DomainsBlacklist...)),
 		),
 	)
 
@@ -130,6 +132,9 @@ func Router(
 
 		// favorites
 		r.Route("/{address}/favorites", favorites.Router(repo))
+
+		//get users statistics
+		r.Get("/stats", handlers.UserStats)
 	})
 
 	// blobs
