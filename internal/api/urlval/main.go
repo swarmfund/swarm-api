@@ -5,11 +5,21 @@ import (
 	"net/http"
 	"net/url"
 	"reflect"
-	"strconv"
 
-	"github.com/pkg/errors"
-	"github.com/spf13/cast"
+	"gitlab.com/distributed_lab/figure"
+	"gitlab.com/distributed_lab/logan/v3"
+	"gitlab.com/distributed_lab/logan/v3/errors"
 )
+
+const urlvalKey = "url"
+
+func parseFieldTag(values url.Values) map[string]interface{} {
+	figValues := make(map[string]interface{})
+	for k, v := range values {
+		figValues[k] = v[0]
+	}
+	return figValues
+}
 
 // Populate parses fields from url.Values according to `url` struct tag on dest
 // When values is set to dest, we delete it from values
@@ -17,46 +27,16 @@ import (
 func Decode(values url.Values, dest interface{}) error {
 	rval := reflect.Indirect(reflect.ValueOf(dest))
 	rtyp := rval.Type()
-	for i := 0; i < rval.NumField(); i++ {
-		tag := rtyp.Field(i).Tag.Get("url")
-		if tag == "" {
-			continue
-		}
-		if values.Get(tag) == "" {
-			continue
-		}
-		isSet := false
-		switch rval.Field(i).Interface().(type) {
-		case uint64:
-			uint, err := strconv.ParseUint(values.Get(tag), 0, 64)
-			if err != nil {
-				return errors.Wrapf(err, "failed to parse %s to uint64", tag)
-			}
-			rval.Field(i).Set(reflect.ValueOf(uint))
-			isSet = true
-		case *uint64:
-			uint, err := strconv.ParseUint(values.Get(tag), 0, 64)
-			if err != nil {
-				return errors.Wrapf(err, "failed to parse %s to uint64", tag)
-			}
-			rval.Field(i).Set(reflect.ValueOf(&uint))
-			isSet = true
-		case *string:
-			str := values.Get(tag)
-			rval.Field(i).Set(reflect.ValueOf(&str))
-			isSet = true
-		case *bool:
-			boolean, err := cast.ToBoolE(values.Get(tag))
-			if err != nil {
-				return errors.Wrapf(err, "failed to cast %s to bool", tag)
-			}
-			rval.Field(i).Set(reflect.ValueOf(&boolean))
-			isSet = true
+	for fi := 0; fi < rval.NumField(); fi++ {
+		value := rval.Field(fi)
+		field := rtyp.Field(fi)
+
+		err := figure.Out(&dest).With(figure.BaseHooks).From(parseFieldTag(values)).SetField(value, field, urlvalKey)
+		if err != nil {
+			return errors.Wrap(err, "failed to decode field", logan.F{"field": field.Name})
 		}
 
-		if isSet {
-			values.Del(tag)
-		}
+		values.Del(field.Tag.Get(urlvalKey))
 	}
 	return nil
 }
@@ -73,61 +53,53 @@ func Encode(r *http.Request, filters interface{}) FilterLinks {
 	queries := []url.Values{
 		{}, {}, {},
 	}
-	for i := 0; i < rval.NumField(); i++ {
-		tag := rtyp.Field(i).Tag.Get("url")
-		if tag == "" {
-			continue
+	for fi := 0; fi < rval.NumField(); fi++ {
+		encodeField(queries, rval.Field(fi), rtyp.Field(fi))
+	}
+	return createLinks(r, queries)
+
+}
+
+func encodeField(queries []url.Values, fieldValue reflect.Value, fieldType reflect.StructField) {
+	tag := fieldType.Tag.Get(urlvalKey)
+	if tag == "" {
+		return
+	}
+
+	if tag == "page" {
+		encodePage(queries, tag, fieldValue)
+		return
+	}
+
+	if fieldValue.IsNil() {
+		return
+	}
+
+	uint := reflect.Indirect(fieldValue)
+
+	stringer, ok := uint.Interface().(fmt.Stringer)
+	if ok {
+		for _, query := range queries {
+			query.Add(tag, stringer.String())
 		}
-		if tag == "page" {
-			encodePage(queries, tag, rval.Field(i))
-		}
-		switch rval.Field(i).Interface().(type) {
-		case *uint64:
-			encodeUint64Pointer(queries, tag, rval.Field(i))
-		case *string:
-			encodeStringPointer(queries, tag, rval.Field(i))
-		case *bool:
-			encodeBoolPointer(queries, tag, rval.Field(i))
+	} else {
+		for _, query := range queries {
+			query.Add(tag, fmt.Sprintf("%v", uint))
 		}
 	}
+}
+
+func createLinks(r *http.Request, queries []url.Values) FilterLinks {
 	links := FilterLinks{
 		Self: fmt.Sprintf("%s?%s", r.URL.Path, queries[1].Encode()),
 		Next: fmt.Sprintf("%s?%s", r.URL.Path, queries[2].Encode()),
 	}
+
 	if queries[0].Get("page") != "	" && queries[1].Get("page") != "" {
 		links.Prev = fmt.Sprintf("%s?%s", r.URL.Path, queries[0].Encode())
 	}
+
 	return links
-}
-
-func encodeStringPointer(queries []url.Values, tag string, value reflect.Value) {
-	if value.IsNil() {
-		return
-	}
-	str := reflect.Indirect(value).String()
-	for _, query := range queries {
-		query.Add(tag, str)
-	}
-}
-
-func encodeUint64Pointer(queries []url.Values, tag string, value reflect.Value) {
-	if value.IsNil() {
-		return
-	}
-	uint := reflect.Indirect(value).Uint()
-	for _, query := range queries {
-		query.Add(tag, fmt.Sprintf("%d", uint))
-	}
-}
-
-func encodeBoolPointer(queries []url.Values, tag string, value reflect.Value) {
-	if value.IsNil() {
-		return
-	}
-	boolean := reflect.Indirect(value).Bool()
-	for _, query := range queries {
-		query.Add(tag, fmt.Sprintf("%t", boolean))
-	}
 }
 
 func encodePage(queries []url.Values, tag string, value reflect.Value) {
