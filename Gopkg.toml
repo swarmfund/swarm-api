@@ -116,7 +116,7 @@
 
 [[constraint]]
   name = "gitlab.com/distributed_lab/figure"
-  version = "v1.2"
+  branch = "master"
 
 [[constraint]]
   name = "gitlab.com/distributed_lab/ape"
