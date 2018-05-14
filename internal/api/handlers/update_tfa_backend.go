@@ -138,6 +138,7 @@ func RenderFactorConsumeError(w http.ResponseWriter, r *http.Request, err error)
 	switch terr := cause.(type) {
 	case *secondfactor.FactorRequiredErr:
 		ape.RenderErr(w, &jsonapi.ErrorObject{
+			Code:   "tfa_required",
 			Title:  http.StatusText(http.StatusForbidden),
 			Status: fmt.Sprintf("%d", http.StatusForbidden),
 			Detail: "Additional factor required",
