@@ -27,10 +27,11 @@ func (c *ViperConfig) Notificator() *notificator.Connector {
 			panic(errors.Wrap(err, "failed to figure out notificator"))
 		}
 
-		if err := c.notificator.Init(horizonConnect); err != nil {
+		notificator := notificator.NewConnector(config)
+		if err := notificator.Init(horizonConnect); err != nil {
 			panic(errors.Wrap(err, "failed to init notificator"))
 		}
-		c.notificator = notificator.NewConnector(config)
+		c.notificator = notificator
 	}
 
 	return c.notificator
