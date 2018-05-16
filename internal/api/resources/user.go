@@ -21,6 +21,7 @@ type (
 		RejectReason    string             `json:"reject_reason"`
 		RecoveryAddress types.Address      `json:"recovery_address"`
 		CreatedAt       time.Time          `json:"created_at"`
+		UpdatedAt       *time.Time         `json:"updated_at"`
 		AirdropState    types.AirdropState `json:"airdrop_state"`
 		LastIPAddress   string             `json:"last_ip_address,omitempty"`
 	}
@@ -48,8 +49,11 @@ func NewUser(user *api.User) User {
 
 	relationships := &UserRelationships{}
 
-	if user.KYCBlobValue != nil {
-		blob := Blob{}
+	if user.KYCBlobValue != nil && user.KYCBlobID != nil {
+		blob := Blob{
+			ID:   *user.KYCBlobID,
+			Type: types.BlobTypeKYCForm,
+		}
 		blob.Attributes.Value = *user.KYCBlobValue
 		relationships.KYC = &UserKYC{
 			Data: blob,
@@ -67,6 +71,7 @@ func NewUser(user *api.User) User {
 			RecoveryAddress: user.RecoveryAddress,
 			AirdropState:    *user.AirdropState,
 			CreatedAt:       user.CreatedAt,
+			UpdatedAt:       user.UpdatedAt,
 		},
 		Relationships: relationships,
 	}

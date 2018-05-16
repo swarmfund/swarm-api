@@ -396,12 +396,13 @@
     "network",
     "resources",
     "signcontrol",
+    "signcontrol/internal/httpsignatures",
     "strkey",
     "xdr",
     "xdrbuild",
     "xdrbuild/internal"
   ]
-  revision = "9ab0e0408616ee10e8a659bbe65b5ef8ac51765d"
+  revision = "e1d43f45dee4b917c3484b92ea6da6a594c1b6c3"
 
 [[projects]]
   branch = "master"
@@ -427,7 +428,7 @@
     "internal/wallets",
     "types"
   ]
-  revision = "5978826d872bf1e7f379c3978b3c61fff9f5cf42"
+  revision = "fa5d4d94fefc7bfca42a0135351244215d8924f8"
 
 [[projects]]
   branch = "master"
@@ -513,6 +514,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "7f507ca1b14e30e95761bda939878474771d1abe0625006966bc927836b571ad"
+  inputs-digest = "906e3695905bb8c323f5d8772769e374f8300dda7f4cbbe9377794929666f4d1"
   solver-name = "gps-cdcl"
   solver-version = 1
