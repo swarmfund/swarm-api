@@ -21,9 +21,9 @@ type Config struct {
 	Public       string   `fig:"public"`
 	ClientRouter string   `fig:"client_router"`
 
-	EmailConfirmation *template.Template
-	KYCApprove        *template.Template
-	KYCReject         *template.Template
+	EmailConfirmation *template.Template `fig:"-"`
+	KYCApprove        *template.Template `fig:"-"`
+	KYCReject         *template.Template `fig:"-"`
 }
 
 type Connector struct {
