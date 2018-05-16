@@ -5,7 +5,7 @@ import (
 
 	"gitlab.com/distributed_lab/logan/v3"
 	"gitlab.com/swarmfund/api/internal/hose"
-	"gitlab.com/swarmfund/horizon-connector/v2"
+	"gitlab.com/tokend/horizon-connector"
 )
 
 type Watcher struct {
@@ -25,7 +25,7 @@ func NewWatcher(log *logan.Entry, connector *horizon.Connector, dispatch hose.Tr
 func (w *Watcher) Run() {
 	// ticker to slow down requests leaving quota for other API requests
 	// FIXME find a better way to prioritise requests from API
-	ticker := time.NewTicker(3 * time.Second)
+	ticker := time.NewTicker(3)
 	defer func() {
 		if rvr := recover(); rvr != nil {
 			w.log.WithRecover(rvr).Error("watcher panicked")
@@ -38,7 +38,10 @@ func (w *Watcher) Run() {
 		select {
 		case event := <-events:
 			if event.Transaction != nil {
-				w.log.WithField("tx", event.Transaction.PagingToken).Debug("received tx")
+				w.log.WithFields(logan.F{
+					"tx":     event.Transaction.PagingToken,
+					"ledger": event.Transaction.CreatedAt,
+				}).Debug("received tx")
 				w.dispatch(event)
 			}
 			<-ticker.C

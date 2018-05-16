@@ -9,9 +9,10 @@ import (
 
 type (
 	User struct {
-		Type       types.UserType `json:"type"`
-		ID         types.Address  `json:"id"`
-		Attributes UserAttributes `json:"attributes"`
+		Type          types.UserType     `json:"type"`
+		ID            types.Address      `json:"id"`
+		Attributes    UserAttributes     `json:"attributes"`
+		Relationships *UserRelationships `json:"relationships,omitempty"`
 	}
 	UserAttributes struct {
 		Email           string             `json:"email"`
@@ -20,7 +21,17 @@ type (
 		RejectReason    string             `json:"reject_reason"`
 		RecoveryAddress types.Address      `json:"recovery_address"`
 		CreatedAt       time.Time          `json:"created_at"`
+		UpdatedAt       *time.Time         `json:"updated_at"`
 		AirdropState    types.AirdropState `json:"airdrop_state"`
+		LastIPAddress   string             `json:"last_ip_address,omitempty"`
+	}
+
+	UserRelationships struct {
+		KYC *UserKYC `json:"kyc,omitempty"`
+	}
+
+	UserKYC struct {
+		Data Blob `json:"data"`
 	}
 )
 
@@ -35,6 +46,20 @@ func NewUser(user *api.User) User {
 		}
 		user.AirdropState = &state
 	}
+
+	relationships := &UserRelationships{}
+
+	if user.KYCBlobValue != nil && user.KYCBlobID != nil {
+		blob := Blob{
+			ID:   *user.KYCBlobID,
+			Type: types.BlobTypeKYCForm,
+		}
+		blob.Attributes.Value = *user.KYCBlobValue
+		relationships.KYC = &UserKYC{
+			Data: blob,
+		}
+	}
+
 	return User{
 		Type: user.UserType,
 		ID:   user.Address,
@@ -46,6 +71,8 @@ func NewUser(user *api.User) User {
 			RecoveryAddress: user.RecoveryAddress,
 			AirdropState:    *user.AirdropState,
 			CreatedAt:       user.CreatedAt,
+			UpdatedAt:       user.UpdatedAt,
 		},
+		Relationships: relationships,
 	}
 }

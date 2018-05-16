@@ -3,4 +3,4 @@
 /public
 /_vendor-*
 /vendor.orig
-/config.local.yaml
+/config.*.yaml

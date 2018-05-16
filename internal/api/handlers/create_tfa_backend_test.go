@@ -20,9 +20,9 @@ import (
 	"gitlab.com/swarmfund/api/internal/externalmocks"
 	"gitlab.com/swarmfund/api/internal/secondfactor"
 	"gitlab.com/swarmfund/api/internal/types"
-	"gitlab.com/swarmfund/go/doorman"
-	"gitlab.com/swarmfund/go/keypair"
-	"gitlab.com/swarmfund/go/signcontrol"
+	"gitlab.com/tokend/go/doorman"
+	"gitlab.com/tokend/go/keypair"
+	"gitlab.com/tokend/go/signcontrol"
 )
 
 type TestClient struct {

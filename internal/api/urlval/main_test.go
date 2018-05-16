@@ -10,18 +10,22 @@ import (
 
 func TestDecode(t *testing.T) {
 	type Filters struct {
-		Page  uint64  `url:"page"`
-		State *uint64 `url:"state"`
+		Page    uint64  `url:"page"`
+		State   *uint64 `url:"state"`
+		Boolean *bool   `url:"boolean"`
 	}
 	uint := uint64(42)
+
+	var boolean = true
 	cases := []struct {
 		name     string
 		values   url.Values
 		expected Filters
 	}{
 		{"empty", map[string][]string{}, Filters{}},
-		{"*uint64", map[string][]string{"state": {"42"}}, Filters{0, &uint}},
-		{"uint64", map[string][]string{"page": {"42"}}, Filters{uint, nil}},
+		{"*uint64", map[string][]string{"state": {"42"}}, Filters{0, &uint, nil}},
+		{"uint64", map[string][]string{"page": {"42"}}, Filters{uint, nil, nil}},
+		{"bool", map[string][]string{"page": {"42"}, "boolean": {"true"}}, Filters{uint, nil, &boolean}},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {

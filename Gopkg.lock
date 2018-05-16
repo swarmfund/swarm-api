@@ -329,12 +329,6 @@
 
 [[projects]]
   branch = "master"
-  name = "github.com/streadway/amqp"
-  packages = ["."]
-  revision = "ff791c2d22d3f1588b4e2cc71a9fba5e1da90654"
-
-[[projects]]
-  branch = "master"
   name = "github.com/stretchr/objx"
   packages = ["."]
   revision = "1a9d0bb9f541897e62256577b352fdbc1fb4fd94"
@@ -380,8 +374,8 @@
     "v3/errors",
     "v3/fields"
   ]
-  revision = "0f4dfbd71ca22492150c91510966d936f434a3eb"
-  version = "v3.3.1"
+  revision = "0c279a3a45143457b569e979e395481778e1ba42"
+  version = "v3.5.0"
 
 [[projects]]
   branch = "master"
@@ -390,8 +384,8 @@
   revision = "939a613db2add16474a15d5058867fdb7252f1df"
 
 [[projects]]
-  branch = "master"
-  name = "gitlab.com/swarmfund/go"
+  branch = "feature/signcontrol-v2"
+  name = "gitlab.com/tokend/go"
   packages = [
     "amount",
     "crc16",
@@ -402,36 +396,39 @@
     "network",
     "resources",
     "signcontrol",
+    "signcontrol/internal/httpsignatures",
     "strkey",
     "xdr",
     "xdrbuild",
     "xdrbuild/internal"
   ]
-  revision = "2c8e0dfa264e645fb01fba44ec1a84e37b9bfea3"
+  revision = "02e5ac2d973fef1b7ddb7f503143fb2de46a7775"
 
 [[projects]]
   branch = "master"
-  name = "gitlab.com/swarmfund/horizon-connector"
+  name = "gitlab.com/tokend/horizon-connector"
   packages = [
-    "v2",
-    "v2/internal",
-    "v2/internal/account",
-    "v2/internal/asset",
-    "v2/internal/balance",
-    "v2/internal/blob",
-    "v2/internal/document",
-    "v2/internal/errors",
-    "v2/internal/listener",
-    "v2/internal/operation",
-    "v2/internal/resources",
-    "v2/internal/responses",
-    "v2/internal/sale",
-    "v2/internal/templates",
-    "v2/internal/transaction",
-    "v2/internal/user",
-    "v2/types"
+    ".",
+    "internal",
+    "internal/account",
+    "internal/asset",
+    "internal/balance",
+    "internal/blob",
+    "internal/document",
+    "internal/errors",
+    "internal/listener",
+    "internal/operation",
+    "internal/resources",
+    "internal/resources/operations",
+    "internal/responses",
+    "internal/sale",
+    "internal/templates",
+    "internal/transaction",
+    "internal/user",
+    "internal/wallets",
+    "types"
   ]
-  revision = "56f75ea32aaedf41d28d02cc4d175c533f80234c"
+  revision = "fa5d4d94fefc7bfca42a0135351244215d8924f8"
 
 [[projects]]
   branch = "master"
@@ -517,6 +514,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "76a28f1c16da02f62aa60dfaaf3f5af8fcca8af0d0d39596659c333065b051a9"
+  inputs-digest = "7fbc5413ae23dcf087cd2c009a45bbc8f3de853a1ef24d7defa9d054393abe52"
   solver-name = "gps-cdcl"
   solver-version = 1

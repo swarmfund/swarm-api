@@ -16,7 +16,7 @@ import (
 	"gitlab.com/swarmfund/api/internal/favorites/internal/resources"
 	"gitlab.com/swarmfund/api/internal/favorites/internal/types"
 	types2 "gitlab.com/swarmfund/api/internal/types"
-	"gitlab.com/swarmfund/go/doorman"
+	"gitlab.com/tokend/go/doorman"
 )
 
 type (

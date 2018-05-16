@@ -10,10 +10,12 @@ import (
 	"github.com/pkg/errors"
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/ape/problems"
+	"gitlab.com/swarmfund/api/internal/api/movetoape"
 	"gitlab.com/swarmfund/api/internal/api/resources"
 	storage2 "gitlab.com/swarmfund/api/internal/storage"
 	"gitlab.com/swarmfund/api/internal/types"
 	"gitlab.com/swarmfund/api/storage"
+	"gitlab.com/tokend/go/doorman"
 )
 
 type (
@@ -51,15 +53,12 @@ func (r PutDocumentRequest) Validate() error {
 }
 
 func (r PutDocumentRequestData) Validate() error {
+	// FIXME
+	if ok := storage.IsContentTypeAllowed(r.Type, r.Attributes.ContentType); !ok {
+		return Errors{"/data/type": errors.New("not allowed")}
+	}
 	return ValidateStruct(&r,
 		Field(&r.Type, Required),
-		Field(&r.Attributes, Required),
-	)
-}
-
-func (r PutDocumentRequestAttributes) Validate() error {
-	return ValidateStruct(&r,
-		Field(&r.ContentType, Required, By(storage.IsAllowedContentType)),
 	)
 }
 
@@ -70,8 +69,6 @@ func PutDocument(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO check allowed
-
 	user, err := UsersQ(r).ByAddress(string(request.AccountID))
 	if err != nil {
 		Log(r).WithError(err).Error("failed to get user")
@@ -79,19 +76,29 @@ func PutDocument(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if user == nil {
-		ape.RenderErr(w, problems.NotFound())
-		return
+	var ownerID int64
+	if user != nil {
+		// user exists means docs has an owner and we check against it's signers
+		if err := Doorman(r, doorman.SignerOf(string(user.Address))); err != nil {
+			movetoape.RenderDoormanErr(w, err)
+			return
+		}
+		ownerID = user.ID
+	} else {
+		if err := Doorman(r, doorman.SignerOf(CoreInfo(r).GetMasterAccountID())); err != nil {
+			movetoape.RenderDoormanErr(w, err)
+			return
+		}
 	}
 
-	if !storage.IsContentTypeAllowed(request.Data.Attributes.ContentType) {
+	if !storage.IsContentTypeAllowed(request.Data.Type, request.Data.Attributes.ContentType) {
 		ape.RenderErr(w, problems.BadRequest(Errors{
 			"/data/attributes/content_type": errors.New("not allowed"),
 		})...)
 		return
 	}
 
-	key := storage2.NewKey(user.ID, request.Data.Type)
+	key := storage2.NewKey(ownerID, request.Data.Type)
 
 	form, err := Storage(r).UploadFormData(
 		storage2.EncodeKey(key),

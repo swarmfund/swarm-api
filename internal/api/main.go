@@ -11,6 +11,7 @@ import (
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/ape/problems"
 	"gitlab.com/distributed_lab/logan/v3"
+	"gitlab.com/swarmfund/api/blacklist"
 	"gitlab.com/swarmfund/api/config"
 	"gitlab.com/swarmfund/api/db2"
 	"gitlab.com/swarmfund/api/db2/api"
@@ -21,10 +22,11 @@ import (
 	"gitlab.com/swarmfund/api/internal/favorites"
 	"gitlab.com/swarmfund/api/internal/hose"
 	"gitlab.com/swarmfund/api/internal/secondfactor"
+	"gitlab.com/swarmfund/api/internal/track"
 	"gitlab.com/swarmfund/api/notificator"
 	"gitlab.com/swarmfund/api/storage"
-	"gitlab.com/swarmfund/go/doorman"
-	"gitlab.com/swarmfund/horizon-connector/v2"
+	"gitlab.com/tokend/go/doorman"
+	"gitlab.com/tokend/horizon-connector"
 	"gitlab.com/tokend/keypair"
 )
 
@@ -34,7 +36,7 @@ func Router(
 	tfaQ api.TFAQI, storage *storage.Connector, master keypair.Address, signer keypair.Full,
 	coreInfo data.CoreInfoI, blobQ data.Blobs, sentry *raven.Client,
 	userDispatch hose.UserDispatch, notificator *notificator.Connector, repo *db2.Repo,
-	wallets config.Wallets,
+	wallets config.Wallets, tracker *track.Tracker,
 ) chi.Router {
 	r := chi.NewRouter()
 
@@ -58,6 +60,8 @@ func Router(
 			handlers.CtxNotificator(notificator),
 			handlers.CtxWallets(wallets),
 			handlers.CtxBlobQ(blobQ),
+			handlers.CtxTracker(tracker),
+			handlers.CtxDomainApprover(blacklist.NewApprover(wallets.DomainsBlacklist...)),
 		),
 	)
 
@@ -71,6 +75,7 @@ func Router(
 	r.Route("/wallets", func(r chi.Router) {
 		// admin endpoints
 		r.Get("/", handlers.WalletsIndex)
+		r.Delete("/{wallet-id}", handlers.DeleteWallets)
 
 		// signup
 		r.Post("/", handlers.CreateWallet)
@@ -127,6 +132,9 @@ func Router(
 
 		// favorites
 		r.Route("/{address}/favorites", favorites.Router(repo))
+
+		//get users statistics
+		r.Get("/stats", handlers.UserStats)
 	})
 
 	// blobs
@@ -136,6 +144,7 @@ func Router(
 	})
 
 	r.Route("/documents", func(r chi.Router) {
+		r.Post("/", handlers.PutDocument)
 		r.Get("/{document}", handlers.GetDocument)
 	})
 

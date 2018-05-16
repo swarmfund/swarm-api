@@ -1,8 +1,8 @@
 package horizon
 
 import (
-	"gitlab.com/swarmfund/go/resources"
-	"gitlab.com/swarmfund/horizon-connector/v2"
+	"gitlab.com/tokend/go/resources"
+	"gitlab.com/tokend/horizon-connector"
 )
 
 type AccountQ struct {
@@ -27,7 +27,7 @@ func (q *AccountQ) Signers(address string) ([]resources.Signer, error) {
 	}
 
 	// TODO share resource
-	result := make([]resources.Signer, len(signers))
+	result := make([]resources.Signer, 0, len(signers))
 	for _, signer := range signers {
 		result = append(result, resources.Signer{
 			AccountID:  signer.PublicKey,

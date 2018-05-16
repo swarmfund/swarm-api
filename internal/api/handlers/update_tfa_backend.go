@@ -18,7 +18,7 @@ import (
 	"gitlab.com/distributed_lab/ape/problems"
 	"gitlab.com/swarmfund/api/internal/api/movetoape"
 	"gitlab.com/swarmfund/api/internal/secondfactor"
-	"gitlab.com/swarmfund/go/doorman"
+	"gitlab.com/tokend/go/doorman"
 )
 
 type (
