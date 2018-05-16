@@ -384,7 +384,7 @@
   revision = "939a613db2add16474a15d5058867fdb7252f1df"
 
 [[projects]]
-  branch = "feature/signcontrol-v2"
+  branch = "master"
   name = "gitlab.com/tokend/go"
   packages = [
     "amount",
@@ -402,7 +402,7 @@
     "xdrbuild",
     "xdrbuild/internal"
   ]
-  revision = "02e5ac2d973fef1b7ddb7f503143fb2de46a7775"
+  revision = "e1d43f45dee4b917c3484b92ea6da6a594c1b6c3"
 
 [[projects]]
   branch = "master"
@@ -514,6 +514,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "7fbc5413ae23dcf087cd2c009a45bbc8f3de853a1ef24d7defa9d054393abe52"
+  inputs-digest = "906e3695905bb8c323f5d8772769e374f8300dda7f4cbbe9377794929666f4d1"
   solver-name = "gps-cdcl"
   solver-version = 1
