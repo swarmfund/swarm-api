@@ -13,6 +13,7 @@ const (
 //Warning: Do not call the Notificator directly,
 //use instead of it the notificator that is in api.API
 func (c *ViperConfig) Notificator() *notificator.Connector {
+	horizonConnect := c.Horizon()
 	c.Lock()
 	defer c.Unlock()
 
@@ -26,6 +27,9 @@ func (c *ViperConfig) Notificator() *notificator.Connector {
 			panic(errors.Wrap(err, "failed to figure out notificator"))
 		}
 
+		if err := c.notificator.Init(horizonConnect); err != nil {
+			panic(errors.Wrap(err, "failed to init notificator"))
+		}
 		c.notificator = notificator.NewConnector(config)
 	}
 

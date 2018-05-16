@@ -52,15 +52,10 @@ type App struct {
 
 // NewApp constructs an new App instance from the provided config.
 func NewApp(config config.Config) (*App, error) {
-	notificator := config.Notificator()
-	if err := notificator.Init(config.Horizon()); err != nil {
-		return nil, errors.Wrap(err, "failed to init notificator")
-	}
-
 	result := &App{
 		config:      config,
 		horizon:     config.Horizon(),
-		notificator: notificator,
+		notificator: config.Notificator(),
 	}
 	result.ticks = time.NewTicker(10 * time.Second)
 	result.init()
@@ -90,6 +85,10 @@ func (a *App) Blobs() data.Blobs {
 
 func (a *App) Tracker() *track.Tracker {
 	return track.NewTracker(a.Config().Log(), postgres.NewTracking(a.APIRepo(a.ctx)))
+}
+
+func (a *App) Notificator() *notificator.Connector {
+	return a.notificator
 }
 
 // Serve starts the horizon web server, binding it to a socket, setting up

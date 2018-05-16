@@ -36,7 +36,7 @@ func sendVerifications(app *App, log *logan.Entry) error {
 
 	for _, token := range tokens {
 		payload := clienturl.EmailVerification(token.WalletID, token.Token)
-		err = app.notificator.SendVerificationLink(token.Email, payload)
+		err = app.Notificator().SendVerificationLink(token.Email, payload)
 		if err != nil {
 			log.WithError(err).WithField("email", token.Email).Warn("failed to send verification link")
 			continue
