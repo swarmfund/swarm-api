@@ -10,8 +10,6 @@ const (
 	notificatorConfigKey = "notificator"
 )
 
-//Warning: Do not call the Notificator directly,
-//use instead of it the notificator that is in api.API
 func (c *ViperConfig) Notificator() *notificator.Connector {
 	horizonConnect := c.Horizon()
 	log := c.Log()
