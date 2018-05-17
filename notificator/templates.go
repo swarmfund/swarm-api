@@ -5,6 +5,7 @@ import (
 
 	"bytes"
 
+	"gitlab.com/distributed_lab/logan/v3"
 	"gitlab.com/distributed_lab/logan/v3/errors"
 	"gitlab.com/distributed_lab/notificator"
 	"gitlab.com/swarmfund/api/internal/clienturl"
@@ -74,7 +75,7 @@ func (c *Connector) NotifyRejection(email string) error {
 
 func (c *Connector) send(requestType int, token string, payload notificator.Payload) error {
 	if c.conf.Disabled {
-		// TODO log warning
+		c.log.WithFields(logan.F{"request_type": requestType, "token": token}).Warn("disabled")
 		return nil
 	}
 

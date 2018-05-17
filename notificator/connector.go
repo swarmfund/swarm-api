@@ -6,8 +6,8 @@ import (
 	"net/url"
 
 	"github.com/pkg/errors"
+	"gitlab.com/distributed_lab/logan/v3"
 	"gitlab.com/distributed_lab/notificator"
-	"gitlab.com/tokend/horizon-connector"
 )
 
 const (
@@ -28,6 +28,7 @@ type Config struct {
 
 type Connector struct {
 	notificator *notificator.Connector
+	log         *logan.Entry
 	conf        Config
 }
 
@@ -41,22 +42,23 @@ func NewConnector(conf Config) *Connector {
 	}
 }
 
-func (c *Connector) Init(connector *horizon.Connector) error {
-	templatesQ := connector.Templates()
-	emailConfirmation, err := getTemplate("email_confirm", templatesQ)
+func (c *Connector) Init(loader TemplateLoader, log *logan.Entry) error {
+	c.log = log
+
+	emailConfirmation, err := getTemplate("email_confirm", loader)
 	if err != nil {
 		return errors.Wrap(err, "failed to get template")
 	}
 	c.conf.EmailConfirmation = emailConfirmation
 
-	kycApprove, err := getTemplate("kyc_approve", templatesQ)
+	kycApprove, err := getTemplate("kyc_approve", loader)
 	if err != nil {
 		return errors.Wrap(err, "failed to get template")
 	}
 
 	c.conf.KYCApprove = kycApprove
 
-	kycReject, err := getTemplate("kyc_reject", templatesQ)
+	kycReject, err := getTemplate("kyc_reject", loader)
 	if err != nil {
 		return errors.Wrap(err, "failed to get template")
 	}

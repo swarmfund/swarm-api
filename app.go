@@ -19,7 +19,6 @@ import (
 	"gitlab.com/swarmfund/api/internal/hose"
 	"gitlab.com/swarmfund/api/internal/track"
 	"gitlab.com/swarmfund/api/log"
-	"gitlab.com/swarmfund/api/notificator"
 	"gitlab.com/swarmfund/api/storage"
 	"gitlab.com/tokend/go/doorman"
 	"gitlab.com/tokend/horizon-connector"
@@ -44,18 +43,16 @@ type App struct {
 	memoryCache    *cache.Cache
 	storage        *storage.Connector
 	// DEPRECATED
-	horizon     *horizon.Connector
-	txBus       *hose.TransactionBus
-	userBus     *hose.UserBus
-	notificator *notificator.Connector
+	horizon *horizon.Connector
+	txBus   *hose.TransactionBus
+	userBus *hose.UserBus
 }
 
 // NewApp constructs an new App instance from the provided config.
 func NewApp(config config.Config) (*App, error) {
 	result := &App{
-		config:      config,
-		horizon:     config.Horizon(),
-		notificator: config.Notificator(),
+		config:  config,
+		horizon: config.Horizon(),
 	}
 	result.ticks = time.NewTicker(10 * time.Second)
 	result.init()
@@ -87,10 +84,6 @@ func (a *App) Tracker() *track.Tracker {
 	return track.NewTracker(a.Config().Log(), postgres.NewTracking(a.APIRepo(a.ctx)))
 }
 
-func (a *App) Notificator() *notificator.Connector {
-	return a.notificator
-}
-
 // Serve starts the horizon web server, binding it to a socket, setting up
 // the shutdown signals.
 func (a *App) Serve() {
@@ -114,7 +107,7 @@ func (a *App) Serve() {
 		a.Blobs(),
 		a.Config().Sentry(),
 		a.userBus.Dispatch,
-		a.notificator,
+		a.Config().Notificator(),
 		a.APIRepo(a.ctx),
 		a.config.Wallets(),
 		a.Tracker(),
