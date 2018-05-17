@@ -23,16 +23,16 @@ func TestDecode(t *testing.T) {
 		values   url.Values
 		expected Filters
 	}{
-		{"empty", map[string][]string{}, Filters{}},
-		{"*uint64", map[string][]string{"state": {"42"}}, Filters{0, &uint, nil, nil}},
-		{"uint64", map[string][]string{"page": {"42"}}, Filters{uint, nil, nil, nil}},
-		{"bool", map[string][]string{"page": {"42"}, "boolean": {"true"}}, Filters{uint, nil, &boolean, nil}},
-		{"*string", map[string][]string{"page": {"42"}, "pstring": {"Vasyl Lomachenko"}}, Filters{uint, nil, nil, &pstring}},
+		{"empty", url.Values{}, Filters{}},
+		{"*uint64", url.Values{"state": {"42"}}, Filters{0, &uint, nil, nil}},
+		{"uint64", url.Values{"page": {"42"}}, Filters{uint, nil, nil, nil}},
+		{"bool", url.Values{"page": {"42"}, "boolean": {"true"}}, Filters{uint, nil, &boolean, nil}},
+		{"*string", url.Values{"page": {"42"}, "pstring": {"Vasyl Lomachenko"}}, Filters{uint, nil, nil, &pstring}},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			var got Filters
-			Decode(tc.values, &got)
+			assert.NoError(t, Decode(tc.values, &got))
 			assert.Equal(t, tc.expected, got)
 		})
 	}
@@ -55,8 +55,9 @@ func TestEncode(t *testing.T) {
 		expected FilterLinks
 	}{
 		{"page", Fields{Page: 10}, FilterLinks{"/users?page=10", "/users?page=11", "/users?page=9"}},
-		{"first page", Fields{Page: 1}, FilterLinks{"/users?page=1", "/users?page=2", "/users?"}},
+		{"first page", Fields{Page: 1}, FilterLinks{"/users?page=1", "/users?page=2", ""}},
 		{"state", Fields{Page: 5, State: &state}, FilterLinks{"/users?page=5&state=42", "/users?page=6&state=42", "/users?page=4&state=42"}},
+		{"state first page", Fields{Page: 1, State: &state}, FilterLinks{"/users?page=1&state=42", "/users?page=2&state=42", ""}},
 		{"string encode", Fields{Page: 5, Name: &name}, FilterLinks{"/users?name=yoba&page=5", "/users?name=yoba&page=6", "/users?name=yoba&page=4"}},
 		{"bool encode", Fields{Page: 5, Allowed: &allowed}, FilterLinks{"/users?allowed=true&page=5", "/users?allowed=true&page=6", "/users?allowed=true&page=4"}},
 	}

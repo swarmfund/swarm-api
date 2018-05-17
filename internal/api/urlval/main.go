@@ -60,22 +60,22 @@ func Encode(r *http.Request, filters interface{}) FilterLinks {
 
 }
 
-func encodeField(queries []url.Values, fieldValue reflect.Value, fieldType reflect.StructField) {
-	tag := fieldType.Tag.Get(urlvalKey)
+func encodeField(queries []url.Values, value reflect.Value, field reflect.StructField) {
+	tag := field.Tag.Get(urlvalKey)
 	if tag == "" {
 		return
 	}
 
 	if tag == "page" {
-		encodePage(queries, tag, fieldValue)
+		encodePage(queries, tag, value)
 		return
 	}
 
-	if fieldValue.IsNil() {
+	if value.IsNil() {
 		return
 	}
 
-	uint := reflect.Indirect(fieldValue)
+	uint := reflect.Indirect(value)
 
 	stringer, ok := uint.Interface().(fmt.Stringer)
 	if ok {
@@ -95,7 +95,8 @@ func createLinks(r *http.Request, queries []url.Values) FilterLinks {
 		Next: fmt.Sprintf("%s?%s", r.URL.Path, queries[2].Encode()),
 	}
 
-	if queries[0].Get("page") != "	" && queries[1].Get("page") != "" {
+	//Check if it is the first page and prev page doesn't exist
+	if queries[0].Get("page") != "" {
 		links.Prev = fmt.Sprintf("%s?%s", r.URL.Path, queries[0].Encode())
 	}
 
