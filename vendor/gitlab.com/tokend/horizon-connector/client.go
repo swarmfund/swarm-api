@@ -20,7 +20,7 @@ func throttle() chan time.Time {
 	ch := make(chan time.Time, burst)
 
 	go func() {
-		tick := time.Tick(1 * time.Second)
+		tick := time.Tick(100 * time.Millisecond)
 		// prefill buffer
 		for i := 0; i < burst; i++ {
 			ch <- time.Now()
@@ -49,7 +49,7 @@ func NewClient(client *http.Client, base *url.URL) *Client {
 }
 
 func (c *Client) Do(request *http.Request) ([]byte, error) {
-	//<-c.throttle
+	<-c.throttle
 
 	// ensure content-type just in case
 	request.Header.Set("content-type", "application/json")
