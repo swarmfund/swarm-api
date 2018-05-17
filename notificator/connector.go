@@ -1,14 +1,13 @@
 package notificator
 
 import (
-	"bytes"
 	"fmt"
 	"html/template"
 	"net/url"
 
 	"github.com/pkg/errors"
+	"gitlab.com/distributed_lab/logan/v3"
 	"gitlab.com/distributed_lab/notificator"
-	"gitlab.com/swarmfund/api/internal/clienturl"
 )
 
 const (
@@ -16,113 +15,68 @@ const (
 )
 
 type Config struct {
-	Disabled     bool
-	Endpoint     string
-	Secret       string
-	Public       string
-	ClientRouter string
+	Disabled     bool     `fig:"disabled"`
+	Endpoint     *url.URL `fig:"endpoint"`
+	Secret       string   `fig:"secret"`
+	Public       string   `fig:"public"`
+	ClientRouter string   `fig:"client_router"`
 
-	EmailConfirmation *template.Template
-	KYCApprove        *template.Template
-	KYCReject         *template.Template
+	EmailConfirmation *template.Template `fig:"-"`
+	KYCApprove        *template.Template `fig:"-"`
+	KYCReject         *template.Template `fig:"-"`
 }
 
 type Connector struct {
 	notificator *notificator.Connector
+	log         *logan.Entry
 	conf        Config
 }
 
 func NewConnector(conf Config) *Connector {
-	// TODO move this to config
-	endpoint, err := url.Parse(conf.Endpoint)
-	if err != nil {
-		panic(err)
-	}
-
 	return &Connector{
 		notificator: notificator.NewConnector(
 			notificator.Pair{Secret: conf.Secret, Public: conf.Public},
-			*endpoint,
+			*conf.Endpoint,
 		),
 		conf: conf,
 	}
 }
 
-func (c *Connector) SendVerificationLink(email string, payload clienturl.Payload) error {
-	encoded, err := payload.Encode()
+func (c *Connector) Init(loader TemplateLoader, log *logan.Entry) error {
+	c.log = log
+
+	emailConfirmation, err := getTemplate("email_confirm", loader)
 	if err != nil {
-		return errors.Wrap(err, "failed to encode payload")
+		return errors.Wrap(err, "failed to get template")
 	}
-	letter := &Letter{
-		Header: "Swarm Email Verification",
-		Link:   fmt.Sprintf("%s/%s", c.conf.ClientRouter, encoded),
-	}
+	c.conf.EmailConfirmation = emailConfirmation
 
-	var buff bytes.Buffer
-	err = c.conf.EmailConfirmation.Execute(&buff, letter)
+	kycApprove, err := getTemplate("kyc_approve", loader)
 	if err != nil {
-		return errors.Wrap(err, "Error while populating template for notify approval")
-	}
-	msg := &notificator.EmailRequestPayload{
-		Destination: email,
-		Subject:     letter.Header,
-		Message:     buff.String(),
+		return errors.Wrap(err, "failed to get template")
 	}
 
-	return c.send(NotificationTypeVerificationEmail, email, msg)
-}
+	c.conf.KYCApprove = kycApprove
 
-func (c *Connector) NotifyApproval(email string) error {
-	letter := &Letter{
-		Header: "Swarm Verification Request",
-		Link:   c.conf.ClientRouter,
-	}
-
-	var buff bytes.Buffer
-	if err := c.conf.KYCApprove.Execute(&buff, letter); err != nil {
-		return errors.Wrap(err, "failed to render template")
-	}
-	msg := &notificator.EmailRequestPayload{
-		Destination: email,
-		Subject:     letter.Header,
-		Message:     buff.String(),
-	}
-
-	return c.send(NotificationTypeVerificationEmail, email, msg)
-}
-
-func (c *Connector) NotifyRejection(email string) error {
-	letter := &Letter{
-		Header: "Swarm Verification Request",
-		Link:   c.conf.ClientRouter,
-	}
-
-	var buff bytes.Buffer
-	if err := c.conf.KYCReject.Execute(&buff, letter); err != nil {
-		return errors.Wrap(err, "failed to render template")
-	}
-	msg := &notificator.EmailRequestPayload{
-		Destination: email,
-		Subject:     letter.Header,
-		Message:     buff.String(),
-	}
-
-	return c.send(NotificationTypeVerificationEmail, email, msg)
-}
-
-func (c *Connector) send(requestType int, token string, payload notificator.Payload) error {
-	if c.conf.Disabled {
-		// TODO log warning
-		return nil
-	}
-
-	response, err := c.notificator.Send(requestType, token, payload)
+	kycReject, err := getTemplate("kyc_reject", loader)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "failed to get template")
 	}
 
-	if !response.IsSuccess() {
-		return errors.New("notification request not accepted")
-	}
+	c.conf.KYCReject = kycReject
+
 	return nil
+}
+
+type TemplateLoader interface {
+	Get(id string) ([]byte, error)
+}
+
+func getTemplate(name string, loader TemplateLoader) (*template.Template, error) {
+	body, err := loader.Get(name)
+	if err != nil {
+		return nil, errors.Wrap(err, fmt.Sprintf("unable to download %s", name))
+	}
+
+	return template.New(name).Parse(string(body))
 }

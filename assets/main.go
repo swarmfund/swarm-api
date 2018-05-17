@@ -8,27 +8,17 @@ import (
 //go:generate gofmt -w bindata.go
 
 const (
-	templatesDir  = "templates"
 	enumsDir      = "enums"
 	migrationsDir = "migrations"
 )
 
 var (
-	Templates  *TemplatesLoader
 	Enums      *EnumsLoader
 	Migrations *MigrationsLoader
 )
 
 type AssetFn func(name string) ([]byte, error)
 type AssetDirFn func(name string) ([]string, error)
-
-func init() {
-	Templates = NewTemplatesLoader()
-	if err := Templates.loadDir(templatesDir); err != nil {
-		log.WithField("service", "load-templates").WithError(err).Fatal("failed to load templates")
-		return
-	}
-}
 
 func init() {
 	Enums = NewEnumsLoader()
