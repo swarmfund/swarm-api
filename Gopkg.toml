@@ -115,8 +115,8 @@
   version = "1.2.15"
 
 [[constraint]]
-  name = "gitlab.com/distributed_lab/figure"
   branch = "master"
+  name = "gitlab.com/distributed_lab/figure"
 
 [[constraint]]
   name = "gitlab.com/distributed_lab/ape"
