@@ -27,8 +27,10 @@ func (c *ViperConfig) Notificator() *notificator.Connector {
 		}
 
 		notificator := notificator.NewConnector(config)
-		if err := notificator.Init(horizonConnect.Templates(), log.WithField("service", "notificator")); err != nil {
-			panic(errors.Wrap(err, "failed to init notificator"))
+		if !config.Disabled {
+			if err := notificator.Init(horizonConnect.Templates(), log.WithField("service", "notificator")); err != nil {
+				panic(errors.Wrap(err, "failed to init notificator"))
+			}
 		}
 		c.notificator = notificator
 	}
