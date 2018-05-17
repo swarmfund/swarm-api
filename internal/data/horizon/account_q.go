@@ -27,7 +27,7 @@ func (q *AccountQ) Signers(address string) ([]resources.Signer, error) {
 	}
 
 	// TODO share resource
-	result := make([]resources.Signer, len(signers))
+	result := make([]resources.Signer, 0, len(signers))
 	for _, signer := range signers {
 		result = append(result, resources.Signer{
 			AccountID:  signer.PublicKey,

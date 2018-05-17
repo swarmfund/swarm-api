@@ -12,8 +12,9 @@ import (
 )
 
 const (
-	tableUser      = "users"
-	tableUserLimit = 100
+	tableUser       = "users"
+	tableUserLimit  = 100
+	tableUserStates = "user_states"
 )
 
 var (
@@ -22,12 +23,15 @@ var (
 		"u.id",
 		"u.email",
 		"u.address",
+		"u.created_at",
+		"us.updated_at",
 		"u.kyc_sequence",
 		"u.reject_reason",
 		"r.address as recovery_address",
 		"a.state as airdrop_state",
 		"(select json_agg(kyc) from kyc_entities kyc where kyc.user_id=u.id) as kyc_entities",
 		"b.value as kyc_blob_value",
+		"b.id as kyc_blob_id",
 		// state and type might be nil if ingestion is still in progress,
 		// make sure resources render some meaningful stub values that will not break clients
 		"coalesce(us.state, 0) as user_state",
@@ -37,7 +41,7 @@ var (
 		Join("recoveries r on r.wallet=u.email").
 		// joining left since it's optional due to late migration
 		LeftJoin("airdrops a on a.owner=u.address").
-		LeftJoin("blobs b ON u.address = b.owner_address AND CAST( b.relationships->>'kyc_sequence' AS INT) = u.kyc_sequence AND b.type = ?", types.BlobTypeKYCForm).
+		LeftJoin("blobs b ON us.kyc_blob = b.id and b.type = ?", types.BlobTypeKYCForm).
 		OrderBy("id").
 		From(tableUserAliased)
 
@@ -90,6 +94,7 @@ type UsersQI interface {
 	Update(u *User) error
 
 	KYC() KYCQI
+	TotalRegistrations() (uint64, error)
 }
 
 func (q *Q) Users() UsersQI {
@@ -215,6 +220,15 @@ func (q *UsersQ) SetState(update UserStateUpdate) error {
 			WHERE us.updated_at <= excluded.updated_at
 	`)
 	_, err := q.parent.Exec(stmt)
+	if err != nil {
+		cause := errors.Cause(err)
+		pqerr, ok := cause.(*pq.Error)
+		if ok {
+			if pqerr.Constraint == "user_states_users_fkey" {
+				return ErrUsersConflict
+			}
+		}
+	}
 	return err
 }
 
@@ -293,7 +307,7 @@ func (q *UsersQ) Participants(ops map[int64][]Participant) error {
 	}
 
 	for _, op := range ops {
-		for pi, _ := range op {
+		for pi := range op {
 			participant := op[pi]
 			if user, ok := usersMap[participant.AccountID]; ok {
 				participant.Email = &user.Email
@@ -306,16 +320,41 @@ func (q *UsersQ) Participants(ops map[int64][]Participant) error {
 }
 
 func (q *UsersQ) ByFirstName(firstName string) UsersQI {
-	q.sql = q.sql.Where("b.value::jsonb->>'first_name' = ?", firstName)
+	q.sql = q.sql.Where("? in (b.value::jsonb#>>'{first_name}', b.value::jsonb#>>'{v2,first_name}')", firstName)
 	return q
 }
 
 func (q *UsersQ) ByLastName(lastName string) UsersQI {
-	q.sql = q.sql.Where("b.value::jsonb->>'last_name' = ?", lastName)
+	q.sql = q.sql.Where("? in (b.value::jsonb#>>'{last_name}', b.value::jsonb#>>'{v2,last_name}')", lastName)
 	return q
 }
 
 func (q *UsersQ) ByCountry(country string) UsersQI {
-	q.sql = q.sql.Where("b.value::jsonb->'address'->>'country' = ?", country)
+	q.sql = q.sql.Where("? in (b.value::jsonb#>>'{address, country}', b.value::jsonb#>>'{v2,address,country}')", country)
 	return q
+}
+
+func (q *UsersQ) TotalRegistrations() (uint64, error) {
+	sql := sq.Select("COUNT(*)").From(tableUser)
+
+	var amount uint64
+	err := q.parent.Get(&amount, sql)
+
+	return amount, err
+}
+
+func (q *UsersQ) TotalKYCApplications() (uint64, error) {
+	sql := sq.Select("COUNT(*)").From(tableUserStates).Where("state = ?", types.UserStateWaitingForApproval)
+
+	var amount uint64
+	err := q.parent.Get(&amount, sql)
+	return amount, err
+}
+
+func (q *UsersQ) TotalKYCApprovals() (uint64, error) {
+	sql := sq.Select("COUNT(*)").From(tableUserStates).Where("type = ? OR type = ?", types.UserTypeGeneral, types.UserTypeSyndicate)
+
+	var amount uint64
+	err := q.parent.Get(&amount, sql)
+	return amount, err
 }
