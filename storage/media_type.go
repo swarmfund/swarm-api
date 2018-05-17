@@ -27,22 +27,14 @@ func NewMediaTypes(mediaTypes map[string][]string) (MediaTypes, error) {
 }
 
 func (m *MediaTypes) IsAllowed(docType types.DocumentType, mediaType string) bool {
-	general, ok := m.allowed[types.DocumentTypeGeneral]
-	if ok {
-		for _, val := range general {
-			if val == mediaType {
-				return true
-			}
+	general := m.allowed[types.DocumentTypeGeneral]
+	specific := m.allowed[docType]
+	allowed := append(general, specific...)
+	for _, val := range allowed {
+		if val == mediaType {
+			return true
 		}
 	}
 
-	other, ok := m.allowed[docType]
-	if ok {
-		for _, val := range other {
-			if val == mediaType {
-				return true
-			}
-		}
-	}
 	return false
 }
