@@ -50,4 +50,6 @@ func SendNotifications(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	notificator := handlers.Notificator(r)
+
 }

@@ -7,9 +7,13 @@ import (
 
 	"gitlab.com/distributed_lab/logan/v3"
 	"gitlab.com/distributed_lab/logan/v3/errors"
-	"gitlab.com/distributed_lab/notificator"
+	"gitlab.com/distributed_lab/notificator-server/client"
 	"gitlab.com/swarmfund/api/internal/clienturl"
 )
+
+func (c *Connector) SendSaleNotifications(emails string) {
+
+}
 
 func (c *Connector) SendVerificationLink(email string, payload clienturl.Payload) error {
 	encoded, err := payload.Encode()
