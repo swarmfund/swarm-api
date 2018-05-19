@@ -24,6 +24,8 @@ type Favorites interface {
 	Create(favorite Favorite) error
 	Delete(owner types.Address, id int64) error
 
+	GetEmails(key string) ([]string, error)
+
 	// filter methods
 	Page(uint64) Favorites
 	ByType(types2.FavoriteType) Favorites

@@ -14,5 +14,7 @@ func Router(repo *db2.Repo) func(chi.Router) {
 		r.Post("/", handlers.CreateFavorite)
 		r.Delete("/{favorite}", handlers.DeleteFavorite)
 		r.Get("/", handlers.FavoriteIndex)
+		//TODO MOVE ME to api.Handlers
+		r.Post("/notifications/{key}", handlers.SendNotifications)
 	}
 }

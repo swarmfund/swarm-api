@@ -92,3 +92,14 @@ func (q *Favorites) Select() (result []data.Favorite, err error) {
 	err = q.repo.Select(&result, q.sql)
 	return result, err
 }
+
+func (q *Favorites) GetEmails(key string) ([]string, error) {
+	sql := squirrel.Select("u.email").
+		From("users u").
+		RightJoin("favorites f ON u.address = f.owner").
+		Where("f.key = ?", key)
+
+	var emails []string
+	err := q.repo.Select(emails, sql)
+	return emails, err
+}
