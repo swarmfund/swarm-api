@@ -2,16 +2,17 @@ package api
 
 import (
 	"time"
-	"gitlab.com/swarmfund/api/internal/clienturl"
+
 	"gitlab.com/distributed_lab/logan/v3"
 	"gitlab.com/distributed_lab/logan/v3/errors"
+	"gitlab.com/swarmfund/api/internal/clienturl"
 )
 
 func initVerificationSender(app *App) {
 	go func() {
 		log := logan.New()
 		ticker := time.NewTicker(5 * time.Second)
-		for ; ; <-ticker.C  {
+		for ; ; <-ticker.C {
 			err := sendVerifications(app, log)
 			if err != nil {
 				log.WithError(err).Error("Failed to send verifications")

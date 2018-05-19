@@ -26,6 +26,7 @@ type (
 	PutDocumentRequestData struct {
 		Type       types.DocumentType           `json:"type"`
 		Attributes PutDocumentRequestAttributes `json:"attributes"`
+		Storage    *storage.Connector           `json:"-"`
 	}
 	PutDocumentRequestAttributes struct {
 		ContentType string `json:"content_type"`
@@ -42,6 +43,7 @@ func NewPutDocumentRequest(r *http.Request) (PutDocumentRequest, error) {
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
 		return request, errors.Wrap(err, "failed to unmarshal")
 	}
+	request.Data.Storage = Storage(r)
 	return request, request.Validate()
 }
 
@@ -53,10 +55,10 @@ func (r PutDocumentRequest) Validate() error {
 }
 
 func (r PutDocumentRequestData) Validate() error {
-	// FIXME
-	if ok := storage.IsContentTypeAllowed(r.Type, r.Attributes.ContentType); !ok {
+	if !r.Storage.IsContentTypeAllowed(r.Type, r.Attributes.ContentType) {
 		return Errors{"/data/type": errors.New("not allowed")}
 	}
+
 	return ValidateStruct(&r,
 		Field(&r.Type, Required),
 	)
@@ -89,13 +91,6 @@ func PutDocument(w http.ResponseWriter, r *http.Request) {
 			movetoape.RenderDoormanErr(w, err)
 			return
 		}
-	}
-
-	if !storage.IsContentTypeAllowed(request.Data.Type, request.Data.Attributes.ContentType) {
-		ape.RenderErr(w, problems.BadRequest(Errors{
-			"/data/attributes/content_type": errors.New("not allowed"),
-		})...)
-		return
 	}
 
 	key := storage2.NewKey(ownerID, request.Data.Type)

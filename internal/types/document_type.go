@@ -17,6 +17,7 @@ const (
 	DocumentTypeKYCIdDocument
 	DocumentTypeKYCPoa
 	DocumentTypeKYCSelfie
+	DocumentTypeGeneral //never use it, it needs to init default value of allowed media types
 )
 
 func IsPublicDocument(t DocumentType) bool {
