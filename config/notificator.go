@@ -3,7 +3,6 @@ package config
 import (
 	"github.com/pkg/errors"
 	"gitlab.com/distributed_lab/figure"
-	"gitlab.com/swarmfund/api/assets"
 	"gitlab.com/swarmfund/api/notificator"
 )
 
@@ -12,6 +11,8 @@ const (
 )
 
 func (c *ViperConfig) Notificator() *notificator.Connector {
+	horizonConnect := c.Horizon()
+	log := c.Log()
 	c.Lock()
 	defer c.Unlock()
 
@@ -25,11 +26,13 @@ func (c *ViperConfig) Notificator() *notificator.Connector {
 			panic(errors.Wrap(err, "failed to figure out notificator"))
 		}
 
-		config.EmailConfirmation = assets.Templates.Lookup("email_confirm")
-		config.KYCApprove = assets.Templates.Lookup("kyc_approve")
-		config.KYCReject = assets.Templates.Lookup("kyc_reject")
-
-		c.notificator = notificator.NewConnector(config)
+		notificator := notificator.NewConnector(config)
+		if !config.Disabled {
+			if err := notificator.Init(horizonConnect.Templates(), log.WithField("service", "notificator")); err != nil {
+				panic(errors.Wrap(err, "failed to init notificator"))
+			}
+		}
+		c.notificator = notificator
 	}
 
 	return c.notificator

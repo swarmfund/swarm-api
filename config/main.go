@@ -10,6 +10,7 @@ import (
 	"gitlab.com/swarmfund/api/internal/discourse"
 	"gitlab.com/swarmfund/api/internal/mixpanel"
 	"gitlab.com/swarmfund/api/notificator"
+	"gitlab.com/swarmfund/api/storage"
 	"gitlab.com/tokend/horizon-connector"
 )
 
@@ -17,7 +18,7 @@ type Config interface {
 	Init() error
 	API() API
 	HTTP() HTTP
-	Storage() Storage
+	Storage() *storage.Connector
 	Log() *logan.Entry
 	Wallets() Wallets
 
@@ -42,6 +43,7 @@ type ViperConfig struct {
 	logan       *logan.Entry
 	mixpanel    *mixpanel.Connector
 	wallets     *Wallets
+	storage     *storage.Connector
 }
 
 func NewViperConfig(fn string) Config {
