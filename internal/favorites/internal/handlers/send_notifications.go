@@ -3,6 +3,9 @@ package handlers
 import (
 	"net/http"
 
+	"encoding/json"
+	"io/ioutil"
+
 	"github.com/go-chi/chi"
 	"github.com/spf13/cast"
 	"gitlab.com/distributed_lab/ape"
@@ -12,6 +15,7 @@ import (
 )
 
 type NotificationLetter struct {
+	Message string `json:"message"`
 }
 
 //SendNotifications check signature of sale owner
@@ -44,12 +48,32 @@ func SendNotifications(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//if no one add sale to favorite
+	//if no one add sale to favorite or no such sale
 	if len(emails) == 0 {
 		w.WriteHeader(http.StatusNoContent)
 		return
 	}
 
-	notificator := handlers.Notificator(r)
+	defer r.Body.Close()
+	//read message from request
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		ape.RenderErr(w, problems.BadRequest(err)...)
+		return
+	}
 
+	letter := &NotificationLetter{}
+	if err := json.Unmarshal(body, letter); err != nil {
+		ape.RenderErr(w, problems.BadRequest(err)...)
+		return
+	}
+
+	err = handlers.Notificator(r).SendSaleNotifications(emails, letter.Message)
+	if err != nil {
+		handlers.Log(r).WithError(err).Error("failed to send notifications")
+		ape.RenderErr(w, problems.InternalError())
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
 }

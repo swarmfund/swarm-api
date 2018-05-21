@@ -11,8 +11,30 @@ import (
 	"gitlab.com/swarmfund/api/internal/clienturl"
 )
 
-func (c *Connector) SendSaleNotifications(emails string) {
+//TODO FINISH DOCS
+//SendSaleNotifications takes list of emails
+func (c *Connector) SendSaleNotifications(emails []string, msg string) error {
+	letter := &Letter{
+		Header: "Swarm Email Verification",
+		Link:   c.conf.ClientRouter,
+		Body:   msg,
+	}
 
+	var buff bytes.Buffer
+	err := c.conf.EmailsNotifications.Execute(&buff, letter)
+	if err != nil {
+		return errors.Wrap(err, "Error while populating template for notify approval")
+	}
+
+	var emailRequestPayloads []notificator.EmailRequestPayload
+	for _, email := range emails {
+		emailRequestPayloads = append(emailRequestPayloads, notificator.EmailRequestPayload{
+			Destination: email,
+			Subject:     letter.Header,
+			Message:     buff.String(),
+		})
+	}
+	return c.sendNotifications(NotificationTypeVerificationEmail, emails, emailRequestPayloads)
 }
 
 func (c *Connector) SendVerificationLink(email string, payload clienturl.Payload) error {
@@ -84,6 +106,28 @@ func (c *Connector) send(requestType int, token string, payload notificator.Payl
 	}
 
 	response, err := c.notificator.Send(requestType, token, payload)
+	if err != nil {
+		return err
+	}
+
+	if !response.IsSuccess() {
+		return errors.New("notification request not accepted")
+	}
+	return nil
+}
+
+func (c *Connector) sendNotifications(requestType int, tokens []string, emailRequestPayloads []notificator.EmailRequestPayload) error {
+	if c.conf.Disabled {
+		c.log.WithFields(logan.F{"request_type": requestType, "token": tokens}).Warn("disabled")
+		return nil
+	}
+
+	var payloads []notificator.Payload
+	for _, emailPayload := range emailRequestPayloads {
+		payloads = append(payloads, emailPayload)
+	}
+
+	response, err := c.notificator.SendNotifications(requestType, tokens, payloads)
 	if err != nil {
 		return err
 	}

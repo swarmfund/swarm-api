@@ -7,7 +7,7 @@ import (
 
 	"github.com/pkg/errors"
 	"gitlab.com/distributed_lab/logan/v3"
-	"gitlab.com/distributed_lab/notificator"
+	"gitlab.com/distributed_lab/notificator-server/client"
 )
 
 const (
@@ -21,9 +21,10 @@ type Config struct {
 	Public       string   `fig:"public"`
 	ClientRouter string   `fig:"client_router"`
 
-	EmailConfirmation *template.Template `fig:"-"`
-	KYCApprove        *template.Template `fig:"-"`
-	KYCReject         *template.Template `fig:"-"`
+	EmailConfirmation   *template.Template `fig:"-"`
+	KYCApprove          *template.Template `fig:"-"`
+	KYCReject           *template.Template `fig:"-"`
+	EmailsNotifications *template.Template `fig:"-"`
 }
 
 type Connector struct {
@@ -64,6 +65,13 @@ func (c *Connector) Init(loader TemplateLoader, log *logan.Entry) error {
 	}
 
 	c.conf.KYCReject = kycReject
+
+	emailNotifications, err := getTemplate("emails_notifications", loader)
+	if err != nil {
+		return errors.Wrap(err, "failed to get template")
+	}
+
+	c.conf.EmailsNotifications = emailNotifications
 
 	return nil
 }
