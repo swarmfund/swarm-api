@@ -10,8 +10,8 @@ import (
 	"net/url"
 
 	"github.com/stretchr/testify/assert"
-	"gitlab.com/distributed_lab/geoinfo"
-	"gitlab.com/distributed_lab/geoinfo/resources"
+	"gitlab.com/swarmfund/api/geoinfo"
+	"gitlab.com/swarmfund/api/geoinfo/resources"
 )
 
 func TestConnector(t *testing.T) {

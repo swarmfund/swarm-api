@@ -7,8 +7,8 @@ import (
 
 	"net/url"
 
-	"gitlab.com/distributed_lab/geoinfo/resources"
 	"gitlab.com/distributed_lab/logan/v3/errors"
+	"gitlab.com/swarmfund/api/geoinfo/resources"
 )
 
 var (
