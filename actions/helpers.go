@@ -431,13 +431,20 @@ func (base *Base) GetSenderDeviceInfo(userIdentifier, domain string) (*api.Devic
 
 	http.SetCookie(base.W, cookie)
 	deviceInfo.DeviceUID = cookie.Value
-
-	locationInfo, err := geoinfo.GetLocationInfo(deviceInfo.IP)
+	deviceInfo.Location, err = GetGeoLocation(deviceInfo.IP)
 	if err != nil {
-		deviceInfo.Location = "Unknown"
-	} else {
-		deviceInfo.Location = locationInfo.FullRegion()
+		base.Err = err
 	}
 
 	return &deviceInfo, nil
+}
+
+func GetGeoLocation(ip string) (string, error) {
+	connector := geoinfo.NewConnector("fb170f98697192973f33434cb35157b4")
+	locationInfo, err := connector.LocationInfo(ip)
+	if err != nil {
+		return "Unknown", err
+	} else {
+		return locationInfo.FullRegion(), nil
+	}
 }
