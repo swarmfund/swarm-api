@@ -80,6 +80,7 @@ type UsersQI interface {
 	ByFirstName(firstName string) UsersQI
 	ByLastName(lastName string) UsersQI
 	ByCountry(country string) UsersQI
+	ByIP(ip string) (UsersQI, error)
 	Select(dest interface{}) error
 	Page(page uint64) UsersQI
 
@@ -332,6 +333,17 @@ func (q *UsersQ) ByLastName(lastName string) UsersQI {
 func (q *UsersQ) ByCountry(country string) UsersQI {
 	q.sql = q.sql.Where("? in (b.value::jsonb#>>'{address, country}', b.value::jsonb#>>'{v2,address,country}')", country)
 	return q
+}
+
+func (q *UsersQ) ByIP(ip string) (UsersQI, error) {
+	ipQuery := sq.Select("address").Distinct().From("tracking").Where("details -> 'Request' ->> 'IP' = ?", ip)
+
+	var addresses []string
+	err := q.parent.Select(&addresses, ipQuery)
+
+	q.sql = selectUser.Where(sq.Eq{"u.address": addresses})
+
+	return q, err
 }
 
 func (q *UsersQ) TotalRegistrations() (uint64, error) {

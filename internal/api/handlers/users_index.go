@@ -28,6 +28,7 @@ type (
 		Type    *uint64 `url:"type"`
 		Email   *string `url:"email"`
 		Address *string `url:"address"`
+		IP      *string `url:"ip"`
 
 		//Relationships
 		FirstName *string `url:"first_name"`
@@ -96,6 +97,15 @@ func UsersIndex(w http.ResponseWriter, r *http.Request) {
 
 	if filters.Country != nil {
 		q = q.ByCountry(*filters.Country)
+	}
+
+	if filters.IP != nil {
+		q, err = q.ByIP(*filters.IP)
+		if err != nil {
+			Log(r).WithError(err).Error("failed to exec ip query")
+			ape.RenderErr(w, problems.InternalError())
+			return
+		}
 	}
 
 	if err := q.Select(&records); err != nil {
