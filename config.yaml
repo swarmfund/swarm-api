@@ -1,19 +1,29 @@
 api:
   database_url: postgres://postgres@localhost/api?sslmode=disable
-  horizon_url: http://localhost:8000
+  horizon_url: http://localhost:11627
   account_manager: SBMFQCGDVJBC2NYBRPURK3ISC4XJGGOLHMGHF7MIHVXE2DIQSMY6NYRH
   # disable only signature validity check
   skip_signature_check: true
+  horizon_signer: SB73STJOWULYZNPGDLNRBAYGMROB47ATNKM723XORFBLI356U3SKMARZ
 
 horizon:
-  url: http://localhost:8000
+  url: http://localhost:11627
   signer: SB73STJOWULYZNPGDLNRBAYGMROB47ATNKM723XORFBLI356U3SKMARZ
 
 notificator:
   client_router: http://localhost:8888/hredir
   endpoint: http://localhost:9009
+  disabled: true
   #secret: foo
   #public: bar
+
+salesforce:
+  api_url: "https://xxxxxx.salesforce.com/"
+  client_secret: "1234567"
+  client_id: "XXXXXXXXXXXXXXXXXXXXXXXX"
+  username: "test@test.test"
+  password: "qwerty"
+
 
 http:
   host: localhost

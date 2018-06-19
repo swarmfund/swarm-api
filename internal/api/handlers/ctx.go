@@ -10,6 +10,7 @@ import (
 	"gitlab.com/swarmfund/api/db2/api"
 	"gitlab.com/swarmfund/api/internal/data"
 	"gitlab.com/swarmfund/api/internal/hose"
+	"gitlab.com/swarmfund/api/internal/salesforce"
 	"gitlab.com/swarmfund/api/internal/track"
 	"gitlab.com/swarmfund/api/notificator"
 	"gitlab.com/swarmfund/api/storage"
@@ -120,6 +121,16 @@ func CtxStorage(s *storage.Connector) func(context.Context) context.Context {
 
 func Storage(r *http.Request) *storage.Connector {
 	return r.Context().Value(storageCtxKey).(*storage.Connector)
+}
+
+func CtxSalesforce(s *salesforce.Connector) func(context.Context) context.Context {
+	return func(ctx context.Context) context.Context {
+		return context.WithValue(ctx, storageCtxKey, s)
+	}
+}
+
+func Salesforce(r *http.Request) *salesforce.Connector {
+	return r.Context().Value(storageCtxKey).(*salesforce.Connector)
 }
 
 func CtxCoreInfo(s data.CoreInfoI) func(context.Context) context.Context {
