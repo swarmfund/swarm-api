@@ -3,6 +3,8 @@ package postgres
 import (
 	"database/sql"
 
+	"time"
+
 	"github.com/lann/squirrel"
 	"github.com/lib/pq"
 	"github.com/pkg/errors"
@@ -19,7 +21,7 @@ const (
 var (
 	ErrBlobsConflict = errors.New("blobs primary key conflict")
 	blobsSelect      = squirrel.
-				Select("id", "value", "type", "relationships").
+				Select("id", "owner_address", "value", "type", "relationships", "deleted_at").
 				From(blobsTable)
 )
 
@@ -57,6 +59,17 @@ func (q *Blobs) Delete(blobs ...types.Blob) error {
 	return err
 }
 
+func (q *Blobs) MarkDeleted(id string) error {
+	stmt := squirrel.
+		Update(blobsTable).
+		Where("id = ?", id).
+		SetMap(map[string]interface{}{
+			"deleted_at": time.Now().UTC(),
+		})
+	_, err := q.Exec(stmt)
+	return err
+}
+
 func (q *Blobs) ByOwner(owner types.Address) data.Blobs {
 	return &Blobs{
 		q.Repo,
@@ -68,6 +81,13 @@ func (q *Blobs) ByType(tpe types.BlobType) data.Blobs {
 	return &Blobs{
 		q.Repo,
 		q.stmt.Where("type & ? != 0", tpe),
+	}
+}
+
+func (q *Blobs) ExcludeDeleted() data.Blobs {
+	return &Blobs{
+		q.Repo,
+		q.stmt.Where("deleted_at is null"),
 	}
 }
 

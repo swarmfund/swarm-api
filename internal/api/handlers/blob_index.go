@@ -27,8 +27,9 @@ type (
 	}
 
 	BlobIndexFilter struct {
-		Page uint64  `url:"page"`
-		Type *uint64 `url:"type"`
+		Page           uint64  `url:"page"`
+		IncludeDeleted bool    `url:"include_deleted"`
+		Type           *uint64 `url:"type"`
 	}
 )
 
@@ -91,6 +92,12 @@ func BlobIndex(w http.ResponseWriter, r *http.Request) {
 	if filter.Type != nil {
 		blobType := types.BlobType(cast.ToInt32(filter.Type))
 		q = q.ByType(blobType)
+	}
+
+	if !filter.IncludeDeleted {
+		// actually we are excluding here, so flag should be reversed.
+		// implemented this way to better support old clients
+		q = q.ExcludeDeleted()
 	}
 
 	records, err := q.Select()
