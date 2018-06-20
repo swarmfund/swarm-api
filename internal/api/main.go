@@ -141,6 +141,7 @@ func Router(
 	r.Route("/blobs", func(r chi.Router) {
 		r.Post("/", handlers.CreateBlob)
 		r.Get("/{blob}", handlers.GetBlob)
+		r.Delete("/{blob}", handlers.DeleteBlob)
 	})
 
 	r.Route("/documents", func(r chi.Router) {
