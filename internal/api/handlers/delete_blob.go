@@ -7,6 +7,7 @@ import (
 	. "github.com/go-ozzo/ozzo-validation"
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/ape/problems"
+	"gitlab.com/distributed_lab/logan/v3"
 	"gitlab.com/swarmfund/api/internal/api/movetoape"
 	"gitlab.com/tokend/go/doorman"
 )
@@ -44,6 +45,11 @@ func DeleteBlob(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	Log(r).WithFields(logan.F{
+		"blob_owner": blob.OwnerAddress,
+		"blob_id":    blob.ID,
+	}).Debug("got blob")
+
 	if blob == nil || blob.DeletedAt != nil {
 		// blob is not existent or already deleted
 		w.WriteHeader(http.StatusNoContent)
@@ -53,6 +59,8 @@ func DeleteBlob(w http.ResponseWriter, r *http.Request) {
 	if blob.OwnerAddress != nil {
 		constrains = append(constrains, doorman.SignerOf(string(*blob.OwnerAddress)))
 	}
+	Log(r).WithField("constraints_count", len(constrains)).Debug("checking signature constraints")
+
 	if err := Doorman(r, constrains...); err != nil {
 		movetoape.RenderDoormanErr(w, err)
 		return
