@@ -402,7 +402,7 @@
     "xdrbuild",
     "xdrbuild/internal"
   ]
-  revision = "e1d43f45dee4b917c3484b92ea6da6a594c1b6c3"
+  revision = "8b7a24be5c831e2f15a2a84e6f9bb6bce7cfc347"
 
 [[projects]]
   branch = "master"
@@ -514,6 +514,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "3813f23c55724e35dcab801e44c96deb7f661079607656ba27dfcfe774441941"
+  inputs-digest = "20c8906a9cf5c08b0180d0527197cc8fd5c3c98c137e6bba416e0264f8c5a46a"
   solver-name = "gps-cdcl"
   solver-version = 1
