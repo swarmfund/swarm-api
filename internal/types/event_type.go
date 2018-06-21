@@ -42,13 +42,12 @@ var eventToSalesforceActionName = map[Event]string{
 	EventVoteInAnIo:             "Vote in an IO",
 }
 
-// TODO sphere
 var eventToSalesforceSphere = map[Event]string{
 	EventSignUpForNewsletter:    "User Activity",
 	EventReadSwarmBasics:        "Education",
 	EventViewDownloadWhitepaper: "Education",
 	EventWatchedYtVideo:         "Education",
-	EventVisitedFaq:             "Visited FAQ",
+	EventVisitedFaq:             "Education",
 	EventClickedLoginButton:     "User Activity",
 	EventRegister:               "Registration",
 	EventVerifyEmail:            "Registration",
