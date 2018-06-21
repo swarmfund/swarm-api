@@ -1,13 +1,13 @@
 api:
   database_url: postgres://postgres@localhost/api?sslmode=disable
-  horizon_url: http://localhost:11627
+  horizon_url: http://localhost:8000
   account_manager: SBMFQCGDVJBC2NYBRPURK3ISC4XJGGOLHMGHF7MIHVXE2DIQSMY6NYRH
   # disable only signature validity check
   skip_signature_check: true
   horizon_signer: SB73STJOWULYZNPGDLNRBAYGMROB47ATNKM723XORFBLI356U3SKMARZ
 
 horizon:
-  url: http://localhost:11627
+  url: http://localhost:8000
   signer: SB73STJOWULYZNPGDLNRBAYGMROB47ATNKM723XORFBLI356U3SKMARZ
 
 notificator:

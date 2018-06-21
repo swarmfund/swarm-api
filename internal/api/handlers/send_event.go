@@ -44,11 +44,6 @@ func (r SendEventRequestData) Validate() error {
 	)
 }
 
-type UserData struct {
-	Name  string
-	Email string
-}
-
 func SendEvent(w http.ResponseWriter, r *http.Request) {
 	request, err := NewSendEventRequest(r)
 	if err != nil {
@@ -61,6 +56,7 @@ func SendEvent(w http.ResponseWriter, r *http.Request) {
 
 	user, err := UsersQ(r).ByAddress(string(request.Address))
 	if err != nil {
+		Log(r).WithError(err).Error("failed to get user by address")
 		ape.RenderErr(w, problems.InternalError())
 		return
 	}
@@ -77,19 +73,22 @@ func SendEvent(w http.ResponseWriter, r *http.Request) {
 
 	kycData, err := kyc.ParseKYCData(*user.KYCBlobValue)
 	if err != nil {
+		Log(r).WithError(err).Error("failed to parse kyc data")
 		ape.RenderErr(w, problems.InternalError())
 		return
-	}
-	if kycData == nil {
-		w.WriteHeader(204)
-		return
+
 	}
 
-	name := kycData.FirstName + " " + kycData.LastName
+	var name string
+	if kycData != nil {
+		name = kycData.FirstName + " " + kycData.LastName
+	}
 
 	_, err = Salesforce(r).SendEvent(sphere, actionName, time.Now(), name, user.Email, 0, "")
 	if err != nil {
-		ape.RenderErr(w, problems.BadRequest(err)...)
+		Log(r).WithError(err).Error("failed to send event")
+		ape.RenderErr(w, problems.InternalError())
+		return
 	}
 
 	w.WriteHeader(204)
