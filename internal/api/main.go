@@ -109,6 +109,8 @@ func Router(
 		r.Put("/{address}", handlers.CreateUser)
 		r.Patch("/{address}", handlers.PatchUser)
 
+		r.Post("/{address}/events", handlers.SendEvent)
+
 		// documents
 		r.Route("/{address}/documents", func(r chi.Router) {
 			r.Post("/", handlers.PutDocument)
@@ -154,7 +156,6 @@ func Router(
 		// discourse ping-pong
 		r.Get("/discourse-sso", sso.SSOReceiver)
 		r.Post("/discourse-sso", sso.SSORedirect)
-		r.Post("/salesforce/actions", handlers.ProxyAction)
 	})
 
 	return r

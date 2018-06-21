@@ -33,6 +33,7 @@ const (
 	tfaQCtxKey
 	doormanCtxKey
 	storageCtxKey
+	salesforceCtxKey
 	coreInfoCtxKey
 	blobQCtxKey
 	userBusDispatchCtxKey
@@ -125,12 +126,12 @@ func Storage(r *http.Request) *storage.Connector {
 
 func CtxSalesforce(s *salesforce.Connector) func(context.Context) context.Context {
 	return func(ctx context.Context) context.Context {
-		return context.WithValue(ctx, storageCtxKey, s)
+		return context.WithValue(ctx, salesforceCtxKey, s)
 	}
 }
 
 func Salesforce(r *http.Request) *salesforce.Connector {
-	return r.Context().Value(storageCtxKey).(*salesforce.Connector)
+	return r.Context().Value(salesforceCtxKey).(*salesforce.Connector)
 }
 
 func CtxCoreInfo(s data.CoreInfoI) func(context.Context) context.Context {
