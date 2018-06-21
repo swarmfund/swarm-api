@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/patrickmn/go-cache"
+	cache "github.com/patrickmn/go-cache"
 	"gitlab.com/swarmfund/api/config"
 	"gitlab.com/swarmfund/api/coreinfo"
 	"gitlab.com/swarmfund/api/db2"
@@ -110,6 +110,7 @@ func (a *App) Serve() {
 		a.APIRepo(a.ctx),
 		a.config.Wallets(),
 		a.Tracker(),
+		a.Config().Salesforce(),
 	)
 
 	r.Mount("/", a.web.router)

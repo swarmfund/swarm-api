@@ -9,6 +9,7 @@ import (
 	"gitlab.com/distributed_lab/logan/v3"
 	"gitlab.com/swarmfund/api/internal/discourse"
 	"gitlab.com/swarmfund/api/internal/mixpanel"
+	"gitlab.com/swarmfund/api/internal/salesforce"
 	"gitlab.com/swarmfund/api/notificator"
 	"gitlab.com/swarmfund/api/storage"
 	"gitlab.com/tokend/horizon-connector"
@@ -27,6 +28,7 @@ type Config interface {
 	Horizon() *horizon.Connector
 	Discourse() *discourse.Connector
 	Mixpanel() *mixpanel.Connector
+	Salesforce() *salesforce.Connector
 
 	Get(string) map[string]interface{}
 }
@@ -42,6 +44,7 @@ type ViperConfig struct {
 	sentry      *raven.Client
 	logan       *logan.Entry
 	mixpanel    *mixpanel.Connector
+	salesforce  *salesforce.Connector
 	wallets     *Wallets
 	storage     *storage.Connector
 }

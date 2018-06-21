@@ -24,6 +24,7 @@ var (
 		Run: func(cmd *cobra.Command, args []string) {
 			defer func() {
 				if rvr := recover(); rvr != nil {
+					// TODO: stack=unknown
 					configInstance.Log().WithRecover(rvr).Error("app panicked")
 				}
 			}()

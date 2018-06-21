@@ -5,7 +5,7 @@ import (
 
 	"time"
 
-	"github.com/getsentry/raven-go"
+	raven "github.com/getsentry/raven-go"
 	"github.com/go-chi/chi"
 	"github.com/google/jsonapi"
 	"gitlab.com/distributed_lab/ape"
@@ -21,6 +21,7 @@ import (
 	"gitlab.com/swarmfund/api/internal/discourse/sso"
 	"gitlab.com/swarmfund/api/internal/favorites"
 	"gitlab.com/swarmfund/api/internal/hose"
+	"gitlab.com/swarmfund/api/internal/salesforce"
 	"gitlab.com/swarmfund/api/internal/secondfactor"
 	"gitlab.com/swarmfund/api/internal/track"
 	"gitlab.com/swarmfund/api/notificator"
@@ -36,7 +37,7 @@ func Router(
 	tfaQ api.TFAQI, storage *storage.Connector, master keypair.Address, signer keypair.Full,
 	coreInfo data.CoreInfoI, blobQ data.Blobs, sentry *raven.Client,
 	userDispatch hose.UserDispatch, notificator *notificator.Connector, repo *db2.Repo,
-	wallets config.Wallets, tracker *track.Tracker,
+	wallets config.Wallets, tracker *track.Tracker, salesforce *salesforce.Connector,
 ) chi.Router {
 	r := chi.NewRouter()
 
@@ -62,6 +63,7 @@ func Router(
 			handlers.CtxBlobQ(blobQ),
 			handlers.CtxTracker(tracker),
 			handlers.CtxDomainApprover(blacklist.NewApprover(wallets.DomainsBlacklist...)),
+			handlers.CtxSalesforce(salesforce),
 		),
 	)
 
@@ -106,6 +108,8 @@ func Router(
 		r.Get("/{address}", handlers.GetUser)
 		r.Put("/{address}", handlers.CreateUser)
 		r.Patch("/{address}", handlers.PatchUser)
+
+		r.Post("/{address}/events", handlers.SendEvent)
 
 		// documents
 		r.Route("/{address}/documents", func(r chi.Router) {
