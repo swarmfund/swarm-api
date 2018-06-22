@@ -74,6 +74,8 @@ func Router(
 	// static stuff
 	r.Get("/kdf", handlers.GetKDF)
 
+	r.Get("/data/enums", handlers.GetEnums)
+
 	r.Route("/wallets", func(r chi.Router) {
 		// admin endpoints
 		r.Get("/", handlers.WalletsIndex)
@@ -106,6 +108,7 @@ func Router(
 	r.Route("/users", func(r chi.Router) {
 		r.Get("/", handlers.UsersIndex)
 		r.Get("/{address}", handlers.GetUser)
+		r.Get("/{address}/id", handlers.GetUserId)
 		r.Put("/{address}", handlers.CreateUser)
 		r.Patch("/{address}", handlers.PatchUser)
 
