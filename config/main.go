@@ -29,12 +29,16 @@ type Config interface {
 	Discourse() *discourse.Connector
 	Mixpanel() *mixpanel.Connector
 	Salesforce() *salesforce.Connector
+}
 
-	Get(string) map[string]interface{}
+//go:generate mockery -case underscore -name rawGetter -testonly -inpkg
+// rawGetter encapsulates raw config values provider
+type rawGetter interface {
+	GetStringMap(key string) map[string]interface{}
 }
 
 type ViperConfig struct {
-	*viper.Viper
+	rawGetter
 	*sync.RWMutex
 
 	// runtime-initialized instances
@@ -47,15 +51,23 @@ type ViperConfig struct {
 	salesforce  *salesforce.Connector
 	wallets     *Wallets
 	storage     *storage.Connector
+	api         *API
 }
 
 func NewViperConfig(fn string) Config {
-	config := ViperConfig{
-		Viper:   viper.GetViper(),
+	// init underlying viper
+	v := viper.GetViper()
+	v.SetConfigFile(fn)
+
+	return newViperConfig(v)
+}
+
+func newViperConfig(raw rawGetter) Config {
+	config := &ViperConfig{
 		RWMutex: &sync.RWMutex{},
 	}
-	config.SetConfigFile(fn)
-	return &config
+	config.rawGetter = raw
+	return config
 }
 
 func (c *ViperConfig) Init() error {
@@ -63,13 +75,4 @@ func (c *ViperConfig) Init() error {
 		return errors.Wrap(err, "failed to read config file")
 	}
 	return nil
-}
-
-// Get will return value associated with config key, empty map if key is missing
-func (c *ViperConfig) Get(key string) map[string]interface{} {
-	m := c.Viper.GetStringMap(key)
-	if m == nil {
-		m = map[string]interface{}{}
-	}
-	return m
 }

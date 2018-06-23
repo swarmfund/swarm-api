@@ -3,4 +3,5 @@
 /public
 /_vendor-*
 /vendor.orig
-/config.*.yaml
+config.*.yaml
+*.backup

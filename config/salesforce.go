@@ -16,22 +16,22 @@ func (c *ViperConfig) Salesforce() *salesforce.Connector {
 	defer c.Unlock()
 
 	if c.salesforce == nil {
-		v := c.Viper.Sub("salesforce")
+		v := c.GetStringMap("salesforce")
 		if v == nil {
 			panic("salesforce config entry is missing")
 		}
 
-		apiRawURL := v.GetString("api_url")
+		apiRawURL := v["api_url"].(string)
 		apiURL, err := url.Parse(apiRawURL)
 		if err != nil {
 			panic(errors.Wrap(err, "failed to parse salesforce api url", logan.F{
 				"api_url": apiRawURL,
 			}))
 		}
-		secret := v.GetString("client_secret")
-		id := v.GetString("client_id")
-		username := v.GetString("username")
-		password := v.GetString("password")
+		secret := v["client_secret"].(string)
+		id := v["client_id"].(string)
+		username := v["username"].(string)
+		password := v["password"].(string)
 
 		salesforce, err := salesforce.NewConnector(apiURL, secret, id, username, password)
 		if err != nil {
