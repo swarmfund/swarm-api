@@ -16,7 +16,7 @@ func (c *ViperConfig) Mixpanel() *mixpanel.Connector {
 		}
 		err := figure.
 			Out(&config).
-			From(c.Get("mixpanel")).
+			From(c.GetStringMap("mixpanel")).
 			Please()
 		if err != nil {
 			panic(errors.Wrap(err, "failed to figure out"))
