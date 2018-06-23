@@ -370,6 +370,7 @@
 [[projects]]
   name = "gitlab.com/distributed_lab/logan"
   packages = [
+    ".",
     "v3",
     "v3/errors",
     "v3/fields"
@@ -514,6 +515,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "20c8906a9cf5c08b0180d0527197cc8fd5c3c98c137e6bba416e0264f8c5a46a"
+  inputs-digest = "1f851f283410849a4461019d20e1159be0f528c2da19a0c1ca1f98b714e3b537"
   solver-name = "gps-cdcl"
   solver-version = 1
