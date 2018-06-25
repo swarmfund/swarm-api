@@ -19,6 +19,7 @@ notificator:
   #public: bar
 
 salesforce:
+  disabled: true
   api_url: "https://xxxxxx.salesforce.com/"
   client_secret: "1234567"
   client_id: "XXXXXXXXXXXXXXXXXXXXXXXX"
