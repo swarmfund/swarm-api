@@ -71,10 +71,13 @@ func Router(
 		ape.RenderErr(w, problems.NotFound())
 	})
 
+	//participants
+	r.Get("/user_id", handlers.GetUserId)
+	r.Get("/data/enums", handlers.GetEnums)
+
 	// static stuff
 	r.Get("/kdf", handlers.GetKDF)
 
-	r.Get("/data/enums", handlers.GetEnums)
 
 	r.Route("/wallets", func(r chi.Router) {
 		// admin endpoints
@@ -105,10 +108,12 @@ func Router(
 		})
 	})
 
+
+
+
 	r.Route("/users", func(r chi.Router) {
 		r.Get("/", handlers.UsersIndex)
 		r.Get("/{address}", handlers.GetUser)
-		r.Get("/{address}/id", handlers.GetUserId)
 		r.Put("/{address}", handlers.CreateUser)
 		r.Patch("/{address}", handlers.PatchUser)
 

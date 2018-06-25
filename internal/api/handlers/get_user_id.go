@@ -4,22 +4,12 @@ import (
 	"github.com/go-chi/chi"
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/ape/problems"
-	"gitlab.com/swarmfund/api/internal/types"
 	"net/http"
 
 	"encoding/json"
 	"gitlab.com/swarmfund/api/internal/api/movetoape"
 	"gitlab.com/swarmfund/api/internal/api/resources"
 	"gitlab.com/tokend/go/doorman"
-)
-
-type (
-	GetUserIDResponse struct {
-		Data UserID `json:"data"`
-	}
-	UserID struct {
-		ID types.Address `json:"id"`
-	}
 )
 
 func GetUserId(w http.ResponseWriter, r *http.Request) {
@@ -44,10 +34,8 @@ func GetUserId(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response := GetUserIDResponse{
-		Data: UserID{
-			ID: resources.NewUser(user).ID,
-		},
+	response := map[string]string{
+		"account_id": string(resources.NewUser(user).ID),
 	}
 
 	defer json.NewEncoder(w).Encode(&response)
