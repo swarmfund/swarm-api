@@ -159,5 +159,7 @@ func Router(
 		r.Post("/discourse-sso", sso.SSORedirect)
 	})
 
+	// guest-by-email favorites
+	r.Route("/favorites", favorites.Router(repo))
 	return r
 }

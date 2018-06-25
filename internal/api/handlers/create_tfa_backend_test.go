@@ -14,6 +14,7 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/magiconair/properties/assert"
 	"github.com/stretchr/testify/mock"
+	"gitlab.com/distributed_lab/ape/apeutil"
 	"gitlab.com/swarmfund/api/db2/api"
 	"gitlab.com/swarmfund/api/db2/api/mocks"
 	"gitlab.com/swarmfund/api/internal/api/middlewares"
@@ -110,7 +111,7 @@ func TestNewCreateBackendRequest(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			r := RequestWithURLParams([]byte(tc.body), map[string]string{
+			r := apeutil.RequestWithURLParams([]byte(tc.body), map[string]string{
 				"wallet-id": tc.walletID,
 			})
 			got, err := NewCreateBackendRequest(r)

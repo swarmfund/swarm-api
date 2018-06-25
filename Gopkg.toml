@@ -120,4 +120,4 @@
 
 [[constraint]]
   name = "gitlab.com/distributed_lab/ape"
-  version = "v0.2"
+  version = "v0.3"
