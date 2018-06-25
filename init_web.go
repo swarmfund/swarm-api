@@ -57,7 +57,6 @@ func initWebActions(app *App) {
 	r := app.web.router
 
 	// participants
-	r.Post("/details", &DetailsAction{})
 	r.Post("/participants", &ParticipantsAction{})
 
 	r.NotFound(&NotFoundAction{})
