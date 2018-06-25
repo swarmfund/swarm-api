@@ -13,7 +13,8 @@ var (
 
 type Favorite struct {
 	ID    int64               `db:"id"`
-	Owner types.Address       `db:"owner"`
+	Owner *types.Address      `db:"owner"`
+	Email *string             `db:"email"`
 	Type  types2.FavoriteType `db:"type"`
 	Key   string              `db:"key"`
 }

@@ -11,11 +11,12 @@ import (
 )
 
 const (
-	favoritesOwnerConstraint   = "favorites_users_fkey"
-	favoritiesUniqueConstraint = "favorites_unique_per_user"
-	tableFavorites             = "favorites"
-	tableFavoritesAliased      = "favorites f"
-	tableFavoritesLimit        = 1024
+	favoritesOwnerConstraint       = "favorites_users_fkey"
+	favoritesUniqueOwnerConstraint = "favorites_unique_per_owner"
+	favoritesUniqueEmailConstraint = "favorites_unique_per_email"
+	tableFavorites                 = "favorites"
+	tableFavoritesAliased          = "favorites f"
+	tableFavoritesLimit            = 1024
 )
 
 var (
@@ -48,6 +49,7 @@ func (q *Favorites) Create(favorite data.Favorite) error {
 		"type":  favorite.Type,
 		"owner": favorite.Owner,
 		"key":   favorite.Key,
+		"email": favorite.Email,
 	})
 	_, err := q.repo.Exec(stmt)
 	if err != nil {
@@ -58,7 +60,7 @@ func (q *Favorites) Create(favorite data.Favorite) error {
 				return data.ErrOwnerViolated
 			}
 			// already exists
-			if pqerr.Constraint == favoritiesUniqueConstraint {
+			if pqerr.Constraint == favoritesUniqueOwnerConstraint || pqerr.Constraint == favoritesUniqueEmailConstraint {
 				// we already have that record, so why throw error
 				return nil
 			}
