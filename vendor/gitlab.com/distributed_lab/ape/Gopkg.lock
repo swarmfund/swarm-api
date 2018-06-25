@@ -14,6 +14,12 @@
   revision = "32a13797442ccb601b11761d74232773c1402d14"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/go-chi/chi"
+  packages = ["."]
+  revision = "cca4135d8dddff765463feaf1118047a9e506b4a"
+
+[[projects]]
   name = "github.com/go-ozzo/ozzo-validation"
   packages = ["."]
   revision = "85dcd8368eba387e65a03488b003e233994e87e9"
@@ -32,32 +38,17 @@
   version = "v0.8.0"
 
 [[projects]]
-  name = "github.com/sirupsen/logrus"
-  packages = ["."]
-  revision = "d682213848ed68c0a260ca37d6dd5ace8423f5ba"
-  version = "v1.0.4"
-
-[[projects]]
   name = "gitlab.com/distributed_lab/logan"
-  packages = ["v3","v3/errors","v3/fields"]
+  packages = [
+    "v3/errors",
+    "v3/fields"
+  ]
   revision = "0f4dfbd71ca22492150c91510966d936f434a3eb"
   version = "v3.3.1"
-
-[[projects]]
-  branch = "master"
-  name = "golang.org/x/crypto"
-  packages = ["ssh/terminal"]
-  revision = "95a4943f35d008beabde8c11e5075a1b714e6419"
-
-[[projects]]
-  branch = "master"
-  name = "golang.org/x/sys"
-  packages = ["unix","windows"]
-  revision = "83801418e1b59fb1880e363299581ee543af32ca"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "5a263f1352331a005f2c08bb781399c3dd01bbde4200f17b7e3603661c36f7ab"
+  inputs-digest = "ae52397cafe4f127911f1d8c77406c9236d2042d47d6127b3e54b4431d454114"
   solver-name = "gps-cdcl"
   solver-version = 1
