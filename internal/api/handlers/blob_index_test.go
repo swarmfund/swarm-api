@@ -4,12 +4,13 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"gitlab.com/distributed_lab/ape/apeutil"
 	"gitlab.com/swarmfund/api/internal/api/handlers"
 )
 
 func TestNewBlobIndexRequest(t *testing.T) {
 	params := map[string]string{"address": "GAHOOHZTJDHYMLV5HP3GSUPWUOERGEOAWB52NBSV2IKR2225SB3SW2QK"}
-	request := handlers.RequestWithURLParams([]byte(``), params)
+	request := apeutil.RequestWithURLParams([]byte(``), params)
 
 	query := request.URL.Query()
 

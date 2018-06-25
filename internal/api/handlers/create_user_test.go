@@ -1,27 +1,12 @@
 package handlers
 
 import (
-	"context"
-	"net/http"
 	"testing"
-
-	"bytes"
 
 	"reflect"
 
-	"github.com/go-chi/chi"
+	"gitlab.com/distributed_lab/ape/apeutil"
 )
-
-// TODO move to ape
-func RequestWithURLParams(body []byte, params map[string]string) *http.Request {
-	rctx := chi.NewRouteContext()
-	for key, value := range params {
-		rctx.URLParams.Add(key, value)
-	}
-	r, _ := http.NewRequest("GET", "/", bytes.NewReader(body))
-	r = r.WithContext(context.WithValue(r.Context(), chi.RouteCtxKey, rctx))
-	return r
-}
 
 func TestNewCreateUserRequest(t *testing.T) {
 	cases := []struct {
@@ -48,7 +33,7 @@ func TestNewCreateUserRequest(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			r := RequestWithURLParams([]byte(tc.body), map[string]string{
+			r := apeutil.RequestWithURLParams([]byte(tc.body), map[string]string{
 				"address": tc.address,
 			})
 			got, err := NewCreateUserRequest(r)
