@@ -74,10 +74,8 @@ func Router(
 	//participants
 	r.Get("/user_id", handlers.GetUserId)
 	r.Get("/data/enums", handlers.GetEnums)
-	r.Post("/details", handlers.PostDetails)
-	//r.Post("/details", &DetailsAction{})
-	//r.Post("/participants", handlers.PostParticipants)
-	//r.Post("/participants", &ParticipantsAction{})
+	r.Post("/details", handlers.GetUsersDetails)
+	r.Post("/participants", handlers.GetParticipants)
 
 	// static stuff
 	r.Get("/kdf", handlers.GetKDF)

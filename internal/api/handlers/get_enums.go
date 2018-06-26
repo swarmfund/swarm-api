@@ -10,5 +10,5 @@ import (
 func GetEnums(w http.ResponseWriter, r *http.Request) {
 	response := assets.Enums.Data()
 
-	defer json.NewEncoder(w).Encode(&response)
+	json.NewEncoder(w).Encode(&response)
 }
