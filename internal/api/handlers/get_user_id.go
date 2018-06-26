@@ -13,7 +13,7 @@ import (
 )
 
 func GetUserId(w http.ResponseWriter, r *http.Request) {
-	address := chi.URLParam(r, "address")
+	address := chi.URLParam(r, "email")
 
 	user, err := UsersQ(r).ByAddress(address)
 	if err != nil {
