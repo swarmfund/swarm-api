@@ -3,7 +3,6 @@ package api
 import (
 	"fmt"
 	"net/http"
-	"sync"
 	"time"
 
 	"github.com/patrickmn/go-cache"
@@ -141,8 +140,6 @@ func (a *App) Serve() {
 
 	log.Infof("Starting horizon on %s", addr)
 
-	go a.run()
-
 	if err := srv.ListenAndServe(); err != nil {
 		log.Panic(err)
 	}
@@ -180,68 +177,21 @@ func (a *App) CoreInfoConn() data.CoreInfoI {
 // UpdateStellarCoreInfo updates the value of coreVersion and networkPassphrase
 // from the Stellar core API.
 func (a *App) UpdateStellarCoreInfo() {
-	info, err := a.horizon.Info()
-	if err != nil {
-		log.WithField("service", "app").WithError(err).Warn("could not load stellar-core info")
-		return
+	for {
+		info, err := a.horizon.Info()
+		if err != nil {
+			log.WithField("service", "app").WithError(err).Warn("could not load stellar-core info")
+			time.Sleep(5 * time.Second)
+			continue
+		}
+		a.CoreInfo = info
 	}
-	a.CoreInfo = info
 }
 
-// Tick triggers horizon to update all of it's background processes such as
-// transaction submission, metrics, ingestion and reaping.
-func (a *App) Tick() {
-	var wg sync.WaitGroup
-	log.Debug("ticking app")
-	// update ledger state and stellar-core info in parallel
-	wg.Add(1)
 
-	go func() {
-		defer func() {
-			wg.Done()
-		}()
-		a.UpdateStellarCoreInfo()
-	}()
-
-	wg.Wait()
-
-	log.Debug("finished ticking app")
-}
 
 // Init initializes app, using the config to populate db connections and
 // whatnot.
 func (a *App) init() {
 	appInit.Run(a)
 }
-
-// run is the function that runs in the background that triggers Tick each
-// second
-func (a *App) run() {
-	for {
-		select {
-		case <-a.ticks.C:
-			a.Tick()
-		case <-a.ctx.Done():
-			log.Info("finished background ticker")
-			return
-		}
-	}
-}
-
-/*func (c *Connector) runUpdater() {
-	entry := log.WithField("service", "corer")
-	var info *Info
-	var err error
-
-	for {
-		time.Sleep(1 * time.Hour)
-
-		info, err = c.getCoreInfo()
-		if err != nil {
-			entry.WithError(err).Error("unable to update core info")
-			continue
-		}
-
-		coreInfo = info
-		entry.Debug("core info updated")
-	}*/
