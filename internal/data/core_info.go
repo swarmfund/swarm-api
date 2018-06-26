@@ -4,6 +4,6 @@ package data
 
 type CoreInfoI interface {
 	GetMasterAccountID() string
-	Passphrase() string
-	TXExpire() int64
+	GetPassphrase() string
+	GetTXExpire() int64
 }

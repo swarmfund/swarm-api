@@ -27,16 +27,16 @@ import (
 	"gitlab.com/swarmfund/api/storage"
 	"gitlab.com/tokend/go/doorman"
 	"gitlab.com/tokend/horizon-connector"
-	"gitlab.com/tokend/keypair"
+	"gitlab.com/tokend/go/xdrbuild"
 )
 
 func Router(
 	entry *logan.Entry, walletQ api.WalletQI, tokensQ data.EmailTokensQ,
 	usersQ api.UsersQI, doorman doorman.Doorman, horizon *horizon.Connector,
-	tfaQ api.TFAQI, storage *storage.Connector, master keypair.Address, signer keypair.Full,
-	coreInfo data.CoreInfoI, blobQ data.Blobs, sentry *raven.Client,
+	tfaQ api.TFAQI, storage *storage.Connector, coreInfo data.CoreInfoI,
+	blobQ data.Blobs, sentry *raven.Client,
 	userDispatch hose.UserDispatch, notificator *notificator.Connector, repo *db2.Repo,
-	wallets config.Wallets, tracker *track.Tracker,
+	wallets config.Wallets, tracker *track.Tracker, txbuilder *xdrbuild.Transaction,
 ) chi.Router {
 	r := chi.NewRouter()
 
@@ -51,7 +51,7 @@ func Router(
 			handlers.CtxEmailTokensQ(tokensQ),
 			handlers.CtxUsersQ(usersQ),
 			handlers.CtxHorizon(horizon),
-			handlers.CtxTransaction(master, signer),
+			handlers.CtxTransaction(txbuilder),
 			handlers.CtxTFAQ(tfaQ),
 			handlers.CtxDoorman(doorman),
 			handlers.CtxStorage(storage),

@@ -8,7 +8,6 @@ import (
 
 	"github.com/patrickmn/go-cache"
 	"gitlab.com/swarmfund/api/config"
-	"gitlab.com/swarmfund/api/coreinfo"
 	"gitlab.com/swarmfund/api/db2"
 	"gitlab.com/swarmfund/api/db2/api"
 	api2 "gitlab.com/swarmfund/api/internal/api"
@@ -25,6 +24,7 @@ import (
 	"golang.org/x/net/context"
 	"golang.org/x/net/http2"
 	"gopkg.in/tylerb/graceful.v1"
+	"gitlab.com/tokend/go/xdrbuild"
 )
 
 // App represents the root of the state of a horizon instance.
@@ -88,6 +88,13 @@ func (a *App) Tracker() *track.Tracker {
 func (a *App) Serve() {
 	a.web.router.Compile()
 
+	source := a.MasterKP()
+	signer := a.MasterSignerKP()
+	builder:= xdrbuild.
+		NewBuilder(a.CoreInfoConn().GetPassphrase(), a.CoreInfoConn().GetTXExpire()).
+		Transaction(source).
+		Sign(signer)
+
 	r := api2.Router(
 		a.Config().Log().WithField("service", "api"),
 		a.APIQ().Wallet(),
@@ -100,8 +107,6 @@ func (a *App) Serve() {
 		a.horizon,
 		a.APIQ().TFA(),
 		a.config.Storage(),
-		a.MasterKP(),
-		a.MasterSignerKP(),
 		a.CoreInfoConn(),
 		a.Blobs(),
 		a.Config().Sentry(),
@@ -110,6 +115,7 @@ func (a *App) Serve() {
 		a.APIRepo(a.ctx),
 		a.config.Wallets(),
 		a.Tracker(),
+		builder,
 	)
 
 	r.Mount("/", a.web.router)
@@ -163,12 +169,12 @@ func (a *App) APIRepo(ctx context.Context) *db2.Repo {
 }
 
 // CoreInfoConn create new instance of coreinfo.Connector.
-func (a *App) CoreInfoConn() *coreinfo.Connector {
-	connector, err := coreinfo.NewConnector(a.Config().API().HorizonURL)
+func (a *App) CoreInfoConn() data.CoreInfoI {
+	info, err := a.Config().Horizon().Info()
 	if err != nil {
 		panic(err)
 	}
-	return connector
+	return info
 }
 
 // UpdateStellarCoreInfo updates the value of coreVersion and networkPassphrase
@@ -221,3 +227,21 @@ func (a *App) run() {
 		}
 	}
 }
+
+/*func (c *Connector) runUpdater() {
+	entry := log.WithField("service", "corer")
+	var info *Info
+	var err error
+
+	for {
+		time.Sleep(1 * time.Hour)
+
+		info, err = c.getCoreInfo()
+		if err != nil {
+			entry.WithError(err).Error("unable to update core info")
+			continue
+		}
+
+		coreInfo = info
+		entry.Debug("core info updated")
+	}*/

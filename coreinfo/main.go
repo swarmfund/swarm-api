@@ -1,4 +1,4 @@
-package coreinfo
+package coreinfoz
 
 import (
 	"encoding/json"

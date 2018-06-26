@@ -16,7 +16,6 @@ import (
 	"gitlab.com/tokend/go/doorman"
 	"gitlab.com/tokend/go/xdrbuild"
 	"gitlab.com/tokend/horizon-connector"
-	"gitlab.com/tokend/keypair"
 )
 
 type ctxKey int
@@ -28,7 +27,7 @@ const (
 	usersQCtxKey
 	horizonConnectorCtxKey
 	txSignerCtxKey
-	txSourceCtxKey
+	txBuilderCtxKey
 	tfaQCtxKey
 	doormanCtxKey
 	storageCtxKey
@@ -132,6 +131,7 @@ func CoreInfo(r *http.Request) data.CoreInfoI {
 	return r.Context().Value(coreInfoCtxKey).(data.CoreInfoI)
 }
 
+
 func CtxBlobQ(q data.Blobs) func(context.Context) context.Context {
 	return func(ctx context.Context) context.Context {
 		return context.WithValue(ctx, blobQCtxKey, q)
@@ -153,13 +153,7 @@ func UserBusDispatch(r *http.Request, event hose.UserEvent) {
 	dispatch(event)
 }
 
-func CtxTransaction(source keypair.Address, signer keypair.Full) func(context.Context) context.Context {
-	return func(ctx context.Context) context.Context {
-		ctx = context.WithValue(ctx, txSourceCtxKey, source)
-		ctx = context.WithValue(ctx, txSignerCtxKey, signer)
-		return ctx
-	}
-}
+
 
 func CtxNotificator(notificator *notificator.Connector) func(context.Context) context.Context {
 	return func(ctx context.Context) context.Context {
@@ -171,14 +165,18 @@ func Notificator(r *http.Request) *notificator.Connector {
 	return r.Context().Value(notificatorCtxKey).(*notificator.Connector)
 }
 
+
+func CtxTransaction(txbuilder *xdrbuild.Transaction) func(context.Context) context.Context {
+	return func(ctx context.Context) context.Context {
+		ctx = context.WithValue(ctx, txBuilderCtxKey, txbuilder)
+		return ctx
+	}
+
+}
+
+
 func Transaction(r *http.Request) *xdrbuild.Transaction {
-	info := CoreInfo(r)
-	source := r.Context().Value(txSourceCtxKey).(keypair.Address)
-	signer := r.Context().Value(txSignerCtxKey).(keypair.Full)
-	return xdrbuild.
-		NewBuilder(info.Passphrase(), info.TXExpire()).
-		Transaction(source).
-		Sign(signer)
+ 	return r.Context().Value(txBuilderCtxKey).(*xdrbuild.Transaction)
 }
 
 func CtxWallets(disableConfirm config.Wallets) func(context.Context) context.Context {
