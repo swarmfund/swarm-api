@@ -38,6 +38,6 @@ func GetUserId(w http.ResponseWriter, r *http.Request) {
 		"account_id": string(resources.NewUser(user).ID),
 	}
 
-	defer json.NewEncoder(w).Encode(&response)
+	json.NewEncoder(w).Encode(&response)
 
 }

@@ -1,16 +1,14 @@
 package handlers
 
 import (
+	"encoding/json"
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/ape/problems"
 	"gitlab.com/swarmfund/api/db2/api"
+	"gitlab.com/swarmfund/api/internal/types"
 	"gitlab.com/swarmfund/api/resource/base"
 	"io/ioutil"
 	"net/http"
-	"gitlab.com/tokend/go/doorman"
-	"gitlab.com/swarmfund/api/internal/api/movetoape"
-	"encoding/json"
-	"gitlab.com/swarmfund/api/internal/types"
 )
 
 type (
@@ -26,14 +24,6 @@ type (
 
 func GetParticipants(w http.ResponseWriter, r *http.Request) {
 
-	//check allowed
-	if err := Doorman(r,
-		doorman.SignerOf(CoreInfo(r).GetMasterAccountID()),
-	); err != nil {
-		movetoape.RenderDoormanErr(w, err)
-		return
-	}
-
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		Log(r).WithError(err).Error("Incorrect body")
@@ -43,32 +33,54 @@ func GetParticipants(w http.ResponseWriter, r *http.Request) {
 	var res Participants
 
 	err = json.Unmarshal(body, &res.Request)
-	if err != nil{
+	if err != nil {
 		Log(r).WithError(err).Error("Can't unmarshal request")
 		ape.RenderErr(w, problems.BadRequest(err)...)
 	}
 
+	accountIDs := res.Request.fetchIDs()
 
-	//TODO single query
-	users := make([]api.User, 0)
-	for _, op := range res.Request.Participants{
-		for pi := range op{
-			user, err := UsersQ(r).ByAddress(string(op[pi].AccountID))
-			if err != nil{
-				Log(r).WithError(err).Error("failed to get users")
-				ape.RenderErr(w, problems.InternalError())
-				return
-			}
-			users = append(users, *user)
+	users, err := UsersQ(r).ByAddresses(accountIDs)
+	if err != nil {
+		Log(r).WithError(err).Error("Can't find users")
+		ape.RenderErr(w, problems.InternalError())
+	}
+	res.Request = res.Request.update(users)
+
+	res.Resource = res.Request.populate()
+
+	json.NewEncoder(w).Encode(&res.Resource)
+}
+
+func (request ParticipantsRequest) populate() (response map[int64][]base.Participant) {
+	for op, participants := range request.Participants {
+		for _, participant := range participants {
+			var r base.Participant
+			r.Populate(&participant)
+			response[op] = append(response[op], r)
 		}
 	}
+
+	return
+}
+
+func (request ParticipantsRequest) fetchIDs() (accountIDs []string) {
+	for _, op := range request.Participants {
+		for pi := range op {
+			accountIDs = append(accountIDs, string(op[pi].AccountID))
+		}
+	}
+	return
+}
+
+func (request ParticipantsRequest) update(users []api.User) ParticipantsRequest {
 
 	usersMap := map[types.Address]api.User{}
 	for _, user := range users {
 		usersMap[user.Address] = user
 	}
 
-	for _, op := range res.Request.Participants {
+	for _, op := range request.Participants {
 		for pi := range op {
 			participant := op[pi]
 			if user, ok := usersMap[participant.AccountID]; ok {
@@ -77,15 +89,5 @@ func GetParticipants(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
-
-	res.Resource = map[int64][]base.Participant{}
-	for op, participants := range res.Request.Participants {
-		for _, participant := range participants {
-			var r base.Participant
-			r.Populate(&participant)
-			res.Resource[op] = append(res.Resource[op], r)
-		}
-	}
-
-	json.NewEncoder(w).Encode(&res.Resource)
+	return request
 }

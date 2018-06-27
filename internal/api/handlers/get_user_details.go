@@ -1,13 +1,13 @@
 package handlers
 
 import (
-	"net/http"
 	"encoding/json"
-	"io/ioutil"
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/ape/problems"
-	"gitlab.com/swarmfund/api/resource"
 	"gitlab.com/swarmfund/api/db2/api"
+	"gitlab.com/swarmfund/api/resource"
+	"io/ioutil"
+	"net/http"
 )
 
 type (
@@ -16,7 +16,7 @@ type (
 	}
 
 	Details struct {
-		Request DetailsRequest
+		Request  DetailsRequest
 		Records  []api.User
 		Resource resource.ShortenUsersDetails
 	}
@@ -32,23 +32,17 @@ func GetUsersDetails(w http.ResponseWriter, r *http.Request) {
 	}
 	var res Details
 	err = json.Unmarshal(body, &res.Request)
-	if err != nil{
+	if err != nil {
 		Log(r).WithError(err).Error("Can't unmarshal body")
 		ape.RenderErr(w, problems.BadRequest(err)...)
 	}
 
-	users := make([]api.User, 0)
-	//TODO single query
-	for _, addr := range res.Request.Addresses{
-		user, err := UsersQ(r).ByAddress(addr)
-		if err != nil{
-			Log(r).WithError(err).Error("failed to get users")
-			ape.RenderErr(w, problems.InternalError())
-			return
-		}
-		users = append(users, *user)
-	}
+	users, err := UsersQ(r).ByAddresses(res.Request.Addresses)
 
+	if err != nil {
+		Log(r).WithError(err).Error("Can't find users")
+		ape.RenderErr(w, problems.InternalError())
+	}
 
 	res.Records = users
 
