@@ -17,7 +17,7 @@ func (c *Connector) SendVerificationLink(email string, payload clienturl.Payload
 		return errors.Wrap(err, "failed to encode payload")
 	}
 	letter := &Letter{
-		Header: "Swarm Email Verification",
+		Header: "Email Verification",
 		Link:   fmt.Sprintf("%s/%s", c.conf.ClientRouter, encoded),
 	}
 
@@ -37,7 +37,7 @@ func (c *Connector) SendVerificationLink(email string, payload clienturl.Payload
 
 func (c *Connector) NotifyApproval(email string) error {
 	letter := &Letter{
-		Header: "Swarm Verification Request",
+		Header: "Verification Request",
 		Link:   c.conf.ClientRouter,
 	}
 
@@ -56,7 +56,7 @@ func (c *Connector) NotifyApproval(email string) error {
 
 func (c *Connector) NotifyRejection(email string) error {
 	letter := &Letter{
-		Header: "Swarm Verification Request",
+		Header: "Verification Request",
 		Link:   c.conf.ClientRouter,
 	}
 
