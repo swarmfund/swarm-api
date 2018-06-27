@@ -9,6 +9,7 @@ import (
 	"gitlab.com/swarmfund/api/db2/api"
 	"gitlab.com/swarmfund/api/internal/data"
 	"gitlab.com/tokend/horizon-connector"
+	"gitlab.com/tokend/go/xdrbuild"
 )
 
 func TestCtxLog(t *testing.T) {
@@ -39,6 +40,17 @@ func TestCtxHorizon(t *testing.T) {
 	request := &http.Request{}
 	request = request.WithContext(CtxHorizon(expected)(ctx))
 	got := Horizon(request)
+	if got != expected {
+		t.Fatalf("expected %#v got %#v", expected, got)
+	}
+}
+
+func TestCtxTransaction(t *testing.T) {
+	expected := &xdrbuild.Transaction{}
+	ctx := context.Background()
+	request := &http.Request{}
+	request = request.WithContext(CtxTransaction(expected)(ctx))
+	got := Transaction(request)
 	if got != expected {
 		t.Fatalf("expected %#v got %#v", expected, got)
 	}
