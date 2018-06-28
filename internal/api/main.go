@@ -80,7 +80,6 @@ func Router(
 	// static stuff
 	r.Get("/kdf", handlers.GetKDF)
 
-
 	r.Route("/wallets", func(r chi.Router) {
 		// admin endpoints
 		r.Get("/", handlers.WalletsIndex)
@@ -109,9 +108,6 @@ func Router(
 			r.Put("/{backend}/verification", handlers.VerifyFactorOTP)
 		})
 	})
-
-
-
 
 	r.Route("/users", func(r chi.Router) {
 		r.Get("/", handlers.UsersIndex)
