@@ -2,13 +2,13 @@ package handlers
 
 import (
 	"encoding/json"
-	"gitlab.com/swarmfund/api/assets"
 	"net/http"
-)
 
+	"gitlab.com/swarmfund/api/assets"
+)
 
 func GetEnums(w http.ResponseWriter, r *http.Request) {
 	response := assets.Enums.Data()
 
-	json.NewEncoder(w).Encode(&response)
+	json.NewEncoder(w).Encode(response)
 }
