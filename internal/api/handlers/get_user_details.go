@@ -42,6 +42,7 @@ func GetUsersDetails(w http.ResponseWriter, r *http.Request) {
 	request, err := NewGetDetailsRequest(r)
 	if err != nil {
 		ape.RenderErr(w, problems.BadRequest(err)...)
+		return
 	}
 
 	users, err := UsersQ(r).ByAddresses(request.Addresses)
@@ -49,6 +50,7 @@ func GetUsersDetails(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		Log(r).WithError(err).Error("Can't find users")
 		ape.RenderErr(w, problems.InternalError())
+		return
 	}
 
 	var response GetDetailsResponse
