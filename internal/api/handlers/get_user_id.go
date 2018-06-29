@@ -16,9 +16,7 @@ func GetUserId(w http.ResponseWriter, r *http.Request) {
 	email := chi.URLParam(r, "email")
 
 	q := UsersQ(r).EmailMatches(email)
-
 	var user api.User
-
 	if err := q.Select(&user); err != nil {
 		Log(r).WithError(err).Error("failed to get user")
 		ape.RenderErr(w, problems.NotFound())
