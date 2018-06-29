@@ -6,6 +6,7 @@ import (
 	"gitlab.com/distributed_lab/figure"
 	"gitlab.com/distributed_lab/logan/v3/errors"
 	"gitlab.com/swarmfund/api/internal/salesforce"
+
 )
 
 // Salesforce returns a ready-to-use salesforce connector
