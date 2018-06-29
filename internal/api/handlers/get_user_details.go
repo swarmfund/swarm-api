@@ -54,6 +54,7 @@ func GetUsersDetails(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var response GetDetailsResponse
+	response.Users = make(map[types.Address]api.User)
 	for _, user := range users {
 		response.Users[user.Address] = user
 	}
