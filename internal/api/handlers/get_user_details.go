@@ -48,7 +48,7 @@ func GetUsersDetails(w http.ResponseWriter, r *http.Request) {
 	users, err := UsersQ(r).ByAddresses(request.Addresses)
 
 	if err != nil {
-		Log(r).WithError(err).Error("Can't find users")
+		Log(r).WithError(err).Error("Failed to get users")
 		ape.RenderErr(w, problems.InternalError())
 		return
 	}
