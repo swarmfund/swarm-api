@@ -32,7 +32,6 @@ func NewGetParticipantsRequest(r *http.Request) (GetParticipantsRequest, error) 
 
 func (r GetParticipantsRequest) Validate() error {
 	return ValidateStruct(&r,
-		Field(&r.ForAccount, Required),
 		Field(&r.Participants, Required),
 	)
 }
@@ -43,6 +42,7 @@ func GetParticipants(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		ape.RenderErr(w, problems.BadRequest(err)...)
+		return
 	}
 
 	var accountIDs []string
@@ -55,8 +55,10 @@ func GetParticipants(w http.ResponseWriter, r *http.Request) {
 
 	users, err := UsersQ(r).ByAddresses(accountIDs)
 	if err != nil {
-		Log(r).WithError(err).Error("Can't find users")
+		Log(r).WithError(err).Error("Failed to get users from db")
 		ape.RenderErr(w, problems.InternalError())
+		return
+		
 	}
 
 	usersMap := map[types.Address]api.User{}
@@ -84,4 +86,5 @@ func GetParticipants(w http.ResponseWriter, r *http.Request) {
 	}
 
 	json.NewEncoder(w).Encode(response)
+	return
 }
