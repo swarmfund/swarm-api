@@ -8,17 +8,12 @@ import (
 	"github.com/pkg/errors"
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/ape/problems"
-	"gitlab.com/swarmfund/api/db2/api"
-	"gitlab.com/swarmfund/api/internal/types"
+	"gitlab.com/swarmfund/api/resource"
 )
 
 type (
 	GetDetailsRequest struct {
 		Addresses []string `json:"addresses"`
-	}
-
-	GetDetailsResponse struct {
-		Users map[types.Address]api.User `json:"users"`
 	}
 )
 
@@ -53,13 +48,9 @@ func GetUsersDetails(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var response GetDetailsResponse
-	response.Users = make(map[types.Address]api.User)
-	for _, user := range users {
-		response.Users[user.Address] = user
-	}
+	var response resource.ShortenUsersDetails
+	response.Populate(users)
 
 	json.NewEncoder(w).Encode(response)
 
-	return
 }
