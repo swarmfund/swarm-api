@@ -3,7 +3,6 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/go-chi/chi"
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/ape/problems"
 
@@ -13,7 +12,7 @@ import (
 )
 
 func GetUserId(w http.ResponseWriter, r *http.Request) {
-	email := chi.URLParam(r, "email")
+	email := r.URL.Query().Get("email")
 
 	q := UsersQ(r).EmailMatches(email)
 	var user api.User
