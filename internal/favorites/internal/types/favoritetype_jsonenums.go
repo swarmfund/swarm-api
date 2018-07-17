@@ -23,6 +23,7 @@ func init() {
 		_FavoriteTypeNameToValue = map[string]FavoriteType{
 			interface{}(FavoriteTypeSale).(fmt.Stringer).String():      FavoriteTypeSale,
 			interface{}(FavoriteTypeAssetPair).(fmt.Stringer).String(): FavoriteTypeAssetPair,
+			interface{}(FavoriteTypeSettings).(fmt.Stringer).String():  FavoriteTypeSettings,
 		}
 	}
 }
@@ -30,11 +31,13 @@ func init() {
 var _FavoriteTypeNameToValue = map[string]FavoriteType{
 	"sale":       FavoriteTypeSale,
 	"asset_pair": FavoriteTypeAssetPair,
+	"settings":   FavoriteTypeSettings,
 }
 
 var _FavoriteTypeValueToName = map[FavoriteType]string{
 	FavoriteTypeSale:      "sale",
 	FavoriteTypeAssetPair: "asset_pair",
+	FavoriteTypeSettings:  "settings",
 }
 
 // String is generated so FavoriteType satisfies fmt.Stringer.

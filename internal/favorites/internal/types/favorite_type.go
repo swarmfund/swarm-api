@@ -6,4 +6,5 @@ type FavoriteType int32
 const (
 	FavoriteTypeSale FavoriteType = 1 << iota
 	FavoriteTypeAssetPair
+	FavoriteTypeSettings
 )
