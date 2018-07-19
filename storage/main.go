@@ -8,8 +8,8 @@ import (
 	"github.com/minio/minio-go"
 	"github.com/minio/minio-go/pkg/policy"
 	"github.com/pkg/errors"
+	"gitlab.com/distributed_lab/logan/v3"
 	"gitlab.com/swarmfund/api/internal/types"
-	"gitlab.com/swarmfund/api/log"
 )
 
 const (
@@ -19,7 +19,7 @@ const (
 
 type Connector struct {
 	Minio             *minio.Client
-	Log               *log.Entry
+	Log               *logan.Entry
 	MinContentLength  int64
 	MaxContentLength  int64
 	AllowedMediaTypes MediaTypes

@@ -2,12 +2,6 @@
 
 
 [[projects]]
-  branch = "default"
-  name = "bitbucket.org/ww/goautoneg"
-  packages = ["."]
-  revision = "75cd24fc2f2c2a2088577d12123ddee5f54e0675"
-
-[[projects]]
   branch = "master"
   name = "github.com/agl/ed25519"
   packages = [
@@ -103,12 +97,6 @@
   ]
   revision = "85dcd8368eba387e65a03488b003e233994e87e9"
   version = "v3.3"
-
-[[projects]]
-  branch = "master"
-  name = "github.com/goji/context"
-  packages = ["."]
-  revision = "68b83f7b0439800daff361aeff573ecad1b26cbe"
 
 [[projects]]
   name = "github.com/google/jsonapi"
@@ -269,12 +257,6 @@
 
 [[projects]]
   branch = "master"
-  name = "github.com/rcrowley/go-metrics"
-  packages = ["."]
-  revision = "e181e095bae94582363434144c61a9653aff6e50"
-
-[[projects]]
-  branch = "master"
   name = "github.com/rubenv/sql-migrate"
   packages = [
     ".",
@@ -284,7 +266,10 @@
 
 [[projects]]
   name = "github.com/sirupsen/logrus"
-  packages = ["."]
+  packages = [
+    ".",
+    "hooks/test"
+  ]
   revision = "f006c2ac4710855cf0f916dd6b77acf6b048dc6e"
   version = "v1.0.3"
 
@@ -343,16 +328,6 @@
   version = "v1.1.4"
 
 [[projects]]
-  name = "github.com/zenazn/goji"
-  packages = [
-    "web",
-    "web/middleware",
-    "web/mutil"
-  ]
-  revision = "64eb34159fe53473206c2b3e70fe396a639452f2"
-  version = "v1.0"
-
-[[projects]]
   name = "gitlab.com/distributed_lab/ape"
   packages = [
     ".",
@@ -400,6 +375,7 @@
     "signcontrol",
     "signcontrol/internal/httpsignatures",
     "strkey",
+    "support/log",
     "xdr",
     "xdrbuild",
     "xdrbuild/internal"
@@ -524,6 +500,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "28f65d383a323d02663f2a2f32991aed425c0659ca21a20b0dec0d1c8b3ddbfa"
+  inputs-digest = "447077167465a87d304d2bd1c06f0bee827089df384ad9714b2f31cd124e4c8e"
   solver-name = "gps-cdcl"
   solver-version = 1
