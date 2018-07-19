@@ -80,6 +80,7 @@
     "hash",
     "keypair",
     "network",
+    "resources",
     "signcontrol",
     "signcontrol/internal/httpsignatures",
     "strkey",
@@ -87,7 +88,7 @@
     "xdrbuild",
     "xdrbuild/internal"
   ]
-  revision = "bc0dd83fb8cb09756bfa31ce9434345a4fa77758"
+  revision = "fa21b389937a307ea37202da31dad8fed9e06fec"
 
 [[projects]]
   branch = "master"
@@ -99,6 +100,12 @@
     "internal/strkey"
   ]
   revision = "c148f15306edac6a1ad994d8b218e8ae61a0b2c1"
+
+[[projects]]
+  branch = "master"
+  name = "gitlab.com/tokend/regources"
+  packages = ["."]
+  revision = "f597b01ef45ccc3398ea70a196597cfc9ef75766"
 
 [[projects]]
   branch = "master"
@@ -122,6 +129,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "5e8aaaf7250705a12f25f1552279b0585778547799714c9e3b88eae2fcd1bc2a"
+  inputs-digest = "c930b97ceffb46223d9ba6bb259781d8386cc0d430de40a08850107c98de50c6"
   solver-name = "gps-cdcl"
   solver-version = 1

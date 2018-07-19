@@ -9,7 +9,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/cast"
 	"gitlab.com/distributed_lab/figure"
-	"gitlab.com/swarmfund/api/log"
 	"gitlab.com/swarmfund/api/storage"
 )
 
@@ -75,7 +74,7 @@ func (c *ViperConfig) Storage() *storage.Connector {
 
 	connector := &storage.Connector{
 		Minio:             minio,
-		Log:               log.WithField("service", "storage"),
+		Log:               c.Log().WithField("service", "storage"),
 		MinContentLength:  config.MinContentLength,
 		MaxContentLength:  config.MaxContentLength,
 		AllowedMediaTypes: config.MediaTypes,

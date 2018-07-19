@@ -6,8 +6,6 @@ import (
 	"net/http"
 	"net/url"
 	"time"
-
-	"gitlab.com/swarmfund/api/log"
 )
 
 // Connector is a structure with methods for getting core info.
@@ -76,7 +74,7 @@ func (c *Connector) TXExpire() int64 {
 
 // runUpdater starts an infinite loop in which it updates coreInfo every hour.
 func (c *Connector) runUpdater() {
-	entry := log.WithField("service", "corer")
+	//entry := log.WithField("service", "corer")
 	var info *Info
 	var err error
 
@@ -85,12 +83,12 @@ func (c *Connector) runUpdater() {
 
 		info, err = c.getCoreInfo()
 		if err != nil {
-			entry.WithError(err).Error("unable to update core info")
+			//entry.WithError(err).Error("unable to update core info")
 			continue
 		}
 
 		coreInfo = info
-		entry.Debug("core info updated")
+		//entry.Debug("core info updated")
 	}
 }
 

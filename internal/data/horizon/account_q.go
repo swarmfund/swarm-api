@@ -30,9 +30,9 @@ func (q *AccountQ) Signers(address string) ([]resources.Signer, error) {
 	result := make([]resources.Signer, 0, len(signers))
 	for _, signer := range signers {
 		result = append(result, resources.Signer{
-			AccountID:  signer.PublicKey,
+			AccountID:  signer.AccountID,
 			Weight:     int(signer.Weight),
-			SignerType: int(signer.Type),
+			SignerType: int(signer.SignerType),
 			Identity:   int(signer.Identity),
 			Name:       signer.Name,
 		})

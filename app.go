@@ -17,9 +17,9 @@ import (
 	"gitlab.com/swarmfund/api/internal/data/postgres"
 	"gitlab.com/swarmfund/api/internal/hose"
 	"gitlab.com/swarmfund/api/internal/track"
-	"gitlab.com/swarmfund/api/log"
 	"gitlab.com/swarmfund/api/storage"
 	"gitlab.com/tokend/go/doorman"
+	"gitlab.com/tokend/go/support/log"
 	"gitlab.com/tokend/horizon-connector"
 	"gitlab.com/tokend/keypair"
 	"golang.org/x/net/context"
@@ -33,7 +33,6 @@ type App struct {
 	CoreInfo *horizon.Info
 
 	config         config.Config
-	web            *Web
 	apiQ           api.QInterface
 	ctx            context.Context
 	cancel         func()
@@ -86,8 +85,6 @@ func (a *App) Tracker() *track.Tracker {
 // Serve starts the horizon web server, binding it to a socket, setting up
 // the shutdown signals.
 func (a *App) Serve() {
-	a.web.router.Compile()
-
 	r := api2.Router(
 		a.Config().Log().WithField("service", "api"),
 		a.APIQ().Wallet(),
@@ -113,28 +110,25 @@ func (a *App) Serve() {
 		a.Config().Salesforce(),
 	)
 
-	r.Mount("/", a.web.router)
 	http.Handle("/", r)
 
 	addr := fmt.Sprintf("%s:%d", a.config.HTTP().Host, a.config.HTTP().Port)
 
 	srv := &graceful.Server{
 		Timeout: 10 * time.Second,
-
 		Server: &http.Server{
 			Addr:    addr,
 			Handler: http.DefaultServeMux,
 		},
-
 		ShutdownInitiated: func() {
-			log.Info("received signal, gracefully stopping")
+			//log.Info("received signal, gracefully stopping")
 			a.Close()
 		},
 	}
 
 	http2.ConfigureServer(srv.Server, nil)
 
-	log.Infof("Starting horizon on %s", addr)
+	//log.Infof("Starting horizon on %s", addr)
 
 	go a.run()
 
@@ -142,7 +136,7 @@ func (a *App) Serve() {
 		log.Panic(err)
 	}
 
-	log.Info("stopped")
+	//log.Info("stopped")
 }
 
 // Close cancels the app and forces the closure of db connections

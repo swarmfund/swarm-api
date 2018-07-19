@@ -4,23 +4,27 @@ import (
 	"gitlab.com/tokend/horizon-connector/internal/operation"
 	"gitlab.com/tokend/horizon-connector/internal/resources"
 	"gitlab.com/tokend/horizon-connector/internal/transaction"
+	"gitlab.com/tokend/horizon-connector/internal/transactionv2"
 	"context"
 )
 
+// Q wraps queues to use their methods
 type Q struct {
 	txQ *transaction.Q
+	txV2Q *transactionv2.Q
 	// TODO Rename - it'a actually RequestQ
 	opQ *operation.Q
 }
 
-func NewQ(tx *transaction.Q, op *operation.Q) *Q {
+func NewQ(tx *transaction.Q, txV2Q *transactionv2.Q, op *operation.Q) *Q {
 	return &Q{
 		tx,
+		txV2Q,
 		op,
 	}
 }
 
-// DEPRECATED use StreamAllReviewableRequests instead
+// DEPRECATED: use StreamAllReviewableRequests instead
 func (q *Q) Requests(result chan<- resources.Request) <-chan error {
 	errs := make(chan error)
 	go func() {
@@ -43,8 +47,7 @@ func (q *Q) Requests(result chan<- resources.Request) <-chan error {
 	return errs
 }
 
-// TODO Consider working with *Withdrawal* specific types.
-// DEPRECATED Use StreamWithdrawalRequests instead
+// DEPRECATED: Use StreamWithdrawalRequests instead
 func (q *Q) WithdrawalRequests(result chan<- resources.Request) <-chan error {
 	errs := make(chan error)
 
