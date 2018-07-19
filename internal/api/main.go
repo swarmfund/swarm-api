@@ -71,6 +71,12 @@ func Router(
 		ape.RenderErr(w, problems.NotFound())
 	})
 
+	//participants
+	r.Get("/user_id", handlers.GetUserId)
+	r.Get("/data/enums", handlers.GetEnums)
+	r.Post("/details", handlers.GetUsersDetails)
+	r.Post("/participants", handlers.GetParticipants)
+
 	// static stuff
 	r.Get("/kdf", handlers.GetKDF)
 
@@ -136,6 +142,9 @@ func Router(
 
 		// favorites
 		r.Route("/{address}/favorites", favorites.Router(repo))
+
+		// favorites aka settings
+		r.Route("/{address}/settings", favorites.Router(repo))
 
 		//get users statistics
 		r.Get("/stats", handlers.UserStats)

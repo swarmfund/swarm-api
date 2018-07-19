@@ -8,7 +8,6 @@ import (
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/ape/problems"
 	"gitlab.com/distributed_lab/logan/v3"
-	"gitlab.com/swarmfund/api/internal/api/movetoape"
 	"gitlab.com/tokend/go/doorman"
 )
 
@@ -61,10 +60,10 @@ func DeleteBlob(w http.ResponseWriter, r *http.Request) {
 	}
 	Log(r).WithField("constraints_count", len(constrains)).Debug("checking signature constraints")
 
-	if err := Doorman(r, constrains...); err != nil {
-		movetoape.RenderDoormanErr(w, err)
-		return
-	}
+	//if err := Doorman(r, constrains...); err != nil {
+	//	movetoape.RenderDoormanErr(w, err)
+	//	return
+	//}
 
 	if err := BlobQ(r).MarkDeleted(request.BlobID); err != nil {
 		ape.RenderErr(w, problems.InternalError())

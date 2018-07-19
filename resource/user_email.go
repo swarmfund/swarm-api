@@ -25,3 +25,4 @@ func (d *ShortenUsersDetails) Populate(records []api.User) {
 		}
 	}
 }
+

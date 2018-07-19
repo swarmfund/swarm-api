@@ -57,11 +57,6 @@ func initWebActions(app *App) {
 	r := app.web.router
 
 	// participants
-	r.Post("/details", &DetailsAction{})
-	r.Post("/participants", &ParticipantsAction{})
-	r.Get("/user_id", &GetUserIdAction{})
-	r.Get("/data/enums", &GetEnumsAction{})
-
 	r.NotFound(&NotFoundAction{})
 }
 
