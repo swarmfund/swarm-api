@@ -6,6 +6,7 @@ import (
 
 	"gitlab.com/distributed_lab/logan/v3"
 	"gitlab.com/distributed_lab/logan/v3/errors"
+	goresources "gitlab.com/tokend/go/resources"
 	"gitlab.com/tokend/go/xdr"
 	"gitlab.com/tokend/horizon-connector/internal"
 	"gitlab.com/tokend/horizon-connector/internal/resources"
@@ -15,6 +16,7 @@ import (
 var (
 	ErrNoSigner      = errors.New("No such signer")
 	ErrNotEnoughType = errors.New("Not enough types")
+	ErrNoBalance     = errors.New("no such balance")
 )
 
 type Q struct {
@@ -35,12 +37,12 @@ func (q *Q) IsSigner(master string, signer string, signerType ...xdr.SignerType)
 	isAllowedSigner := false
 	var notEnoughTypes []xdr.SignerType
 	for _, s := range signers {
-		if signer == s.PublicKey {
+		if signer == s.AccountID {
 			isAllowedSigner = true
 		}
 
 		for _, t := range signerType {
-			if s.Type&int32(t) == 0 {
+			if s.SignerType&int(t) == 0 {
 				notEnoughTypes = append(notEnoughTypes, t)
 			}
 		}
@@ -57,7 +59,7 @@ func (q *Q) IsSigner(master string, signer string, signerType ...xdr.SignerType)
 	return nil
 }
 
-func (q *Q) Signers(address string) ([]resources.Signer, error) {
+func (q *Q) Signers(address string) ([]goresources.Signer, error) {
 	endpoint := fmt.Sprintf("/accounts/%s/signers", address)
 	response, err := q.client.Get(endpoint)
 	if err != nil {
@@ -67,10 +69,12 @@ func (q *Q) Signers(address string) ([]resources.Signer, error) {
 	if response == nil {
 		return nil, nil
 	}
+
 	var result responses.AccountSigners
 	if err := json.Unmarshal(response, &result); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal")
 	}
+
 	return result.Signers, nil
 }
 
@@ -111,6 +115,37 @@ func (q *Q) ByAddress(address string) (*resources.Account, error) {
 		return nil, errors.Wrap(err, "failed to unmarshal")
 	}
 	return &account, nil
+}
+
+// CurrentBalanceIn return account's balance in provided asset
+// ErrNoBalance if balance does not exist
+func (q *Q) CurrentBalanceIn(address, asset string) (result resources.Balance, err error) {
+	account, err := q.ByAddress(address)
+	if err != nil {
+		return result, errors.Wrap(err, "failed to get account")
+	}
+	for _, balance := range account.Balances {
+		if balance.Asset == asset {
+			return balance, nil
+		}
+	}
+	return result, ErrNoBalance
+}
+
+// CurrentExternalBindingData will return (nil, nil) if account external binding does not exist
+func (q *Q) CurrentExternalBindingData(address string, externalSystem int32) (*string, error) {
+	account, err := q.ByAddress(address)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get account")
+	}
+
+	for _, system := range account.ExternalSystemAccounts {
+		if system.Type.Value == externalSystem {
+			return &system.Data, nil
+		}
+	}
+
+	return nil, nil
 }
 
 func (q *Q) Balances(address string) ([]resources.Balance, error) {
