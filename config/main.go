@@ -3,15 +3,16 @@ package config
 import (
 	"sync"
 
-	raven "github.com/getsentry/raven-go"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/getsentry/raven-go"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 	"gitlab.com/distributed_lab/logan/v3"
+	"gitlab.com/swarmfund/api/internal/data"
 	"gitlab.com/swarmfund/api/internal/discourse"
 	"gitlab.com/swarmfund/api/internal/mixpanel"
 	"gitlab.com/swarmfund/api/internal/salesforce"
 	"gitlab.com/swarmfund/api/notificator"
-	"gitlab.com/swarmfund/api/storage"
 	"gitlab.com/tokend/horizon-connector"
 )
 
@@ -19,7 +20,7 @@ type Config interface {
 	Init() error
 	API() API
 	HTTP() HTTP
-	Storage() *storage.Connector
+	Storage() data.Storage
 	Log() *logan.Entry
 	Wallets() Wallets
 
@@ -50,8 +51,9 @@ type ViperConfig struct {
 	mixpanel    *mixpanel.Connector
 	salesforce  *salesforce.Connector
 	wallets     *Wallets
-	storage     *storage.Connector
+	storage     data.Storage
 	api         *API
+	aws         *session.Session
 }
 
 func NewViperConfig(fn string) Config {

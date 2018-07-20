@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	cache "github.com/patrickmn/go-cache"
+	"github.com/patrickmn/go-cache"
 	"gitlab.com/swarmfund/api/config"
 	"gitlab.com/swarmfund/api/coreinfo"
 	"gitlab.com/swarmfund/api/db2"
@@ -17,7 +17,6 @@ import (
 	"gitlab.com/swarmfund/api/internal/data/postgres"
 	"gitlab.com/swarmfund/api/internal/hose"
 	"gitlab.com/swarmfund/api/internal/track"
-	"gitlab.com/swarmfund/api/storage"
 	"gitlab.com/tokend/go/doorman"
 	"gitlab.com/tokend/go/support/log"
 	"gitlab.com/tokend/horizon-connector"
@@ -39,7 +38,7 @@ type App struct {
 	ticks          *time.Ticker
 	horizonVersion string
 	memoryCache    *cache.Cache
-	storage        *storage.Connector
+	storage        data.Storage
 	// DEPRECATED
 	horizon *horizon.Connector
 	txBus   *hose.TransactionBus
