@@ -112,3 +112,21 @@ func (q *EmailTokensQ) MarkSent(tid int64) error {
 	_, err := q.Exec(stmt)
 	return err
 }
+
+func (q *EmailTokensQ) GetUnsentWelcomeEmail() ([]data.EmailToken, error) {
+	stmt := emailTokensSelect.
+		Where("sent_welcome_email = false and confirmed = true")
+
+	result := []data.EmailToken{}
+	err := q.Select(&result, stmt)
+	return result, err
+}
+
+func (q *EmailTokensQ) MarkSentWelcomeEmail(tid int64) error {
+	stmt := squirrel.
+		Update(emailTokenTable).
+		Set("sent_welcome_email", true).
+		Where("id = ?", tid)
+	_, err := q.Exec(stmt)
+	return err
+}

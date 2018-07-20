@@ -23,6 +23,8 @@ type EmailTokensQ interface {
 	MarkUnsent(tid int64) error
 	// runner:
 	GetUnsent() ([]EmailToken, error)
+	GetUnsentWelcomeEmail() ([]EmailToken, error)
 	GetUnconfirmed() ([]EmailToken, error)
 	MarkSent(tid int64) error
+	MarkSentWelcomeEmail(tid int64) error
 }

@@ -73,6 +73,26 @@ func (c *Connector) NotifyRejection(email string) error {
 	return c.send(NotificationTypeVerificationEmail, email, msg)
 }
 
+func (c *Connector) SendWelcomeEmail(email string) error {
+	letter := &Letter{
+		Header: "Welcome!",
+		Link:   c.conf.ClientRouter,
+	}
+
+	var buff bytes.Buffer
+	err := c.conf.WelcomeEmail.Execute(&buff, letter)
+	if err != nil {
+		return errors.Wrap(err, "failed to render template for welcome email")
+	}
+	msg := &notificator.EmailRequestPayload{
+		Destination: email,
+		Subject:     letter.Header,
+		Message:     buff.String(),
+	}
+
+	return c.send(NotificationTypeVerificationEmail, email, msg)
+}
+
 func (c *Connector) send(requestType int, token string, payload notificator.Payload) error {
 	if c.conf.Disabled {
 		c.log.WithFields(logan.F{"request_type": requestType, "token": token}).Warn("disabled")

@@ -24,6 +24,7 @@ type Config struct {
 	EmailConfirmation *template.Template `fig:"-"`
 	KYCApprove        *template.Template `fig:"-"`
 	KYCReject         *template.Template `fig:"-"`
+	WelcomeEmail      *template.Template `fig:"-"`
 }
 
 type Connector struct {
@@ -64,6 +65,12 @@ func (c *Connector) Init(loader TemplateLoader, log *logan.Entry) error {
 	}
 
 	c.conf.KYCReject = kycReject
+
+	welcomeEmail, err := getTemplate("welcome_email", loader)
+	if err != nil {
+		return errors.Wrap(err, "failed to get template")
+	}
+	c.conf.WelcomeEmail = welcomeEmail
 
 	return nil
 }
