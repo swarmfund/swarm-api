@@ -1,6 +1,6 @@
 package types
 
-//go:generate jsonenums -tprefix=false -transform=snake -type=ActionName
+//go:generate jsonenums -tprefix=false -transform=snake -type=Event
 
 type Event int32
 

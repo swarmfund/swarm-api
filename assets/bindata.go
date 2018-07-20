@@ -37,6 +37,7 @@
 // migrations/026_fix_user_states.sql
 // migrations/027_blob_delete.sql
 // migrations/028_guest_favorites.sql
+// migrations/029_email_tokens_add_welcome_email.sql
 // DO NOT EDIT!
 
 package assets
@@ -844,6 +845,26 @@ func migrations028_guest_favoritesSql() (*asset, error) {
 	return a, nil
 }
 
+var _migrations029_email_tokens_add_welcome_emailSql = []byte("\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\x7c\xcc\x31\x0e\xc2\x30\x0c\x05\xd0\xdd\xa7\xf8\x3b\xea\x09\xba\x72\x05\xe6\xc8\x6d\x7e\x51\x85\x63\x57\x89\xab\x5e\x1f\x89\x89\x05\xf6\xa7\x37\x4d\xb8\xb5\xfd\xd9\x35\x89\xc7\x21\xa2\x96\xec\x48\x5d\x8c\x60\xd3\xdd\x4a\xc6\x8b\x3e\xa0\xb5\x62\x0d\x3b\x9b\x63\xd0\xb3\x5c\xb4\x35\x1a\xcb\x07\x61\x89\x30\x54\x6e\x7a\x5a\x62\x53\x1b\x9c\x45\xbe\xef\x7b\x5c\xfe\x67\xaf\x3d\x8e\xdf\xfd\x2c\xef\x00\x00\x00\xff\xff\x67\xdd\x49\xe3\xa7\x00\x00\x00")
+
+func migrations029_email_tokens_add_welcome_emailSqlBytes() ([]byte, error) {
+	return bindataRead(
+		_migrations029_email_tokens_add_welcome_emailSql,
+		"migrations/029_email_tokens_add_welcome_email.sql",
+	)
+}
+
+func migrations029_email_tokens_add_welcome_emailSql() (*asset, error) {
+	bytes, err := migrations029_email_tokens_add_welcome_emailSqlBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "migrations/029_email_tokens_add_welcome_email.sql", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
+	a := &asset{bytes: bytes, info: info}
+	return a, nil
+}
+
 // Asset loads and returns the asset for the given name.
 // It returns an error if the asset could not be found or
 // could not be loaded.
@@ -896,43 +917,44 @@ func AssetNames() []string {
 
 // _bindata is a table, holding each asset generator, mapped to its name.
 var _bindata = map[string]func() (*asset, error){
-	"enums/business_type.json":                    enumsBusiness_typeJson,
-	"enums/countries.json":                        enumsCountriesJson,
-	"enums/education.json":                        enumsEducationJson,
-	"enums/employment_status.json":                enumsEmployment_statusJson,
-	"enums/entity_type.json":                      enumsEntity_typeJson,
-	"enums/gender.json":                           enumsGenderJson,
-	"enums/id_document.json":                      enumsId_documentJson,
-	"enums/industry.json":                         enumsIndustryJson,
-	"enums/marital_status.json":                   enumsMarital_statusJson,
-	"enums/nationalities.json":                    enumsNationalitiesJson,
-	"migrations/001_squashed.sql":                 migrations001_squashedSql,
-	"migrations/003_email_tokens.sql":             migrations003_email_tokensSql,
-	"migrations/004_wallets_refactor.sql":         migrations004_wallets_refactorSql,
-	"migrations/005_tfa_backends_refactor.sql":    migrations005_tfa_backends_refactorSql,
-	"migrations/006_totp_constraint.sql":          migrations006_totp_constraintSql,
-	"migrations/007_cascade_wallet_id_update.sql": migrations007_cascade_wallet_id_updateSql,
-	"migrations/008_password_constraint.sql":      migrations008_password_constraintSql,
-	"migrations/009_drop_tfa_keychain.sql":        migrations009_drop_tfa_keychainSql,
-	"migrations/010_users_refactoring.sql":        migrations010_users_refactoringSql,
-	"migrations/011_kyc_entities.sql":             migrations011_kyc_entitiesSql,
-	"migrations/012_blobs.sql":                    migrations012_blobsSql,
-	"migrations/013_rm_org_wallets.sql":           migrations013_rm_org_walletsSql,
-	"migrations/014_blob_relationships.sql":       migrations014_blob_relationshipsSql,
-	"migrations/015_rm_recovery_requests.sql":     migrations015_rm_recovery_requestsSql,
-	"migrations/016_recoveries.sql":               migrations016_recoveriesSql,
-	"migrations/017_rm_pending_transactions.sql":  migrations017_rm_pending_transactionsSql,
-	"migrations/018_user_kyc.sql":                 migrations018_user_kycSql,
-	"migrations/019_airdrops.sql":                 migrations019_airdropsSql,
-	"migrations/020_favorites.sql":                migrations020_favoritesSql,
-	"migrations/021_kdf_v2.sql":                   migrations021_kdf_v2Sql,
-	"migrations/022_referrals.sql":                migrations022_referralsSql,
-	"migrations/023_master_blobs.sql":             migrations023_master_blobsSql,
-	"migrations/024_user_states.sql":              migrations024_user_statesSql,
-	"migrations/025_tracking.sql":                 migrations025_trackingSql,
-	"migrations/026_fix_user_states.sql":          migrations026_fix_user_statesSql,
-	"migrations/027_blob_delete.sql":              migrations027_blob_deleteSql,
-	"migrations/028_guest_favorites.sql":          migrations028_guest_favoritesSql,
+	"enums/business_type.json":                          enumsBusiness_typeJson,
+	"enums/countries.json":                              enumsCountriesJson,
+	"enums/education.json":                              enumsEducationJson,
+	"enums/employment_status.json":                      enumsEmployment_statusJson,
+	"enums/entity_type.json":                            enumsEntity_typeJson,
+	"enums/gender.json":                                 enumsGenderJson,
+	"enums/id_document.json":                            enumsId_documentJson,
+	"enums/industry.json":                               enumsIndustryJson,
+	"enums/marital_status.json":                         enumsMarital_statusJson,
+	"enums/nationalities.json":                          enumsNationalitiesJson,
+	"migrations/001_squashed.sql":                       migrations001_squashedSql,
+	"migrations/003_email_tokens.sql":                   migrations003_email_tokensSql,
+	"migrations/004_wallets_refactor.sql":               migrations004_wallets_refactorSql,
+	"migrations/005_tfa_backends_refactor.sql":          migrations005_tfa_backends_refactorSql,
+	"migrations/006_totp_constraint.sql":                migrations006_totp_constraintSql,
+	"migrations/007_cascade_wallet_id_update.sql":       migrations007_cascade_wallet_id_updateSql,
+	"migrations/008_password_constraint.sql":            migrations008_password_constraintSql,
+	"migrations/009_drop_tfa_keychain.sql":              migrations009_drop_tfa_keychainSql,
+	"migrations/010_users_refactoring.sql":              migrations010_users_refactoringSql,
+	"migrations/011_kyc_entities.sql":                   migrations011_kyc_entitiesSql,
+	"migrations/012_blobs.sql":                          migrations012_blobsSql,
+	"migrations/013_rm_org_wallets.sql":                 migrations013_rm_org_walletsSql,
+	"migrations/014_blob_relationships.sql":             migrations014_blob_relationshipsSql,
+	"migrations/015_rm_recovery_requests.sql":           migrations015_rm_recovery_requestsSql,
+	"migrations/016_recoveries.sql":                     migrations016_recoveriesSql,
+	"migrations/017_rm_pending_transactions.sql":        migrations017_rm_pending_transactionsSql,
+	"migrations/018_user_kyc.sql":                       migrations018_user_kycSql,
+	"migrations/019_airdrops.sql":                       migrations019_airdropsSql,
+	"migrations/020_favorites.sql":                      migrations020_favoritesSql,
+	"migrations/021_kdf_v2.sql":                         migrations021_kdf_v2Sql,
+	"migrations/022_referrals.sql":                      migrations022_referralsSql,
+	"migrations/023_master_blobs.sql":                   migrations023_master_blobsSql,
+	"migrations/024_user_states.sql":                    migrations024_user_statesSql,
+	"migrations/025_tracking.sql":                       migrations025_trackingSql,
+	"migrations/026_fix_user_states.sql":                migrations026_fix_user_statesSql,
+	"migrations/027_blob_delete.sql":                    migrations027_blob_deleteSql,
+	"migrations/028_guest_favorites.sql":                migrations028_guest_favoritesSql,
+	"migrations/029_email_tokens_add_welcome_email.sql": migrations029_email_tokens_add_welcome_emailSql,
 }
 
 // AssetDir returns the file names below a certain
@@ -989,33 +1011,34 @@ var _bintree = &bintree{nil, map[string]*bintree{
 		"nationalities.json":     &bintree{enumsNationalitiesJson, map[string]*bintree{}},
 	}},
 	"migrations": &bintree{nil, map[string]*bintree{
-		"001_squashed.sql":                 &bintree{migrations001_squashedSql, map[string]*bintree{}},
-		"003_email_tokens.sql":             &bintree{migrations003_email_tokensSql, map[string]*bintree{}},
-		"004_wallets_refactor.sql":         &bintree{migrations004_wallets_refactorSql, map[string]*bintree{}},
-		"005_tfa_backends_refactor.sql":    &bintree{migrations005_tfa_backends_refactorSql, map[string]*bintree{}},
-		"006_totp_constraint.sql":          &bintree{migrations006_totp_constraintSql, map[string]*bintree{}},
-		"007_cascade_wallet_id_update.sql": &bintree{migrations007_cascade_wallet_id_updateSql, map[string]*bintree{}},
-		"008_password_constraint.sql":      &bintree{migrations008_password_constraintSql, map[string]*bintree{}},
-		"009_drop_tfa_keychain.sql":        &bintree{migrations009_drop_tfa_keychainSql, map[string]*bintree{}},
-		"010_users_refactoring.sql":        &bintree{migrations010_users_refactoringSql, map[string]*bintree{}},
-		"011_kyc_entities.sql":             &bintree{migrations011_kyc_entitiesSql, map[string]*bintree{}},
-		"012_blobs.sql":                    &bintree{migrations012_blobsSql, map[string]*bintree{}},
-		"013_rm_org_wallets.sql":           &bintree{migrations013_rm_org_walletsSql, map[string]*bintree{}},
-		"014_blob_relationships.sql":       &bintree{migrations014_blob_relationshipsSql, map[string]*bintree{}},
-		"015_rm_recovery_requests.sql":     &bintree{migrations015_rm_recovery_requestsSql, map[string]*bintree{}},
-		"016_recoveries.sql":               &bintree{migrations016_recoveriesSql, map[string]*bintree{}},
-		"017_rm_pending_transactions.sql":  &bintree{migrations017_rm_pending_transactionsSql, map[string]*bintree{}},
-		"018_user_kyc.sql":                 &bintree{migrations018_user_kycSql, map[string]*bintree{}},
-		"019_airdrops.sql":                 &bintree{migrations019_airdropsSql, map[string]*bintree{}},
-		"020_favorites.sql":                &bintree{migrations020_favoritesSql, map[string]*bintree{}},
-		"021_kdf_v2.sql":                   &bintree{migrations021_kdf_v2Sql, map[string]*bintree{}},
-		"022_referrals.sql":                &bintree{migrations022_referralsSql, map[string]*bintree{}},
-		"023_master_blobs.sql":             &bintree{migrations023_master_blobsSql, map[string]*bintree{}},
-		"024_user_states.sql":              &bintree{migrations024_user_statesSql, map[string]*bintree{}},
-		"025_tracking.sql":                 &bintree{migrations025_trackingSql, map[string]*bintree{}},
-		"026_fix_user_states.sql":          &bintree{migrations026_fix_user_statesSql, map[string]*bintree{}},
-		"027_blob_delete.sql":              &bintree{migrations027_blob_deleteSql, map[string]*bintree{}},
-		"028_guest_favorites.sql":          &bintree{migrations028_guest_favoritesSql, map[string]*bintree{}},
+		"001_squashed.sql":                       &bintree{migrations001_squashedSql, map[string]*bintree{}},
+		"003_email_tokens.sql":                   &bintree{migrations003_email_tokensSql, map[string]*bintree{}},
+		"004_wallets_refactor.sql":               &bintree{migrations004_wallets_refactorSql, map[string]*bintree{}},
+		"005_tfa_backends_refactor.sql":          &bintree{migrations005_tfa_backends_refactorSql, map[string]*bintree{}},
+		"006_totp_constraint.sql":                &bintree{migrations006_totp_constraintSql, map[string]*bintree{}},
+		"007_cascade_wallet_id_update.sql":       &bintree{migrations007_cascade_wallet_id_updateSql, map[string]*bintree{}},
+		"008_password_constraint.sql":            &bintree{migrations008_password_constraintSql, map[string]*bintree{}},
+		"009_drop_tfa_keychain.sql":              &bintree{migrations009_drop_tfa_keychainSql, map[string]*bintree{}},
+		"010_users_refactoring.sql":              &bintree{migrations010_users_refactoringSql, map[string]*bintree{}},
+		"011_kyc_entities.sql":                   &bintree{migrations011_kyc_entitiesSql, map[string]*bintree{}},
+		"012_blobs.sql":                          &bintree{migrations012_blobsSql, map[string]*bintree{}},
+		"013_rm_org_wallets.sql":                 &bintree{migrations013_rm_org_walletsSql, map[string]*bintree{}},
+		"014_blob_relationships.sql":             &bintree{migrations014_blob_relationshipsSql, map[string]*bintree{}},
+		"015_rm_recovery_requests.sql":           &bintree{migrations015_rm_recovery_requestsSql, map[string]*bintree{}},
+		"016_recoveries.sql":                     &bintree{migrations016_recoveriesSql, map[string]*bintree{}},
+		"017_rm_pending_transactions.sql":        &bintree{migrations017_rm_pending_transactionsSql, map[string]*bintree{}},
+		"018_user_kyc.sql":                       &bintree{migrations018_user_kycSql, map[string]*bintree{}},
+		"019_airdrops.sql":                       &bintree{migrations019_airdropsSql, map[string]*bintree{}},
+		"020_favorites.sql":                      &bintree{migrations020_favoritesSql, map[string]*bintree{}},
+		"021_kdf_v2.sql":                         &bintree{migrations021_kdf_v2Sql, map[string]*bintree{}},
+		"022_referrals.sql":                      &bintree{migrations022_referralsSql, map[string]*bintree{}},
+		"023_master_blobs.sql":                   &bintree{migrations023_master_blobsSql, map[string]*bintree{}},
+		"024_user_states.sql":                    &bintree{migrations024_user_statesSql, map[string]*bintree{}},
+		"025_tracking.sql":                       &bintree{migrations025_trackingSql, map[string]*bintree{}},
+		"026_fix_user_states.sql":                &bintree{migrations026_fix_user_statesSql, map[string]*bintree{}},
+		"027_blob_delete.sql":                    &bintree{migrations027_blob_deleteSql, map[string]*bintree{}},
+		"028_guest_favorites.sql":                &bintree{migrations028_guest_favoritesSql, map[string]*bintree{}},
+		"029_email_tokens_add_welcome_email.sql": &bintree{migrations029_email_tokens_add_welcome_emailSql, map[string]*bintree{}},
 	}},
 }}
 
