@@ -3,12 +3,13 @@ package data
 import "time"
 
 type EmailToken struct {
-	ID         int64
-	Token      string
-	Email      string
-	WalletID   string `db:"wallet_id"`
-	Confirmed  bool
-	LastSentAt *time.Time `db:"last_sent_at"`
+	ID               int64
+	Token            string
+	Email            string
+	WalletID         string `db:"wallet_id"`
+	Confirmed        bool
+	LastSentAt       *time.Time `db:"last_sent_at"`
+	SentWelcomeEmail bool       `db:"sent_welcome_email"`
 }
 
 //go:generate mockery -case underscore -name EmailTokensQ
