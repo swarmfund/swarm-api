@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/patrickmn/go-cache"
+	"gitlab.com/distributed_lab/logan/v3"
 	"gitlab.com/swarmfund/api/config"
 	"gitlab.com/swarmfund/api/db2"
 	"gitlab.com/swarmfund/api/db2/api"
@@ -18,12 +19,12 @@ import (
 	"gitlab.com/swarmfund/api/log"
 	"gitlab.com/swarmfund/api/storage"
 	"gitlab.com/tokend/go/doorman"
+	"gitlab.com/tokend/go/xdrbuild"
 	"gitlab.com/tokend/horizon-connector"
 	"gitlab.com/tokend/keypair"
 	"golang.org/x/net/context"
 	"golang.org/x/net/http2"
 	"gopkg.in/tylerb/graceful.v1"
-	"gitlab.com/tokend/go/xdrbuild"
 )
 
 // App represents the root of the state of a horizon instance.
@@ -40,6 +41,7 @@ type App struct {
 	horizonVersion string
 	memoryCache    *cache.Cache
 	storage        *storage.Connector
+	infoer         data.Info
 	// DEPRECATED
 	horizon *horizon.Connector
 	txBus   *hose.TransactionBus
@@ -54,20 +56,11 @@ func NewApp(config config.Config) (*App, error) {
 	}
 	result.ticks = time.NewTicker(10 * time.Second)
 	result.init()
-	result.UpdateStellarCoreInfo()
 	return result, nil
 }
 
 func (a *App) Config() config.Config {
 	return a.config
-}
-
-func (a *App) MasterSignerKP() keypair.Full {
-	return a.Config().API().AccountManager
-}
-
-func (a *App) MasterKP() keypair.Address {
-	return keypair.MustParseAddress(a.CoreInfo.MasterAccountID)
 }
 
 func (a *App) EmailTokensQ() data.EmailTokensQ {
@@ -87,12 +80,20 @@ func (a *App) Tracker() *track.Tracker {
 func (a *App) Serve() {
 	a.web.router.Compile()
 
-	source := a.MasterKP()
-	signer := a.MasterSignerKP()
-	builder:= xdrbuild.
-		NewBuilder(a.CoreInfoConn().GetPassphrase(), a.CoreInfoConn().GetTXExpire()).
-		Transaction(source).
-		Sign(signer)
+	builder := func(info data.Info) *xdrbuild.Transaction {
+
+		inf, err := info.Info()
+		if err != nil {
+			//TODO handle error
+			panic(err)
+		}
+		source := keypair.MustParseAddress(inf.GetMasterAccountID())
+		signer := a.Config().API().AccountManager
+		return xdrbuild.
+			NewBuilder(inf.GetPassphrase(), inf.GetTXExpire()).
+			Transaction(source).
+			Sign(signer)
+	}
 
 	r := api2.Router(
 		a.Config().Log().WithField("service", "api"),
@@ -106,7 +107,7 @@ func (a *App) Serve() {
 		a.horizon,
 		a.APIQ().TFA(),
 		a.config.Storage(),
-		a.CoreInfoConn(),
+		a.Info(),
 		a.Blobs(),
 		a.Config().Sentry(),
 		a.userBus.Dispatch,
@@ -116,7 +117,6 @@ func (a *App) Serve() {
 		a.Tracker(),
 		builder,
 	)
-
 	r.Mount("/", a.web.router)
 	http.Handle("/", r)
 
@@ -166,32 +166,13 @@ func (a *App) APIRepo(ctx context.Context) *db2.Repo {
 }
 
 // CoreInfoConn create new instance of coreinfo.Connector.
-func (a *App) CoreInfoConn() data.CoreInfoI {
-	info, err := a.Config().Horizon().Info()
-	if err != nil {
-		panic(err)
-	}
-	return info
+func (a *App) Info() data.Info {
+	return a.infoer
 }
-
-// UpdateStellarCoreInfo updates the value of coreVersion and networkPassphrase
-// from the Stellar core API.
-func (a *App) UpdateStellarCoreInfo() {
-	for {
-		info, err := a.horizon.Info()
-		if err != nil {
-			log.WithField("service", "app").WithError(err).Warn("could not load stellar-core info")
-			time.Sleep(5 * time.Second)
-			continue
-		}
-		a.CoreInfo = info
-	}
-}
-
-
 
 // Init initializes app, using the config to populate db connections and
 // whatnot.
 func (a *App) init() {
+	a.infoer = NewLazyInfo(a.ctx, &logan.Entry{}, a.infoer)
 	appInit.Run(a)
 }

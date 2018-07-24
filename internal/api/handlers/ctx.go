@@ -121,16 +121,20 @@ func Storage(r *http.Request) *storage.Connector {
 	return r.Context().Value(storageCtxKey).(*storage.Connector)
 }
 
-func CtxCoreInfo(s data.CoreInfoI) func(context.Context) context.Context {
+func CtxCoreInfo(s data.Info) func(context.Context) context.Context {
 	return func(ctx context.Context) context.Context {
 		return context.WithValue(ctx, coreInfoCtxKey, s)
 	}
 }
 
-func CoreInfo(r *http.Request) data.CoreInfoI {
-	return r.Context().Value(coreInfoCtxKey).(data.CoreInfoI)
+func CoreInfo(r *http.Request) *horizon.Info {
+	info, err := r.Context().Value(coreInfoCtxKey).(data.Info).Info()
+	if err != nil {
+		//TODO handle error
+		panic(err)
+	}
+	return info
 }
-
 
 func CtxBlobQ(q data.Blobs) func(context.Context) context.Context {
 	return func(ctx context.Context) context.Context {
@@ -153,8 +157,6 @@ func UserBusDispatch(r *http.Request, event hose.UserEvent) {
 	dispatch(event)
 }
 
-
-
 func CtxNotificator(notificator *notificator.Connector) func(context.Context) context.Context {
 	return func(ctx context.Context) context.Context {
 		return context.WithValue(ctx, notificatorCtxKey, notificator)
@@ -165,8 +167,7 @@ func Notificator(r *http.Request) *notificator.Connector {
 	return r.Context().Value(notificatorCtxKey).(*notificator.Connector)
 }
 
-
-func CtxTransaction(txbuilder *xdrbuild.Transaction) func(context.Context) context.Context {
+func CtxTransaction(txbuilder data.Infobuilder) func(context.Context) context.Context {
 	return func(ctx context.Context) context.Context {
 		ctx = context.WithValue(ctx, txBuilderCtxKey, txbuilder)
 		return ctx
@@ -174,9 +175,10 @@ func CtxTransaction(txbuilder *xdrbuild.Transaction) func(context.Context) conte
 
 }
 
-
 func Transaction(r *http.Request) *xdrbuild.Transaction {
- 	return r.Context().Value(txBuilderCtxKey).(*xdrbuild.Transaction)
+	txbuilderbuilder := r.Context().Value(txBuilderCtxKey).(func(info data.Info) *xdrbuild.Transaction)
+	info := r.Context().Value(coreInfoCtxKey).(data.Info)
+	return txbuilderbuilder(info)
 }
 
 func CtxWallets(disableConfirm config.Wallets) func(context.Context) context.Context {

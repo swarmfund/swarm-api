@@ -29,7 +29,7 @@ var (
 			}()
 			app, err := api.NewApp(configInstance)
 			if err != nil {
-				log.WithField("service", "init").WithError(err).Fatal("failed to init app")
+				log.WithField("service", "ini//result.UpdateStellarCoreInfo()t").WithError(err).Fatal("failed to init app")
 			}
 			app.Serve()
 		},
