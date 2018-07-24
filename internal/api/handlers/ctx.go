@@ -10,9 +10,9 @@ import (
 	"gitlab.com/swarmfund/api/db2/api"
 	"gitlab.com/swarmfund/api/internal/data"
 	"gitlab.com/swarmfund/api/internal/hose"
+	"gitlab.com/swarmfund/api/internal/salesforce"
 	"gitlab.com/swarmfund/api/internal/track"
 	"gitlab.com/swarmfund/api/notificator"
-	"gitlab.com/swarmfund/api/storage"
 	"gitlab.com/tokend/go/doorman"
 	"gitlab.com/tokend/go/xdrbuild"
 	"gitlab.com/tokend/horizon-connector"
@@ -31,6 +31,7 @@ const (
 	tfaQCtxKey
 	doormanCtxKey
 	storageCtxKey
+	salesforceCtxKey
 	coreInfoCtxKey
 	blobQCtxKey
 	userBusDispatchCtxKey
@@ -111,14 +112,24 @@ func Doorman(r *http.Request, constraints ...doorman.SignerConstraint) error {
 	return d.Check(r, constraints...)
 }
 
-func CtxStorage(s *storage.Connector) func(context.Context) context.Context {
+func CtxStorage(s data.Storage) func(context.Context) context.Context {
 	return func(ctx context.Context) context.Context {
 		return context.WithValue(ctx, storageCtxKey, s)
 	}
 }
 
-func Storage(r *http.Request) *storage.Connector {
-	return r.Context().Value(storageCtxKey).(*storage.Connector)
+func Storage(r *http.Request) data.Storage {
+	return r.Context().Value(storageCtxKey).(data.Storage)
+}
+
+func CtxSalesforce(s *salesforce.Connector) func(context.Context) context.Context {
+	return func(ctx context.Context) context.Context {
+		return context.WithValue(ctx, salesforceCtxKey, s)
+	}
+}
+
+func Salesforce(r *http.Request) *salesforce.Connector {
+	return r.Context().Value(salesforceCtxKey).(*salesforce.Connector)
 }
 
 func CtxCoreInfo(s data.Info) func(context.Context) context.Context {

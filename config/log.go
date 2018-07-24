@@ -65,7 +65,7 @@ func (c *ViperConfig) Log() *logan.Entry {
 	err := figure.
 		Out(&config).
 		With(figure.BaseHooks, logLevelHook).
-		From(c.Get(logConfigKey)).
+		From(c.GetStringMap(logConfigKey)).
 		Please()
 	if err != nil {
 		panic(errors.Wrap(err, "failed to figure out log"))

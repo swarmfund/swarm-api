@@ -4,6 +4,7 @@ import (
 	"database/sql/driver"
 	"encoding/json"
 	"fmt"
+	"time"
 )
 
 type Blob struct {
@@ -11,6 +12,8 @@ type Blob struct {
 	Type          BlobType
 	Value         string
 	Relationships BlobRelationships
+	OwnerAddress  *Address   `db:"owner_address"`
+	DeletedAt     *time.Time `db:"deleted_at"`
 }
 
 type BlobRelationships map[string]string

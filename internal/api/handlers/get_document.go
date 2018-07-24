@@ -26,7 +26,7 @@ func GetDocument(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	url, err := Storage(r).DocumentURL(document)
+	url, err := Storage(r).SignedObjectURL(document)
 	if err != nil {
 		Log(r).WithError(err).Error("failed get document url")
 		ape.RenderErr(w, problems.InternalError())
