@@ -21,6 +21,7 @@ type Config interface {
 	Storage() *storage.Connector
 	Log() *logan.Entry
 	Wallets() Wallets
+	TxWatcher() TxWatcher
 
 	Notificator() *notificator.Connector
 	Sentry() *raven.Client

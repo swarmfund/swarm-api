@@ -10,7 +10,10 @@ func initTxWatcher(app *App) {
 		app.Config().Horizon(),
 		app.txBus.Dispatch,
 	)
-	go txWatcher.Run()
+	if !app.config.TxWatcher().Disabled {
+		go txWatcher.Run()
+	}
+
 }
 
 func init() {
