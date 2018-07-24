@@ -90,3 +90,15 @@
 [[constraint]]
   name = "gitlab.com/distributed_lab/ape"
   version = "v0.3"
+
+[[constraint]]
+  name = "github.com/aws/aws-sdk-go"
+  version = "v1.14.30"
+
+[prune]
+  go-tests = true
+  non-go = true
+
+  [[prune.project]]
+    name = "github.com/aws/aws-sdk-go"
+    unused-packages = true

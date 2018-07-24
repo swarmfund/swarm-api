@@ -25,7 +25,6 @@ import (
 	"gitlab.com/swarmfund/api/internal/secondfactor"
 	"gitlab.com/swarmfund/api/internal/track"
 	"gitlab.com/swarmfund/api/notificator"
-	"gitlab.com/swarmfund/api/storage"
 	"gitlab.com/tokend/go/doorman"
 	"gitlab.com/tokend/horizon-connector"
 	"gitlab.com/tokend/keypair"
@@ -34,7 +33,7 @@ import (
 func Router(
 	entry *logan.Entry, walletQ api.WalletQI, tokensQ data.EmailTokensQ,
 	usersQ api.UsersQI, doorman doorman.Doorman, horizon *horizon.Connector,
-	tfaQ api.TFAQI, storage *storage.Connector, master keypair.Address, signer keypair.Full,
+	tfaQ api.TFAQI, storage data.Storage, master keypair.Address, signer keypair.Full,
 	coreInfo data.CoreInfoI, blobQ data.Blobs, sentry *raven.Client,
 	userDispatch hose.UserDispatch, notificator *notificator.Connector, repo *db2.Repo,
 	wallets config.Wallets, tracker *track.Tracker, salesforce *salesforce.Connector,

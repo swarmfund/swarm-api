@@ -5,15 +5,12 @@ import (
 
 	"reflect"
 
-	"github.com/minio/minio-go"
 	"github.com/pkg/errors"
 	"github.com/spf13/cast"
 	"gitlab.com/distributed_lab/figure"
-	"gitlab.com/swarmfund/api/storage"
-)
-
-const (
-	storageConfigKey = "storage"
+	"gitlab.com/swarmfund/api/internal/data"
+	"gitlab.com/swarmfund/api/internal/data/s3storage"
+	"gitlab.com/swarmfund/api/internal/storage"
 )
 
 var MediaTypeHook = figure.Hooks{
@@ -42,45 +39,41 @@ var MediaTypeHook = figure.Hooks{
 	},
 }
 
-type Storage struct {
-	AccessKey        string             `fig:"access_key"`
-	SecretKey        string             `fig:"secret_key"`
-	Host             string             `fig:"host"`
-	ForceSSL         bool               `fig:"force_ssl"`
-	MinContentLength int64              `fig:"min_content_length"`
-	MaxContentLength int64              `fig:"max_content_length"`
-	MediaTypes       storage.MediaTypes `fig:"media_types"`
-}
+func (c *ViperConfig) Storage() data.Storage {
+	raw := c.GetStringMap("storage")
 
-func (c *ViperConfig) Storage() *storage.Connector {
-	c.Lock()
-	defer c.Unlock()
-
-	if c.storage != nil {
-		return c.storage
+	// before acquiring lock we must get backend instance to avoid deadlock
+	var probe struct {
+		Backend string `fig:"backend,required"`
 	}
 
-	config := &Storage{}
-
-	err := figure.Out(config).With(figure.BaseHooks, MediaTypeHook).From(c.GetStringMap(storageConfigKey)).Please()
-	if err != nil {
-		panic(errors.Wrap(err, "failed to figure out storage"))
+	if err := figure.Out(&probe).From(raw).Please(); err != nil {
+		panic(errors.Wrap(err, "failed to figure out storage backend"))
 	}
 
-	minio, err := minio.New(config.Host, config.AccessKey, config.SecretKey, config.ForceSSL)
-	if err != nil {
-		panic(errors.Wrap(err, "failed to init client"))
-	}
+	switch probe.Backend {
+	case "aws":
+		aws := c.AWS()
+		// now it should be safe to acquire lock
+		c.Lock()
+		defer c.Unlock()
 
-	connector := &storage.Connector{
-		Minio:             minio,
-		Log:               c.Log().WithField("service", "storage"),
-		MinContentLength:  config.MinContentLength,
-		MaxContentLength:  config.MaxContentLength,
-		AllowedMediaTypes: config.MediaTypes,
-	}
+		var config struct {
+			Bucket string `fig:"bucket,required"`
+			//MediaTypes       storage.MediaTypes `fig:"media_types"`
+		}
 
-	c.storage = connector
+		if err := figure.Out(&config).From(raw).Please(); err != nil {
+			panic(errors.Wrap(err, "failed to figure out storage"))
+		}
+		storage, err := s3storage.NewStorage(aws, config.Bucket)
+		if err != nil {
+			panic(errors.Wrap(err, "failed to init storage"))
+		}
+		c.storage = storage
+	default:
+		panic(fmt.Errorf("unknown backend type: %s", probe.Backend))
+	}
 
 	return c.storage
 }
