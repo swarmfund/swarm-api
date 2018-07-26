@@ -21,6 +21,8 @@ const (
 	EventViewedASpecificTab
 	EventUnsubscribe
 	EventVoteInAnIo
+	EventEnableTFA
+	EventDisableTFA
 )
 
 var eventToSalesforceActionName = map[Event]string{
@@ -40,6 +42,8 @@ var eventToSalesforceActionName = map[Event]string{
 	EventViewedASpecificTab:     "Viewed a specific tab",
 	EventUnsubscribe:            "Unsubscribe",
 	EventVoteInAnIo:             "Vote in an IO",
+	EventEnableTFA:              "Enable 2FA",
+	EventDisableTFA:             "Disable 2FA",
 }
 
 var eventToSalesforceSphere = map[Event]string{
@@ -59,6 +63,8 @@ var eventToSalesforceSphere = map[Event]string{
 	EventViewedASpecificTab:     "Education",
 	EventUnsubscribe:            "User Activity",
 	EventVoteInAnIo:             "User Activity",
+	EventEnableTFA:              "Security",
+	EventDisableTFA:             "Security",
 }
 
 func (r Event) GetSalesforceSphere() string {

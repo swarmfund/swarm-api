@@ -37,6 +37,8 @@ func init() {
 			interface{}(EventViewedASpecificTab).(fmt.Stringer).String():     EventViewedASpecificTab,
 			interface{}(EventUnsubscribe).(fmt.Stringer).String():            EventUnsubscribe,
 			interface{}(EventVoteInAnIo).(fmt.Stringer).String():             EventVoteInAnIo,
+			interface{}(EventEnableTFA).(fmt.Stringer).String():              EventEnableTFA,
+			interface{}(EventDisableTFA).(fmt.Stringer).String():             EventDisableTFA,
 		}
 	}
 }
@@ -58,6 +60,8 @@ var _EventNameToValue = map[string]Event{
 	"viewed_a_specific_tab":    EventViewedASpecificTab,
 	"unsubscribe":              EventUnsubscribe,
 	"vote_in_an_io":            EventVoteInAnIo,
+	"enable_tfa":               EventEnableTFA,
+	"disable_tfa":              EventDisableTFA,
 }
 
 var _EventValueToName = map[Event]string{
@@ -77,6 +81,8 @@ var _EventValueToName = map[Event]string{
 	EventViewedASpecificTab:     "viewed_a_specific_tab",
 	EventUnsubscribe:            "unsubscribe",
 	EventVoteInAnIo:             "vote_in_an_io",
+	EventEnableTFA:              "enable_tfa",
+	EventDisableTFA:             "disable_tfa",
 }
 
 // String is generated so Event satisfies fmt.Stringer.
