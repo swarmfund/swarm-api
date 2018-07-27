@@ -45,8 +45,10 @@ func (c *ViperConfig) AWS() *session.Session {
 		}
 
 		cfg := &aws.Config{
-			Credentials: credentials.NewStaticCredentials(config.AccessKey, config.SecretKey, ""),
-			Region:      aws.String(config.Region),
+			Endpoint:         aws.String(config.Endpoint),
+			Credentials:      credentials.NewStaticCredentials(config.AccessKey, config.SecretKey, ""),
+			Region:           aws.String(config.Region),
+			S3ForcePathStyle: aws.Bool(true),
 		}
 
 		session, err := session.NewSession(cfg)
