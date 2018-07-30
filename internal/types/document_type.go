@@ -20,6 +20,7 @@ const (
 	DocumentTypeGeneral //never use it, it needs to init default value of allowed media types
 	DocumentTypeGeneralPublic
 	DocumentTypeGeneralPrivate
+	DocumentTypeAssetPhoto
 )
 
 func IsPublicDocument(t DocumentType) bool {
