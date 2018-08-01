@@ -34,11 +34,18 @@ func init() {
 			interface{}(EventLogout).(fmt.Stringer).String():                 EventLogout,
 			interface{}(EventBrowseIo).(fmt.Stringer).String():               EventBrowseIo,
 			interface{}(EventViewYtVideo).(fmt.Stringer).String():            EventViewYtVideo,
-			interface{}(EventViewedASpecificTab).(fmt.Stringer).String():     EventViewedASpecificTab,
+			interface{}(EventViewTabOverview).(fmt.Stringer).String():        EventViewTabOverview,
+			interface{}(EventViewTabTeam).(fmt.Stringer).String():            EventViewTabTeam,
+			interface{}(EventViewTabUpdates).(fmt.Stringer).String():         EventViewTabUpdates,
+			interface{}(EventViewTabDocs).(fmt.Stringer).String():            EventViewTabDocs,
+			interface{}(EventViewTabValuations).(fmt.Stringer).String():      EventViewTabValuations,
+			interface{}(EventViewTabGovernance).(fmt.Stringer).String():      EventViewTabGovernance,
+			interface{}(EventViewTabDefault).(fmt.Stringer).String():         EventViewTabDefault,
 			interface{}(EventUnsubscribe).(fmt.Stringer).String():            EventUnsubscribe,
 			interface{}(EventVoteInAnIo).(fmt.Stringer).String():             EventVoteInAnIo,
 			interface{}(EventEnableTFA).(fmt.Stringer).String():              EventEnableTFA,
 			interface{}(EventDisableTFA).(fmt.Stringer).String():             EventDisableTFA,
+			interface{}(EventStartsKYC).(fmt.Stringer).String():              EventStartsKYC,
 		}
 	}
 }
@@ -57,11 +64,18 @@ var _EventNameToValue = map[string]Event{
 	"logout":                   EventLogout,
 	"browse_io":                EventBrowseIo,
 	"view_yt_video":            EventViewYtVideo,
-	"viewed_a_specific_tab":    EventViewedASpecificTab,
+	"view_tab_overview":        EventViewTabOverview,
+	"view_tab_team":            EventViewTabTeam,
+	"view_tab_updates":         EventViewTabUpdates,
+	"view_tab_docs":            EventViewTabDocs,
+	"view_tab_valuations":      EventViewTabValuations,
+	"view_tab_governance":      EventViewTabGovernance,
+	"view_tab_default":         EventViewTabDefault,
 	"unsubscribe":              EventUnsubscribe,
 	"vote_in_an_io":            EventVoteInAnIo,
 	"enable_tfa":               EventEnableTFA,
 	"disable_tfa":              EventDisableTFA,
+	"starts_kyc":               EventStartsKYC,
 }
 
 var _EventValueToName = map[Event]string{
@@ -78,11 +92,18 @@ var _EventValueToName = map[Event]string{
 	EventLogout:                 "logout",
 	EventBrowseIo:               "browse_io",
 	EventViewYtVideo:            "view_yt_video",
-	EventViewedASpecificTab:     "viewed_a_specific_tab",
+	EventViewTabOverview:        "view_tab_overview",
+	EventViewTabTeam:            "view_tab_team",
+	EventViewTabUpdates:         "view_tab_updates",
+	EventViewTabDocs:            "view_tab_docs",
+	EventViewTabValuations:      "view_tab_valuations",
+	EventViewTabGovernance:      "view_tab_governance",
+	EventViewTabDefault:         "view_tab_default",
 	EventUnsubscribe:            "unsubscribe",
 	EventVoteInAnIo:             "vote_in_an_io",
 	EventEnableTFA:              "enable_tfa",
 	EventDisableTFA:             "disable_tfa",
+	EventStartsKYC:              "starts_kyc",
 }
 
 // String is generated so Event satisfies fmt.Stringer.
