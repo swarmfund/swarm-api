@@ -6,7 +6,6 @@ import (
 	"gitlab.com/distributed_lab/figure"
 	"gitlab.com/distributed_lab/logan/v3/errors"
 	"gitlab.com/swarmfund/api/internal/salesforce"
-
 )
 
 // Salesforce returns a ready-to-use salesforce connector
@@ -28,7 +27,9 @@ func (c *ViperConfig) Salesforce() *salesforce.Connector {
 		}
 
 		v := c.GetStringMap("salesforce")
-
+		if toggle.Disabled {
+			return c.salesforce
+		}
 		// getting toggle flag, to check if initialization is needed
 		if err := figure.Out(&toggle).From(v).Please(); err != nil {
 			panic(errors.Wrap(err, "failed to figure out salesforce toggle"))
