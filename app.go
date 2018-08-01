@@ -3,12 +3,11 @@ package api
 import (
 	"fmt"
 	"net/http"
-	"sync"
 	"time"
 
 	"github.com/patrickmn/go-cache"
+	"gitlab.com/distributed_lab/logan/v3"
 	"gitlab.com/swarmfund/api/config"
-	"gitlab.com/swarmfund/api/coreinfo"
 	"gitlab.com/swarmfund/api/db2"
 	"gitlab.com/swarmfund/api/db2/api"
 	api2 "gitlab.com/swarmfund/api/internal/api"
@@ -19,6 +18,7 @@ import (
 	"gitlab.com/swarmfund/api/internal/track"
 	"gitlab.com/tokend/go/doorman"
 	"gitlab.com/tokend/go/support/log"
+	"gitlab.com/tokend/go/xdrbuild"
 	"gitlab.com/tokend/horizon-connector"
 	"gitlab.com/tokend/keypair"
 	"golang.org/x/net/context"
@@ -38,6 +38,7 @@ type App struct {
 	ticks          *time.Ticker
 	horizonVersion string
 	memoryCache    *cache.Cache
+	infoer         data.Info
 	storage        data.Storage
 	// DEPRECATED
 	horizon *horizon.Connector
@@ -53,20 +54,11 @@ func NewApp(config config.Config) (*App, error) {
 	}
 	result.ticks = time.NewTicker(10 * time.Second)
 	result.init()
-	result.UpdateStellarCoreInfo()
 	return result, nil
 }
 
 func (a *App) Config() config.Config {
 	return a.config
-}
-
-func (a *App) MasterSignerKP() keypair.Full {
-	return a.Config().API().AccountManager
-}
-
-func (a *App) MasterKP() keypair.Address {
-	return keypair.MustParseAddress(a.CoreInfo.MasterAccountID)
 }
 
 func (a *App) EmailTokensQ() data.EmailTokensQ {
@@ -84,6 +76,24 @@ func (a *App) Tracker() *track.Tracker {
 // Serve starts the horizon web server, binding it to a socket, setting up
 // the shutdown signals.
 func (a *App) Serve() {
+	//a.web.router.Compile()
+
+	builder := func(info data.Info) *xdrbuild.Transaction {
+
+		inf, err := info.Info()
+		if err != nil {
+			//TODO handle error
+			panic(err)
+		}
+
+		source := keypair.MustParseAddress(inf.GetMasterAccountID())
+		signer := a.Config().API().AccountManager
+		return xdrbuild.
+			NewBuilder(inf.GetPassphrase(), inf.GetTXExpire()).
+			Transaction(source).
+			Sign(signer)
+	}
+
 	r := api2.Router(
 		a.Config().Log().WithField("service", "api"),
 		a.APIQ().Wallet(),
@@ -96,9 +106,7 @@ func (a *App) Serve() {
 		a.horizon,
 		a.APIQ().TFA(),
 		a.config.Storage(),
-		a.MasterKP(),
-		a.MasterSignerKP(),
-		a.CoreInfoConn(),
+		a.Info(),
 		a.Blobs(),
 		a.Config().Sentry(),
 		a.userBus.Dispatch,
@@ -107,6 +115,7 @@ func (a *App) Serve() {
 		a.config.Wallets(),
 		a.Tracker(),
 		a.Config().Salesforce(),
+		builder,
 	)
 
 	http.Handle("/", r)
@@ -128,8 +137,6 @@ func (a *App) Serve() {
 	http2.ConfigureServer(srv.Server, nil)
 
 	//log.Infof("Starting horizon on %s", addr)
-
-	go a.run()
 
 	if err := srv.ListenAndServe(); err != nil {
 		log.Panic(err)
@@ -157,61 +164,13 @@ func (a *App) APIRepo(ctx context.Context) *db2.Repo {
 }
 
 // CoreInfoConn create new instance of coreinfo.Connector.
-func (a *App) CoreInfoConn() *coreinfo.Connector {
-	connector, err := coreinfo.NewConnector(a.Config().API().HorizonURL)
-	if err != nil {
-		panic(err)
-	}
-	return connector
-}
-
-// UpdateStellarCoreInfo updates the value of coreVersion and networkPassphrase
-// from the Stellar core API.
-func (a *App) UpdateStellarCoreInfo() {
-	info, err := a.horizon.Info()
-	if err != nil {
-		log.WithField("service", "app").WithError(err).Warn("could not load stellar-core info")
-		return
-	}
-	a.CoreInfo = info
-}
-
-// Tick triggers horizon to update all of it's background processes such as
-// transaction submission, metrics, ingestion and reaping.
-func (a *App) Tick() {
-	var wg sync.WaitGroup
-	log.Debug("ticking app")
-	// update ledger state and stellar-core info in parallel
-	wg.Add(1)
-
-	go func() {
-		defer func() {
-			wg.Done()
-		}()
-		a.UpdateStellarCoreInfo()
-	}()
-
-	wg.Wait()
-
-	log.Debug("finished ticking app")
+func (a *App) Info() data.Info {
+	return a.infoer
 }
 
 // Init initializes app, using the config to populate db connections and
 // whatnot.
 func (a *App) init() {
+	a.infoer = NewLazyInfo(a.ctx, &logan.Entry{}, a.infoer)
 	appInit.Run(a)
-}
-
-// run is the function that runs in the background that triggers Tick each
-// second
-func (a *App) run() {
-	for {
-		select {
-		case <-a.ticks.C:
-			a.Tick()
-		case <-a.ctx.Done():
-			log.Info("finished background ticker")
-			return
-		}
-	}
 }
