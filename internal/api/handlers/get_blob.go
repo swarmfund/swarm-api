@@ -59,6 +59,7 @@ func GetBlob(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+
 	if !types.IsPublicBlob(blob.Type) {
 		constrains := []doorman.SignerConstraint{doorman.SignerOf(CoreInfo(r).GetMasterAccountID())}
 		if request.Address != "" {
