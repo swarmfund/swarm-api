@@ -1,6 +1,6 @@
 package types
 
-//go:generate jsonenums -tprefix=false -transform=snake -type=ActionName
+//go:generate jsonenums -tprefix=false -transform=snake -type=Event
 
 type Event int32
 
@@ -18,9 +18,18 @@ const (
 	EventLogout
 	EventBrowseIo
 	EventViewYtVideo
-	EventViewedASpecificTab
+	EventViewTabOverview
+	EventViewTabTeam
+	EventViewTabUpdates
+	EventViewTabDocs
+	EventViewTabValuations
+	EventViewTabGovernance
+	EventViewTabDefault
 	EventUnsubscribe
 	EventVoteInAnIo
+	EventEnableTFA
+	EventDisableTFA
+	EventStartsKYC
 )
 
 var eventToSalesforceActionName = map[Event]string{
@@ -37,9 +46,18 @@ var eventToSalesforceActionName = map[Event]string{
 	EventLogout:                 "Logout",
 	EventBrowseIo:               "Browse IO",
 	EventViewYtVideo:            "View YT Video",
-	EventViewedASpecificTab:     "Viewed a specific tab",
+	EventViewTabOverview:        "View Tab Overview",
+	EventViewTabTeam:            "View Tab Team",
+	EventViewTabUpdates:         "View Tab Updates",
+	EventViewTabDocs:            "View Tab Docs",
+	EventViewTabValuations:      "View Tab Valuations",
+	EventViewTabGovernance:      "View Tab Governance",
+	EventViewTabDefault:         "View Tab Default",
 	EventUnsubscribe:            "Unsubscribe",
 	EventVoteInAnIo:             "Vote in an IO",
+	EventEnableTFA:              "Enable 2FA",
+	EventDisableTFA:             "Disable 2FA",
+	EventStartsKYC:              "Starts KYC",
 }
 
 var eventToSalesforceSphere = map[Event]string{
@@ -56,9 +74,18 @@ var eventToSalesforceSphere = map[Event]string{
 	EventLogout:                 "User Activity",
 	EventBrowseIo:               "Education",
 	EventViewYtVideo:            "Education",
-	EventViewedASpecificTab:     "Education",
 	EventUnsubscribe:            "User Activity",
 	EventVoteInAnIo:             "User Activity",
+	EventEnableTFA:              "Security",
+	EventDisableTFA:             "Security",
+	EventStartsKYC:              "User Activity",
+	EventViewTabOverview:        "User Activity",
+	EventViewTabTeam:            "User Activity",
+	EventViewTabUpdates:         "User Activity",
+	EventViewTabDocs:            "User Activity",
+	EventViewTabValuations:      "User Activity",
+	EventViewTabGovernance:      "User Activity",
+	EventViewTabDefault:         "User Activity",
 }
 
 func (r Event) GetSalesforceSphere() string {
