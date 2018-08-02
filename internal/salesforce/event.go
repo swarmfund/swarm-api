@@ -3,13 +3,12 @@ package salesforce
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 
 	"gitlab.com/distributed_lab/logan"
-	errors "gitlab.com/distributed_lab/logan/errors/v3"
+	"gitlab.com/distributed_lab/logan/v3/errors"
 )
 
 var ErrUnauthorized = errors.New("unauthorized")
@@ -69,13 +68,13 @@ func (c *Client) PostEvent(sphere string, actionName string, timeString string, 
 		return nil, err
 	}
 	defer response.Body.Close()
+	responseBytes, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to read auth request body")
+	}
 	// TODO auth.go
 	switch response.StatusCode {
 	case http.StatusCreated:
-		responseBytes, err := ioutil.ReadAll(response.Body)
-		if err != nil {
-			return nil, err
-		}
 
 		var eventResponse *EventResponse
 		err = json.Unmarshal(responseBytes, &eventResponse)
@@ -91,7 +90,8 @@ func (c *Client) PostEvent(sphere string, actionName string, timeString string, 
 		return nil, errors.Wrap(ErrMalformedRequest, "bad request", logan.F{"response_body": string(responseBytes)})
 	default:
 		return nil, errors.Wrap(ErrInternal, "unknown request", logan.F{
-		"response_body": string(responseBytes),
-		"status_code":   response.StatusCode,
-	})
+			"response_body": string(responseBytes),
+			"status_code":   response.StatusCode,
+		})
+	}
 }
