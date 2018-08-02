@@ -3,6 +3,7 @@ package salesforce
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -56,6 +57,8 @@ func (c *Client) PostEvent(sphere string, actionName string, timeString string, 
 	if err != nil {
 		return nil, err
 	}
+
+	fmt.Printf("debug post event: %s\n", string(requestBytes))
 
 	req, err := http.NewRequest("POST", endpointURL.String(), bytes.NewReader(requestBytes))
 	if err != nil {
