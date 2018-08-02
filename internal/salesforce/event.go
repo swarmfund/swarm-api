@@ -70,7 +70,7 @@ func (c *Client) PostEvent(sphere string, actionName string, timeString string, 
 	defer response.Body.Close()
 	responseBytes, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to read auth request body")
+		return nil, errors.Wrap(err, "failed to read event request body")
 	}
 	// TODO auth.go
 	switch response.StatusCode {
