@@ -7,7 +7,12 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+
+	"gitlab.com/distributed_lab/logan"
+	errors "gitlab.com/distributed_lab/logan/errors/v3"
 )
+
+var ErrUnauthorized = errors.New("unauthorized")
 
 // Event contains both default salesforce and specific to a salesforce account fields defined as columns
 type Event struct {
@@ -81,10 +86,12 @@ func (c *Client) PostEvent(sphere string, actionName string, timeString string, 
 		return eventResponse, nil
 
 	case http.StatusUnauthorized:
-		return nil, errors.New("unauthorized")
+		return nil, errors.Wrap(ErrUnauthorized, "unauthorized", logan.F{"response_body": string(responseBytes)})
 	case http.StatusBadRequest:
-		return nil, errors.New("malformed request sent")
-	}
-
-	return nil, errors.New("unknown status code")
+		return nil, errors.Wrap(ErrMalformedRequest, "bad request", logan.F{"response_body": string(responseBytes)})
+	default:
+		return nil, errors.Wrap(ErrInternal, "unknown request", logan.F{
+		"response_body": string(responseBytes),
+		"status_code":   response.StatusCode,
+	})
 }

@@ -36,7 +36,6 @@ func NewConnector(apiURL *url.URL, secret string, id string, username string, pa
 }
 
 // SendEvent sends an event from arguments to salesforce
-func (c *Connector) SendEvent(sphere string, actionName string, time time.Time, actorName string, actorEmail string, investmentAmount int64, investmentCountry string,
-) (*EventResponse, error) {
+func (c *Connector) SendEvent(sphere string, actionName string, time time.Time, actorName string, actorEmail string, investmentAmount int64, investmentCountry string) (*EventResponse, error) {
 	return c.client.PostEvent(sphere, actionName, time.Format(salesforceTimeLayout), actorName, actorEmail, investmentAmount, investmentCountry)
 }
