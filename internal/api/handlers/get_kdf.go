@@ -9,13 +9,14 @@ import (
 
 	"strings"
 
+	"time"
+
 	"github.com/pkg/errors"
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/ape/problems"
 	"gitlab.com/distributed_lab/logan/v3"
 	"gitlab.com/swarmfund/api/internal/api/resources"
 	"gitlab.com/swarmfund/api/internal/data"
-	"gitlab.com/swarmfund/api/internal/lorem"
 )
 
 func getCaseInsensitiveKDF(r *http.Request, email string) (kdf *data.KDF, emailFound string, err error) {
@@ -95,15 +96,9 @@ func GetKDF(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if kdf == nil {
-		kdf = &data.KDF{
-			Version:   2,
-			Algorithm: "scrypt",
-			Bits:      256,
-			N:         4096,
-			R:         8,
-			P:         1,
-			Salt:      lorem.Salt(),
-		}
+		time.Sleep(10 * time.Second)
+		ape.RenderErr(w, problems.NotFound())
+		return
 	}
 
 	json.NewEncoder(w).Encode(struct {
