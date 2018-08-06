@@ -2,10 +2,6 @@ package lorem
 
 import (
 	"math/rand"
-
-	"encoding/base64"
-
-	"github.com/pkg/errors"
 )
 
 var (
@@ -22,12 +18,7 @@ func randomString(n int, source string) string {
 }
 
 func Salt() string {
-	r := make([]byte, 30)
-	_, err := rand.Read(r)
-	if err != nil {
-		panic(errors.Wrap(err, "failed to read random"))
-	}
-	return base64.StdEncoding.EncodeToString(r)
+	return "hpFpaB+0hOL5aC4dwjSFtA=="
 }
 
 func Token() string {
