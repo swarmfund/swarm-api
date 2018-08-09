@@ -1,9 +1,5 @@
 package api
 
-import (
-	"gitlab.com/swarmfund/api/log"
-)
-
 // InitFn is a function that contributes to the initialization of an App struct
 type InitFn func(*App)
 
@@ -53,7 +49,7 @@ func (is *initializerSet) Run(app *App) {
 				continue
 			}
 
-			log.WithField("init_name", i.Name).Debug("running initializer")
+			//log.WithField("init_name", i.Name).Debug("running initializer")
 			i.Fn(app)
 			alreadyRun[i.Name] = true
 			ranInitializer = true
@@ -67,6 +63,6 @@ func (is *initializerSet) Run(app *App) {
 
 	// if we didn't get to run all initializers, we have a cycle
 	if len(alreadyRun) != len(init) {
-		log.Panic("initializer cycle detected")
+		panic("initializer cycle detected")
 	}
 }

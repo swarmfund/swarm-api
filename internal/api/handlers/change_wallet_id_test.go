@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"gitlab.com/distributed_lab/ape/apeutil"
 	"gitlab.com/swarmfund/api/internal/api/resources"
 )
 
@@ -102,7 +103,7 @@ func TestNewChangeWalletIDRequest(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Run(tc.name, func(t *testing.T) {
 				// TODO test url params
-				r := RequestWithURLParams([]byte(tc.body), map[string]string{
+				r := apeutil.RequestWithURLParams([]byte(tc.body), map[string]string{
 					"wallet-id": tc.walletID,
 				})
 				got, err := NewChangeWalletIDRequest(r)

@@ -3,12 +3,13 @@ package data
 import "time"
 
 type EmailToken struct {
-	ID         int64
-	Token      string
-	Email      string
-	WalletID   string `db:"wallet_id"`
-	Confirmed  bool
-	LastSentAt *time.Time `db:"last_sent_at"`
+	ID               int64
+	Token            string
+	Email            string
+	WalletID         string `db:"wallet_id"`
+	Confirmed        bool
+	LastSentAt       *time.Time `db:"last_sent_at"`
+	SentWelcomeEmail bool       `db:"sent_welcome_email"`
 }
 
 //go:generate mockery -case underscore -name EmailTokensQ
@@ -23,6 +24,8 @@ type EmailTokensQ interface {
 	MarkUnsent(tid int64) error
 	// runner:
 	GetUnsent() ([]EmailToken, error)
+	GetUnsentWelcomeEmail() ([]EmailToken, error)
 	GetUnconfirmed() ([]EmailToken, error)
 	MarkSent(tid int64) error
+	MarkSentWelcomeEmail(tid int64) error
 }

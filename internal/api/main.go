@@ -5,7 +5,7 @@ import (
 
 	"time"
 
-	"github.com/getsentry/raven-go"
+	raven "github.com/getsentry/raven-go"
 	"github.com/go-chi/chi"
 	"github.com/google/jsonapi"
 	"gitlab.com/distributed_lab/ape"
@@ -21,10 +21,10 @@ import (
 	"gitlab.com/swarmfund/api/internal/discourse/sso"
 	"gitlab.com/swarmfund/api/internal/favorites"
 	"gitlab.com/swarmfund/api/internal/hose"
+	"gitlab.com/swarmfund/api/internal/salesforce"
 	"gitlab.com/swarmfund/api/internal/secondfactor"
 	"gitlab.com/swarmfund/api/internal/track"
 	"gitlab.com/swarmfund/api/notificator"
-	"gitlab.com/swarmfund/api/storage"
 	"gitlab.com/tokend/go/doorman"
 	"gitlab.com/tokend/horizon-connector"
 )
@@ -32,10 +32,9 @@ import (
 func Router(
 	entry *logan.Entry, walletQ api.WalletQI, tokensQ data.EmailTokensQ,
 	usersQ api.UsersQI, doorman doorman.Doorman, horizon *horizon.Connector,
-	tfaQ api.TFAQI, storage *storage.Connector, coreInfo data.Info,
-	blobQ data.Blobs, sentry *raven.Client,
+	tfaQ api.TFAQI, storage data.Storage, coreInfo data.Info, blobQ data.Blobs, sentry *raven.Client,
 	userDispatch hose.UserDispatch, notificator *notificator.Connector, repo *db2.Repo,
-	wallets config.Wallets, tracker *track.Tracker, txbuilder data.Infobuilder,
+	wallets config.Wallets, tracker *track.Tracker, salesforce *salesforce.Connector, txbuilder data.Infobuilder,
 ) chi.Router {
 	r := chi.NewRouter()
 
@@ -61,12 +60,19 @@ func Router(
 			handlers.CtxBlobQ(blobQ),
 			handlers.CtxTracker(tracker),
 			handlers.CtxDomainApprover(blacklist.NewApprover(wallets.DomainsBlacklist...)),
+			handlers.CtxSalesforce(salesforce),
 		),
 	)
 
 	r.NotFound(func(w http.ResponseWriter, r *http.Request) {
 		ape.RenderErr(w, problems.NotFound())
 	})
+
+	//participants
+	r.Get("/user_id", handlers.GetUserId)
+	r.Get("/data/enums", handlers.GetEnums)
+	r.Post("/details", handlers.GetUsersDetails)
+	r.Post("/participants", handlers.GetParticipants)
 
 	// static stuff
 	r.Get("/kdf", handlers.GetKDF)
@@ -106,6 +112,8 @@ func Router(
 		r.Put("/{address}", handlers.CreateUser)
 		r.Patch("/{address}", handlers.PatchUser)
 
+		r.Post("/{address}/events", handlers.SendEvent)
+
 		// documents
 		r.Route("/{address}/documents", func(r chi.Router) {
 			r.Post("/", handlers.PutDocument)
@@ -132,6 +140,9 @@ func Router(
 		// favorites
 		r.Route("/{address}/favorites", favorites.Router(repo))
 
+		// favorites aka settings
+		r.Route("/{address}/settings", favorites.Router(repo))
+
 		//get users statistics
 		r.Get("/stats", handlers.UserStats)
 	})
@@ -140,6 +151,7 @@ func Router(
 	r.Route("/blobs", func(r chi.Router) {
 		r.Post("/", handlers.CreateBlob)
 		r.Get("/{blob}", handlers.GetBlob)
+		r.Delete("/{blob}", handlers.DeleteBlob)
 	})
 
 	r.Route("/documents", func(r chi.Router) {
@@ -153,5 +165,7 @@ func Router(
 		r.Post("/discourse-sso", sso.SSORedirect)
 	})
 
+	// guest-by-email favorites
+	r.Route("/favorites", favorites.Router(repo))
 	return r
 }

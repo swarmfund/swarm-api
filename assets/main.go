@@ -1,8 +1,6 @@
 package assets
 
-import (
-	"gitlab.com/swarmfund/api/log"
-)
+import "gitlab.com/tokend/go/support/log"
 
 //go:generate go-bindata -nometadata -ignore .+\.go$ -pkg assets -o bindata.go ./...
 //go:generate gofmt -w bindata.go

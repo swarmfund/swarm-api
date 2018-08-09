@@ -12,9 +12,9 @@ import (
 	"gitlab.com/distributed_lab/ape/problems"
 	"gitlab.com/swarmfund/api/internal/api/movetoape"
 	"gitlab.com/swarmfund/api/internal/api/resources"
+	"gitlab.com/swarmfund/api/internal/data"
 	storage2 "gitlab.com/swarmfund/api/internal/storage"
 	"gitlab.com/swarmfund/api/internal/types"
-	"gitlab.com/swarmfund/api/storage"
 	"gitlab.com/tokend/go/doorman"
 )
 
@@ -26,7 +26,7 @@ type (
 	PutDocumentRequestData struct {
 		Type       types.DocumentType           `json:"type"`
 		Attributes PutDocumentRequestAttributes `json:"attributes"`
-		Storage    *storage.Connector           `json:"-"`
+		Storage    data.Storage                 `json:"-"`
 	}
 	PutDocumentRequestAttributes struct {
 		ContentType string `json:"content_type"`
