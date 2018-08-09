@@ -5,10 +5,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/patrickmn/go-cache"
 	"gitlab.com/distributed_lab/logan/v3"
 	"gitlab.com/swarmfund/api/config"
-	"gitlab.com/swarmfund/api/db2"
 	"gitlab.com/swarmfund/api/db2/api"
 	api2 "gitlab.com/swarmfund/api/internal/api"
 	"gitlab.com/swarmfund/api/internal/data"
@@ -19,7 +17,6 @@ import (
 	"gitlab.com/tokend/go/doorman"
 	"gitlab.com/tokend/go/support/log"
 	"gitlab.com/tokend/go/xdrbuild"
-	"gitlab.com/tokend/horizon-connector"
 	"gitlab.com/tokend/keypair"
 	"golang.org/x/net/context"
 	"golang.org/x/net/http2"
@@ -28,31 +25,25 @@ import (
 
 // App represents the root of the state of a horizon instance.
 type App struct {
-	// DEPRECATED
-	CoreInfo *horizon.Info
-
-	config         config.Config
-	apiQ           api.QInterface
-	ctx            context.Context
-	cancel         func()
-	ticks          *time.Ticker
-	horizonVersion string
-	memoryCache    *cache.Cache
-	infoer         data.Info
-	storage        data.Storage
-	// DEPRECATED
-	horizon *horizon.Connector
+	config  config.Config
+	ctx     context.Context
+	cancel  func()
+	infoer  data.Info
+	storage data.Storage
 	txBus   *hose.TransactionBus
 	userBus *hose.UserBus
 }
 
 // NewApp constructs an new App instance from the provided config.
 func NewApp(config config.Config) (*App, error) {
+	ctx, cancel := context.WithCancel(context.Background())
 	result := &App{
 		config:  config,
-		horizon: config.Horizon(),
+		ctx:     ctx,
+		cancel:  cancel,
+		txBus:   hose.NewTransactionBus(),
+		userBus: hose.NewUserBus(),
 	}
-	result.ticks = time.NewTicker(10 * time.Second)
 	result.init()
 	return result, nil
 }
@@ -62,24 +53,21 @@ func (a *App) Config() config.Config {
 }
 
 func (a *App) EmailTokensQ() data.EmailTokensQ {
-	return api.NewEmailTokensQ(a.APIRepo(a.ctx))
+	return api.NewEmailTokensQ(a.Config().DB())
 }
 
 func (a *App) Blobs() data.Blobs {
-	return postgres.NewBlobs(a.APIRepo(a.ctx))
+	return postgres.NewBlobs(a.Config().DB())
 }
 
 func (a *App) Tracker() *track.Tracker {
-	return track.NewTracker(a.Config().Log(), postgres.NewTracking(a.APIRepo(a.ctx)))
+	return track.NewTracker(a.Config().Log(), postgres.NewTracking(a.Config().DB()))
 }
 
 // Serve starts the horizon web server, binding it to a socket, setting up
 // the shutdown signals.
 func (a *App) Serve() {
-	//a.web.router.Compile()
-
 	builder := func(info data.Info) *xdrbuild.Transaction {
-
 		inf, err := info.Info()
 		if err != nil {
 			//TODO handle error
@@ -103,7 +91,7 @@ func (a *App) Serve() {
 			a.Config().API().SkipSignatureCheck,
 			horizon2.NewAccountQ(a.Config().Horizon()),
 		),
-		a.horizon,
+		a.Config().Horizon(),
 		a.APIQ().TFA(),
 		a.config.Storage(),
 		a.Info(),
@@ -111,7 +99,7 @@ func (a *App) Serve() {
 		a.Config().Sentry(),
 		a.userBus.Dispatch,
 		a.Config().Notificator(),
-		a.APIRepo(a.ctx),
+		a.Config().DB(),
 		a.config.Wallets(),
 		a.Tracker(),
 		a.Config().Salesforce(),
@@ -129,38 +117,26 @@ func (a *App) Serve() {
 			Handler: http.DefaultServeMux,
 		},
 		ShutdownInitiated: func() {
-			//log.Info("received signal, gracefully stopping")
 			a.Close()
 		},
 	}
 
 	http2.ConfigureServer(srv.Server, nil)
 
-	//log.Infof("Starting horizon on %s", addr)
-
 	if err := srv.ListenAndServe(); err != nil {
 		log.Panic(err)
 	}
-
-	//log.Info("stopped")
 }
 
 // Close cancels the app and forces the closure of db connections
 func (a *App) Close() {
 	a.cancel()
-	a.ticks.Stop()
 }
 
 // APIQ returns a helper object for performing sql queries against the
 // horizon api database.
 func (a *App) APIQ() api.QInterface {
-	return a.apiQ
-}
-
-// APIRepo returns a new repo that loads data from the api database. The
-// returned repo is bound to `ctx`.
-func (a *App) APIRepo(ctx context.Context) *db2.Repo {
-	return &db2.Repo{DB: a.apiQ.GetRepo().DB, Ctx: ctx}
+	return &api.Q{a.Config().DB()}
 }
 
 // CoreInfoConn create new instance of coreinfo.Connector.

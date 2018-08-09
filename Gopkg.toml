@@ -16,6 +16,10 @@
   name = "github.com/jmoiron/sqlx"
 
 [[constraint]]
+  version = "v3.7"
+  name = "gitlab.com/distributed_lab/logan"
+
+[[constraint]]
   name = "github.com/lann/squirrel"
   version = "1.0.0"
 

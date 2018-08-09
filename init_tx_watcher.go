@@ -5,17 +5,16 @@ import (
 )
 
 func initTxWatcher(app *App) {
-	txWatcher := txwatcher.NewWatcher(
+	if app.config.TXWatcher().Disabled {
+		return
+	}
+	go txwatcher.NewWatcher(
 		app.Config().Log().WithField("service", "tx-watcher"),
 		app.Config().Horizon(),
 		app.txBus.Dispatch,
-	)
-	if !app.config.TxWatcher().Disabled {
-		go txWatcher.Run()
-	}
-
+	).Run()
 }
 
 func init() {
-	appInit.Add("tx-watcher", initTxWatcher, "bus-init")
+	appInit.Add("tx-watcher", initTxWatcher)
 }

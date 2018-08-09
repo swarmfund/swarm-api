@@ -15,7 +15,7 @@ func (c *ViperConfig) Salesforce() *salesforce.Connector {
 	defer c.Unlock()
 
 	if c.salesforce == nil {
-		var toggle struct {
+		var probe struct {
 			Disabled bool `fig:"disabled"`
 		}
 		var config struct {
@@ -27,16 +27,14 @@ func (c *ViperConfig) Salesforce() *salesforce.Connector {
 		}
 
 		v := c.GetStringMap("salesforce")
-		if toggle.Disabled {
-			return c.salesforce
+
+		// check if service is enabled
+		if err := figure.Out(&probe).From(v).Please(); err != nil {
+			panic(errors.Wrap(err, "failed to figure out salesforce probe"))
 		}
-		// getting toggle flag, to check if initialization is needed
-		if err := figure.Out(&toggle).From(v).Please(); err != nil {
-			panic(errors.Wrap(err, "failed to figure out salesforce toggle"))
-		}
-		if toggle.Disabled {
-			// connector is disabled
-			// FIXME find a better way w/o re-reading config
+
+		if probe.Disabled {
+			// FIXME returning nil here, will cause handlers to panic
 			return nil
 		}
 

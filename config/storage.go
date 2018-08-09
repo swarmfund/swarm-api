@@ -41,14 +41,17 @@ var MediaTypeHook = figure.Hooks{
 
 func (c *ViperConfig) Storage() data.Storage {
 	raw := c.GetStringMap("storage")
-	var Disabled struct {
+
+	// check if storage is enabled
+	var disabled struct {
 		Disabled bool `fig:"disabled"`
 	}
-	if err := figure.Out(&Disabled).From(raw).Please(); err != nil {
-		panic(errors.Wrap(err, "failed to figure out disabled"))
+	if err := figure.Out(&disabled).From(raw).Please(); err != nil {
+		panic(errors.Wrap(err, "failed to figure out storage disabled"))
 	}
-	if Disabled.Disabled {
-		return c.storage
+	if disabled.Disabled {
+		// FIXME nil will cause consumers to panic
+		return nil
 	}
 
 	// before acquiring lock we must get backend instance to avoid deadlock

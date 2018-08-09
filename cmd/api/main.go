@@ -23,7 +23,6 @@ var (
 		Run: func(cmd *cobra.Command, args []string) {
 			defer func() {
 				if rvr := recover(); rvr != nil {
-					// TODO: stack=unknown
 					configInstance.Log().WithRecover(rvr).Error("app panicked")
 				}
 			}()
@@ -58,7 +57,7 @@ var (
 				}
 			}
 
-			applied, err := migrateDB(args[0], count, configInstance.API().DatabaseURL, assets.Migrations.Migrate)
+			applied, err := migrateDB(args[0], count, configInstance.DB().DB.DB, assets.Migrations.Migrate)
 			log = log.WithField("applied", applied)
 			if err != nil {
 				log.WithError(err).Error("migration failed")

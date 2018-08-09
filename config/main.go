@@ -8,6 +8,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 	"gitlab.com/distributed_lab/logan/v3"
+	"gitlab.com/swarmfund/api/db2"
 	"gitlab.com/swarmfund/api/internal/data"
 	"gitlab.com/swarmfund/api/internal/discourse"
 	"gitlab.com/swarmfund/api/internal/mixpanel"
@@ -23,7 +24,7 @@ type Config interface {
 	Storage() data.Storage
 	Log() *logan.Entry
 	Wallets() Wallets
-	TxWatcher() TxWatcher
+	TXWatcher() TXWatcher
 
 	Notificator() *notificator.Connector
 	Sentry() *raven.Client
@@ -31,6 +32,7 @@ type Config interface {
 	Discourse() *discourse.Connector
 	Mixpanel() *mixpanel.Connector
 	Salesforce() *salesforce.Connector
+	DB() *db2.Repo
 }
 
 //go:generate mockery -case underscore -name rawGetter -testonly -inpkg
@@ -55,6 +57,7 @@ type ViperConfig struct {
 	storage     data.Storage
 	api         *API
 	aws         *session.Session
+	db          *db2.Repo
 }
 
 func NewViperConfig(fn string) Config {

@@ -6,7 +6,6 @@ import (
 	"gitlab.com/distributed_lab/logan/v3"
 	"gitlab.com/distributed_lab/logan/v3/errors"
 	"gitlab.com/swarmfund/api/db2/api"
-	"gitlab.com/swarmfund/api/internal/hose"
 	"gitlab.com/swarmfund/api/internal/types"
 	"gitlab.com/tokend/go/xdr"
 )
@@ -156,38 +155,39 @@ func checkType(change xdr.LedgerEntryChange) *api.UserStateUpdate {
 }
 
 func init() {
-	appInit.Add("user-state-watcher", func(app *App) {
-		entry := app.Config().Log().WithField("service", "user-state-watcher")
-		mutators := []func(xdr.LedgerEntryChange) *api.UserStateUpdate{
-			NewCheckState(), checkKYC, checkType,
-		}
-		app.txBus.Subscribe(func(event hose.TransactionEvent) {
-			if event.Transaction == nil {
-				return
-			}
-			entry := entry.WithFields(event.Transaction.GetLoganFields())
-			entry.Debug("got tx")
-			for _, change := range event.Transaction.LedgerChanges() {
-				for _, mutator := range mutators {
-					update := func() *api.UserStateUpdate {
-						defer func() {
-							if rvr := recover(); rvr != nil {
-								entry.WithRecover(rvr).Error("mutator panicked")
-							}
-						}()
-						return mutator(change)
-					}()
-					if update != nil {
-						update.Timestamp = event.Transaction.CreatedAt
-						entry := entry.WithFields(update.GetLoganFields())
-						entry.Debug("updating state")
-						err := app.apiQ.Users().SetState(*update)
-						if err != nil {
-							entry.WithError(err).Error("failed to set user state")
-						}
-					}
-				}
-			}
-		})
-	}, "tx-watcher")
+	// TODO uncomment
+	//appInit.Add("user-state-watcher", func(app *App) {
+	//	entry := app.Config().Log().WithField("service", "user-state-watcher")
+	//	mutators := []func(xdr.LedgerEntryChange) *api.UserStateUpdate{
+	//		NewCheckState(), checkKYC, checkType,
+	//	}
+	//	app.txBus.Subscribe(func(event hose.TransactionEvent) {
+	//		if event.Transaction == nil {
+	//			return
+	//		}
+	//		entry := entry.WithFields(event.Transaction.GetLoganFields())
+	//		entry.Debug("got tx")
+	//		for _, change := range event.Transaction.LedgerChanges() {
+	//			for _, mutator := range mutators {
+	//				update := func() *api.UserStateUpdate {
+	//					defer func() {
+	//						if rvr := recover(); rvr != nil {
+	//							entry.WithRecover(rvr).Error("mutator panicked")
+	//						}
+	//					}()
+	//					return mutator(change)
+	//				}()
+	//				if update != nil {
+	//					update.Timestamp = event.Transaction.CreatedAt
+	//					entry := entry.WithFields(update.GetLoganFields())
+	//					entry.Debug("updating state")
+	//					err := app.apiQ.Users().SetState(*update)
+	//					if err != nil {
+	//						entry.WithError(err).Error("failed to set user state")
+	//					}
+	//				}
+	//			}
+	//		}
+	//	})
+	//}, "tx-watcher")
 }

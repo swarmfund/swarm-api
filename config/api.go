@@ -48,10 +48,8 @@ var (
 type API struct {
 	// Project human readable name which will be used as user-facing project identifier
 	// FIXME eventually should be required
-	Project            string `fig:"project"`
-	DatabaseURL        string `fig:"database_url,required"`
-	HorizonURL         url.URL
-	AccountManager     keypair.Full
+	Project            string       `fig:"project"`
+	AccountManager     keypair.Full `fig:"account_manager,required"`
 	SkipSignatureCheck bool
 }
 

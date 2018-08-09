@@ -84,5 +84,5 @@ func sendWelcomeEmails(app *App, log *logan.Entry) error {
 }
 
 func init() {
-	appInit.Add("verification-sender", initVerificationSender, "api-db")
+	appInit.Add("verification-sender", initVerificationSender)
 }
