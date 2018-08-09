@@ -5,7 +5,7 @@ import (
 
 	"time"
 
-	"github.com/getsentry/raven-go"
+	raven "github.com/getsentry/raven-go"
 	"github.com/go-chi/chi"
 	"github.com/google/jsonapi"
 	"gitlab.com/distributed_lab/ape"

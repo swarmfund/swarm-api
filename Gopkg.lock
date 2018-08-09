@@ -21,7 +21,6 @@
   version = "v7"
 
 [[projects]]
-  digest = "1:79838b22eaf01280066b3829e5afc1c6c431513b4e86814065ed257ec0de8f9b"
   name = "github.com/aws/aws-sdk-go"
   packages = [
     "aws",
@@ -54,14 +53,12 @@
     "private/protocol/restxml",
     "private/protocol/xml/xmlutil",
     "service/s3",
-    "service/sts",
+    "service/sts"
   ]
-  pruneopts = "NUT"
   revision = "8cf662a972fa7fba8f2c1ec57648cf840e2bb401"
   version = "v1.14.30"
 
 [[projects]]
-  digest = "1:9c10c434d26c3de9179e249b4bc0d02d7bc0b7366799696c424c1b05a433fd6f"
   name = "github.com/boombuler/barcode"
   packages = [
     ".",
@@ -101,7 +98,6 @@
   digest = "1:8ee4ed93d1a8667720aae42a55724971750d3ef101ae12f13b2d19ae8228e050"
   name = "github.com/dustin/go-humanize"
   packages = ["."]
-  pruneopts = "NT"
   revision = "9f541cc9db5d55bce703bd99987c9d5cb8eea45e"
 
 [[projects]]
@@ -130,13 +126,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:ca1b151877ea1872c38475ecd169939fcb4e61fab381bb15548646f1a71241a6"
   name = "github.com/go-chi/chi"
   packages = [
     ".",
     "middleware",
   ]
-  pruneopts = "NT"
   revision = "0c5e7abb4e562fa14dd2548cb57b28f979a7dcd9"
 
 [[projects]]
@@ -167,7 +161,6 @@
   version = "v3.3"
 
 [[projects]]
-  digest = "1:7aee910356b9b3ae41dc05228d504947f734e58507e8fa0f233e101f27dbc682"
   name = "github.com/google/jsonapi"
   packages = ["."]
   pruneopts = "NT"
@@ -209,10 +202,8 @@
   version = "v1.0"
 
 [[projects]]
-  digest = "1:5c7eddc7cb22575b70eaa0f70bb91ea1d64ac4a36270248aaaba5059138afe99"
   name = "github.com/jmespath/go-jmespath"
   packages = ["."]
-  pruneopts = "NT"
   revision = "0b12d6b5"
 
 [[projects]]
@@ -374,7 +365,6 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:7a466071676241d58c34ffc660fd4f9dc53f1067ad9a4a93b08f08333d3891c0"
   name = "github.com/rubenv/sql-migrate"
   packages = [
     ".",
@@ -388,9 +378,8 @@
   name = "github.com/sirupsen/logrus"
   packages = [
     ".",
-    "hooks/test",
+    "hooks/test"
   ]
-  pruneopts = "NT"
   revision = "f006c2ac4710855cf0f916dd6b77acf6b048dc6e"
   version = "v1.0.3"
 
@@ -465,14 +454,12 @@
   version = "v1.1.4"
 
 [[projects]]
-  digest = "1:ba4c586768fd758beb9fd6ffc084bf7a8c857994d9338855116ee389905cd603"
   name = "gitlab.com/distributed_lab/ape"
   packages = [
     ".",
     "apeutil",
-    "problems",
+    "problems"
   ]
-  pruneopts = "NT"
   revision = "49ef1814b0c696c2ddf55560a7cb12a8b0164e77"
   version = "v0.3"
 
@@ -493,9 +480,8 @@
     "v3/errors",
     "v3/fields",
   ]
-  pruneopts = "NT"
-  revision = "0c279a3a45143457b569e979e395481778e1ba42"
-  version = "v3.5.0"
+  revision = "618e702b8aaf18b947a442d952adac04de41fe90"
+  version = "v3.6"
 
 [[projects]]
   branch = "master"
@@ -534,7 +520,6 @@
     "xdrbuild",
     "xdrbuild/internal",
   ]
-  pruneopts = "NT"
   revision = "7467cd1316e2e022322ef9b64383aef3b56194b3"
 
 [[projects]]
@@ -564,8 +549,7 @@
     "internal/wallets",
     "types",
   ]
-  pruneopts = "NT"
-  revision = "8c7c74bcf4eec7d30585e7bad4c963e660f25151"
+  revision = "da2c208263c83487b889283ce03bdd67813a13c8"
 
 [[projects]]
   branch = "master"
@@ -582,15 +566,12 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:58bf3684270f4adb883723f62ea4604257d6b9af847df4721bd5adc9a0b91484"
   name = "gitlab.com/tokend/regources"
   packages = ["."]
-  pruneopts = "NT"
   revision = "f597b01ef45ccc3398ea70a196597cfc9ef75766"
 
 [[projects]]
   branch = "master"
-  digest = "1:739d957d4737756863707bc25a71579a7354081698fe3eb12be6a63be4afe15e"
   name = "golang.org/x/crypto"
   packages = [
     "ed25519",
@@ -675,65 +656,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  input-imports = [
-    "github.com/asaskevich/govalidator",
-    "github.com/aws/aws-sdk-go/aws",
-    "github.com/aws/aws-sdk-go/aws/credentials",
-    "github.com/aws/aws-sdk-go/aws/session",
-    "github.com/aws/aws-sdk-go/service/s3",
-    "github.com/dukex/mixpanel",
-    "github.com/evalphobia/logrus_sentry",
-    "github.com/getsentry/raven-go",
-    "github.com/go-chi/chi",
-    "github.com/go-chi/chi/middleware",
-    "github.com/go-errors/errors",
-    "github.com/go-ozzo/ozzo-validation",
-    "github.com/go-ozzo/ozzo-validation/is",
-    "github.com/google/jsonapi",
-    "github.com/guregu/null",
-    "github.com/jmoiron/sqlx",
-    "github.com/lann/squirrel",
-    "github.com/lib/pq",
-    "github.com/magiconair/properties/assert",
-    "github.com/minio/minio-go",
-    "github.com/mitchellh/mapstructure",
-    "github.com/mssola/user_agent",
-    "github.com/oklog/ulid",
-    "github.com/patrickmn/go-cache",
-    "github.com/pkg/errors",
-    "github.com/pquerna/otp",
-    "github.com/pquerna/otp/totp",
-    "github.com/rubenv/sql-migrate",
-    "github.com/sirupsen/logrus",
-    "github.com/spf13/cast",
-    "github.com/spf13/cobra",
-    "github.com/spf13/viper",
-    "github.com/stretchr/testify/assert",
-    "github.com/stretchr/testify/mock",
-    "gitlab.com/distributed_lab/ape",
-    "gitlab.com/distributed_lab/ape/apeutil",
-    "gitlab.com/distributed_lab/ape/problems",
-    "gitlab.com/distributed_lab/figure",
-    "gitlab.com/distributed_lab/logan",
-    "gitlab.com/distributed_lab/logan/v3",
-    "gitlab.com/distributed_lab/logan/v3/errors",
-    "gitlab.com/distributed_lab/notificator",
-    "gitlab.com/distributed_lab/running",
-    "gitlab.com/tokend/go/amount",
-    "gitlab.com/tokend/go/doorman",
-    "gitlab.com/tokend/go/hash",
-    "gitlab.com/tokend/go/keypair",
-    "gitlab.com/tokend/go/resources",
-    "gitlab.com/tokend/go/signcontrol",
-    "gitlab.com/tokend/go/strkey",
-    "gitlab.com/tokend/go/support/log",
-    "gitlab.com/tokend/go/xdr",
-    "gitlab.com/tokend/go/xdrbuild",
-    "gitlab.com/tokend/horizon-connector",
-    "gitlab.com/tokend/keypair",
-    "golang.org/x/net/context",
-    "golang.org/x/net/http2",
-    "gopkg.in/tylerb/graceful.v1",
-  ]
+  inputs-digest = "39daafd718a451b074e4280d964d1e9e03ec8044741ad86411467b9f104a1bbb"
   solver-name = "gps-cdcl"
   solver-version = 1

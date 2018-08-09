@@ -118,7 +118,6 @@ func (a *App) Serve() {
 		builder,
 	)
 
-	//r.Mount("/", a.web.router)
 	http.Handle("/", r)
 
 	addr := fmt.Sprintf("%s:%d", a.config.HTTP().Host, a.config.HTTP().Port)

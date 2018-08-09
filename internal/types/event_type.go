@@ -18,9 +18,18 @@ const (
 	EventLogout
 	EventBrowseIo
 	EventViewYtVideo
-	EventViewedASpecificTab
+	EventViewTabOverview
+	EventViewTabTeam
+	EventViewTabUpdates
+	EventViewTabDocs
+	EventViewTabValuations
+	EventViewTabGovernance
+	EventViewTabDefault
 	EventUnsubscribe
 	EventVoteInAnIo
+	EventEnableTFA
+	EventDisableTFA
+	EventStartsKYC
 )
 
 var eventToSalesforceActionName = map[Event]string{
@@ -37,28 +46,46 @@ var eventToSalesforceActionName = map[Event]string{
 	EventLogout:                 "Logout",
 	EventBrowseIo:               "Browse IO",
 	EventViewYtVideo:            "View YT Video",
-	EventViewedASpecificTab:     "Viewed a specific tab",
+	EventViewTabOverview:        "View Tab Overview",
+	EventViewTabTeam:            "View Tab Team",
+	EventViewTabUpdates:         "View Tab Updates",
+	EventViewTabDocs:            "View Tab Docs",
+	EventViewTabValuations:      "View Tab Valuations",
+	EventViewTabGovernance:      "View Tab Governance",
+	EventViewTabDefault:         "View Tab Default",
 	EventUnsubscribe:            "Unsubscribe",
 	EventVoteInAnIo:             "Vote in an IO",
+	EventEnableTFA:              "Enable 2FA",
+	EventDisableTFA:             "Disable 2FA",
+	EventStartsKYC:              "Starts KYC",
 }
 
 var eventToSalesforceSphere = map[Event]string{
 	EventSignUpForNewsletter:    "User Activity",
-	EventReadSwarmBasics:        "Education",
-	EventViewDownloadWhitepaper: "Education",
-	EventWatchedYtVideo:         "Education",
-	EventVisitedFaq:             "Education",
+	EventReadSwarmBasics:        "User Activity",
+	EventViewDownloadWhitepaper: "User Activity",
+	EventWatchedYtVideo:         "User Activity",
+	EventVisitedFaq:             "User Activity",
 	EventClickedLoginButton:     "User Activity",
 	EventRegister:               "Registration",
 	EventVerifyEmail:            "Registration",
-	EventFirstLogin:             "User Activity",
-	EventLogin:                  "User Activity",
-	EventLogout:                 "User Activity",
-	EventBrowseIo:               "Education",
-	EventViewYtVideo:            "Education",
-	EventViewedASpecificTab:     "Education",
-	EventUnsubscribe:            "User Activity",
-	EventVoteInAnIo:             "User Activity",
+	EventFirstLogin:             "Registration",
+	EventLogin:                  "Registration",
+	EventLogout:                 "Registration",
+	EventBrowseIo:               "Investment",
+	EventViewYtVideo:            "Investment",
+	EventUnsubscribe:            "Community",
+	EventVoteInAnIo:             "Participation",
+	EventEnableTFA:              "Security",
+	EventDisableTFA:             "Security",
+	EventViewTabOverview:        "Investment",
+	EventStartsKYC:              "Compilance",
+	EventViewTabTeam:            "Investment",
+	EventViewTabUpdates:         "Investment",
+	EventViewTabDocs:            "Investment",
+	EventViewTabValuations:      "Investment",
+	EventViewTabGovernance:      "Investment",
+	EventViewTabDefault:         "Investment",
 }
 
 func (r Event) GetSalesforceSphere() string {
