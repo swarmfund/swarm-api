@@ -1,8 +1,6 @@
 package lorem
 
-import (
-	"math/rand"
-)
+import "math/rand"
 
 var (
 	letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -15,10 +13,6 @@ func randomString(n int, source string) string {
 		b[i] = source[rand.Intn(len(source))]
 	}
 	return string(b)
-}
-
-func Salt() string {
-	return "hpFpaB+0hOL5aC4dwjSFtA=="
 }
 
 func Token() string {

@@ -9,8 +9,6 @@ import (
 
 	"strings"
 
-	"time"
-
 	"github.com/pkg/errors"
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/ape/problems"
@@ -96,7 +94,6 @@ func GetKDF(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if kdf == nil {
-		time.Sleep(10 * time.Second)
 		ape.RenderErr(w, problems.NotFound())
 		return
 	}

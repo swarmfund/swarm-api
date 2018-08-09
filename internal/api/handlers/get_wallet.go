@@ -5,8 +5,6 @@ import (
 
 	"encoding/json"
 
-	"time"
-
 	"github.com/go-chi/chi"
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/ape/problems"
@@ -27,7 +25,6 @@ func GetWallet(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if wallet == nil {
-		time.Sleep(25 * time.Second)
 		ape.RenderErr(w, problems.NotFound())
 		return
 	}

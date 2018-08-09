@@ -51,19 +51,19 @@ func (c *Connector) Init(loader TemplateLoader, log *logan.Entry) error {
 	}
 	c.conf.EmailConfirmation = emailConfirmation
 
-	//kycApprove, err := getTemplate("kyc_approve", loader)
-	//if err != nil {
-	//	return errors.Wrap(err, "failed to get template")
-	//}
-	//
-	//c.conf.KYCApprove = kycApprove
-	//
-	//kycReject, err := getTemplate("kyc_reject", loader)
-	//if err != nil {
-	//	return errors.Wrap(err, "failed to get template")
-	//}
-	//
-	//c.conf.KYCReject = kycReject
+	kycApprove, err := getTemplate("kyc_approve", loader)
+	if err != nil {
+		return errors.Wrap(err, "failed to get template")
+	}
+
+	c.conf.KYCApprove = kycApprove
+
+	kycReject, err := getTemplate("kyc_reject", loader)
+	if err != nil {
+		return errors.Wrap(err, "failed to get template")
+	}
+
+	c.conf.KYCReject = kycReject
 
 	return nil
 }
