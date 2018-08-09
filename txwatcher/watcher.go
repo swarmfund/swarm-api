@@ -40,7 +40,7 @@ func (w *Watcher) Run() {
 			if event.Transaction != nil {
 				w.log.WithFields(logan.F{
 					"tx":     event.Transaction.PagingToken,
-					"ledger": event.Transaction.CreatedAt,
+					"ledger": event.Transaction.LedgerCloseTime,
 				}).Debug("received tx")
 				w.dispatch(event)
 			}

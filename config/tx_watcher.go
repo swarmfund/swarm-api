@@ -5,25 +5,19 @@ import (
 	"gitlab.com/distributed_lab/logan/v3/errors"
 )
 
-const (
-	txwatcherConfigKey = "tx_watcher"
-)
-
-var (
-	txwatcher *TxWatcher
-)
-
-type TxWatcher struct {
+type TXWatcher struct {
 	Disabled bool
 }
 
-func (c *ViperConfig) TxWatcher() TxWatcher {
-	if txwatcher == nil {
-		txwatcher = &TxWatcher{}
-		config := c.GetStringMap(txwatcherConfigKey)
-		if err := figure.Out(txwatcher).From(config).Please(); err != nil {
-			panic(errors.Wrap(err, "failed to figure out txwatcher"))
-		}
+func (c *ViperConfig) TXWatcher() TXWatcher {
+	c.Lock()
+	defer c.Unlock()
+
+	var config TXWatcher
+
+	if err := figure.Out(&config).From(c.GetStringMap("tx_watcher")).Please(); err != nil {
+		panic(errors.Wrap(err, "failed to figure out tx_watcher"))
 	}
-	return *txwatcher
+
+	return config
 }
