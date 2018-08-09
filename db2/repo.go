@@ -9,7 +9,6 @@ import (
 	"github.com/jmoiron/sqlx"
 	sq "github.com/lann/squirrel"
 	"github.com/pkg/errors"
-	"gitlab.com/swarmfund/api/log"
 	"golang.org/x/net/context"
 )
 
@@ -263,12 +262,12 @@ func (r *Repo) clearSliceIfPossible(dest interface{}) {
 	vt := v.Type()
 
 	if vt.Kind() != reflect.Ptr {
-		log.Warn("cannot clear slice: dest is not pointer")
+		//r.log("cannot clear slice: dest is not pointer")
 		return
 	}
 
 	if vt.Elem().Kind() != reflect.Slice {
-		log.Warn("cannot clear slice: dest is a pointer, but not to a slice")
+		//r.log("cannot clear slice: dest is a pointer, but not to a slice")
 		return
 	}
 
@@ -284,31 +283,31 @@ func (r *Repo) conn() Conn {
 }
 
 func (r *Repo) log(typ string, start time.Time, query string, args []interface{}) {
-	dur := time.Since(start)
-	lEntry := log.
-		Ctx(r.logCtx()).
-		WithFields(log.F{
-			"args": args,
-			"sql":  query,
-			"dur":  dur.String(),
-		})
-
-	lEntry.Debugf("sql: %s", typ)
-	if dur > SlowQueryBound {
-		lEntry.Warningf("too slow sql: %s", typ)
-	}
+	//dur := time.Since(start)
+	//lEntry := log.
+	//	Ctx(r.logCtx()).
+	//	WithFields(log.F{
+	//		"args": args,
+	//		"sql":  query,
+	//		"dur":  dur.String(),
+	//	})
+	//
+	//lEntry.Debugf("sql: %s", typ)
+	//if dur > SlowQueryBound {
+	//	lEntry.Warningf("too slow sql: %s", typ)
+	//}
 }
 
 func (r *Repo) logBegin() {
-	log.Ctx(r.logCtx()).Debug("sql: begin")
+	//log.Ctx(r.logCtx()).Debug("sql: begin")
 }
 
 func (r *Repo) logCommit() {
-	log.Ctx(r.logCtx()).Debug("sql: commit")
+	//log.Ctx(r.logCtx()).Debug("sql: commit")
 }
 
 func (r *Repo) logRollback() {
-	log.Ctx(r.logCtx()).Debug("sql: rollback")
+	//log.Ctx(r.logCtx()).Debug("sql: rollback")
 }
 
 func (r *Repo) logCtx() context.Context {

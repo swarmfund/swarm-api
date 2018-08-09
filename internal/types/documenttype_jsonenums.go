@@ -37,6 +37,7 @@ func init() {
 			interface{}(DocumentTypeGeneral).(fmt.Stringer).String():        DocumentTypeGeneral,
 			interface{}(DocumentTypeGeneralPublic).(fmt.Stringer).String():  DocumentTypeGeneralPublic,
 			interface{}(DocumentTypeGeneralPrivate).(fmt.Stringer).String(): DocumentTypeGeneralPrivate,
+			interface{}(DocumentTypeAssetPhoto).(fmt.Stringer).String():     DocumentTypeAssetPhoto,
 		}
 	}
 }
@@ -58,6 +59,7 @@ var _DocumentTypeNameToValue = map[string]DocumentType{
 	"general":         DocumentTypeGeneral,
 	"general_public":  DocumentTypeGeneralPublic,
 	"general_private": DocumentTypeGeneralPrivate,
+	"asset_photo":     DocumentTypeAssetPhoto,
 }
 
 var _DocumentTypeValueToName = map[DocumentType]string{
@@ -77,6 +79,7 @@ var _DocumentTypeValueToName = map[DocumentType]string{
 	DocumentTypeGeneral:        "general",
 	DocumentTypeGeneralPublic:  "general_public",
 	DocumentTypeGeneralPrivate: "general_private",
+	DocumentTypeAssetPhoto:     "asset_photo",
 }
 
 // String is generated so DocumentType satisfies fmt.Stringer.

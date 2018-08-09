@@ -25,19 +25,16 @@ import (
 	"gitlab.com/swarmfund/api/internal/secondfactor"
 	"gitlab.com/swarmfund/api/internal/track"
 	"gitlab.com/swarmfund/api/notificator"
-	"gitlab.com/swarmfund/api/storage"
 	"gitlab.com/tokend/go/doorman"
 	"gitlab.com/tokend/horizon-connector"
-	"gitlab.com/tokend/keypair"
 )
 
 func Router(
 	entry *logan.Entry, walletQ api.WalletQI, tokensQ data.EmailTokensQ,
 	usersQ api.UsersQI, doorman doorman.Doorman, horizon *horizon.Connector,
-	tfaQ api.TFAQI, storage *storage.Connector, master keypair.Address, signer keypair.Full,
-	coreInfo data.CoreInfoI, blobQ data.Blobs, sentry *raven.Client,
+	tfaQ api.TFAQI, storage data.Storage, coreInfo data.Info, blobQ data.Blobs, sentry *raven.Client,
 	userDispatch hose.UserDispatch, notificator *notificator.Connector, repo *db2.Repo,
-	wallets config.Wallets, tracker *track.Tracker, salesforce *salesforce.Connector,
+	wallets config.Wallets, tracker *track.Tracker, salesforce *salesforce.Connector, txbuilder data.Infobuilder,
 ) chi.Router {
 	r := chi.NewRouter()
 
@@ -52,7 +49,7 @@ func Router(
 			handlers.CtxEmailTokensQ(tokensQ),
 			handlers.CtxUsersQ(usersQ),
 			handlers.CtxHorizon(horizon),
-			handlers.CtxTransaction(master, signer),
+			handlers.CtxTransaction(txbuilder),
 			handlers.CtxTFAQ(tfaQ),
 			handlers.CtxDoorman(doorman),
 			handlers.CtxStorage(storage),
@@ -142,6 +139,9 @@ func Router(
 
 		// favorites
 		r.Route("/{address}/favorites", favorites.Router(repo))
+
+		// favorites aka settings
+		r.Route("/{address}/settings", favorites.Router(repo))
 
 		//get users statistics
 		r.Get("/stats", handlers.UserStats)
