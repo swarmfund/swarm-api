@@ -3,11 +3,16 @@ package salesforce
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
+
+	"gitlab.com/distributed_lab/logan"
+	"gitlab.com/distributed_lab/logan/v3/errors"
 )
+
+var ErrUnauthorized = errors.New("unauthorized")
 
 // Event contains both default salesforce and specific to a salesforce account fields defined as columns
 type Event struct {
@@ -53,6 +58,8 @@ func (c *Client) PostEvent(sphere string, actionName string, timeString string, 
 		return nil, err
 	}
 
+	fmt.Printf("debug post event: %s\n", string(requestBytes))
+
 	req, err := http.NewRequest("POST", endpointURL.String(), bytes.NewReader(requestBytes))
 	if err != nil {
 		return nil, err
@@ -64,13 +71,13 @@ func (c *Client) PostEvent(sphere string, actionName string, timeString string, 
 		return nil, err
 	}
 	defer response.Body.Close()
+	responseBytes, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to read event request body")
+	}
 	// TODO auth.go
 	switch response.StatusCode {
 	case http.StatusCreated:
-		responseBytes, err := ioutil.ReadAll(response.Body)
-		if err != nil {
-			return nil, err
-		}
 
 		var eventResponse *EventResponse
 		err = json.Unmarshal(responseBytes, &eventResponse)
@@ -81,10 +88,13 @@ func (c *Client) PostEvent(sphere string, actionName string, timeString string, 
 		return eventResponse, nil
 
 	case http.StatusUnauthorized:
-		return nil, errors.New("unauthorized")
+		return nil, errors.Wrap(ErrUnauthorized, "unauthorized", logan.F{"response_body": string(responseBytes)})
 	case http.StatusBadRequest:
-		return nil, errors.New("malformed request sent")
+		return nil, errors.Wrap(ErrMalformedRequest, "bad request", logan.F{"response_body": string(responseBytes)})
+	default:
+		return nil, errors.Wrap(ErrInternal, "unknown request", logan.F{
+			"response_body": string(responseBytes),
+			"status_code":   response.StatusCode,
+		})
 	}
-
-	return nil, errors.New("unknown status code")
 }

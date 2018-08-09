@@ -7,7 +7,7 @@ import (
 	"net/url"
 	"strings"
 
-	"gitlab.com/distributed_lab/logan"
+	"gitlab.com/distributed_lab/logan/v3"
 	"gitlab.com/distributed_lab/logan/v3/errors"
 )
 
@@ -54,9 +54,9 @@ func (c *Client) PostAuthRequest(username string, password string) (AuthResponse
 		}
 		return authResponse, nil
 	case http.StatusBadRequest:
-		return EmptyAuthResponse, errors.From(ErrMalformedRequest, logan.F{"response_body": string(responseBytes)})
+		return EmptyAuthResponse, errors.Wrap(ErrMalformedRequest, "bad request", logan.F{"response_body": string(responseBytes)})
 	default:
-		return EmptyAuthResponse, errors.From(ErrInternal, logan.F{
+		return EmptyAuthResponse, errors.Wrap(ErrInternal, "unknown request", logan.F{
 			"response_body": string(responseBytes),
 			"status_code":   response.StatusCode,
 		})
