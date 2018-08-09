@@ -21,6 +21,15 @@ func (c *ViperConfig) AWS() *session.Session {
 
 	raw := c.GetStringMap("aws")
 
+	var Disabled struct {
+		Disabled bool `fig:"disabled"`
+	}
+	if err := figure.Out(&Disabled).From(raw).Please(); err != nil {
+		panic(errors.Wrap(err, "failed to figure out disabled"))
+	}
+	if Disabled.Disabled {
+		return c.aws
+	}
 	// first probe for credentials type we should use
 	var probe struct {
 		Credentials string `fig:"credentials,required"`
