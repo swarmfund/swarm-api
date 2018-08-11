@@ -104,6 +104,7 @@ func (a *App) Serve() {
 		a.Tracker(),
 		a.Config().Salesforce(),
 		builder,
+		a.Config().KYCIndex(),
 	)
 
 	http.Handle("/", r)
