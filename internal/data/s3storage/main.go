@@ -6,8 +6,6 @@ import (
 
 	"strings"
 
-	"fmt"
-
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
@@ -27,7 +25,9 @@ func NewStorage(aws *session.Session, bucket string) (data.Storage, error) {
 		return nil, errors.Wrap(err, "failed to get credentials")
 	}
 	mc, err := minio.New(
-		fmt.Sprintf("s3.%s.amazonaws.com", *aws.Config.Region),
+		// kinda works
+		//fmt.Sprintf("s3.%s.amazonaws.com", *aws.Config.Region),
+		*aws.Config.Endpoint,
 		creds.AccessKeyID,
 		creds.SecretAccessKey,
 		true,
