@@ -24,7 +24,7 @@ func throttle() chan time.Time {
 	ch := make(chan time.Time, burst)
 
 	go func() {
-		tick := time.Tick(100 * time.Millisecond)
+		tick := time.Tick(1 * time.Second)
 		// prefill buffer
 		for i := 0; i < burst; i++ {
 			ch <- time.Now()
@@ -218,7 +218,7 @@ func isStatusCodeSuccessful(code int) bool {
 // Don't use Do() method in new places, use do() instead,
 // new do() doesn't use deprecated errors and doesn't parse status code, but returns it instead.
 func (c *Client) Do(request *http.Request) ([]byte, error) {
-	//<-c.throttle
+	<-c.throttle
 
 	// ensure content-type just in case
 	request.Header.Set("content-type", "application/json")
