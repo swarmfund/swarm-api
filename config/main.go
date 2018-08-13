@@ -1,6 +1,7 @@
 package config
 
 import (
+	"net/url"
 	"sync"
 
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -25,7 +26,6 @@ type Config interface {
 	Log() *logan.Entry
 	Wallets() Wallets
 	TXWatcher() TXWatcher
-
 	Notificator() *notificator.Connector
 	Sentry() *raven.Client
 	Horizon() *horizon.Connector
@@ -33,6 +33,7 @@ type Config interface {
 	Mixpanel() *mixpanel.Connector
 	Salesforce() *salesforce.Connector
 	DB() *db2.Repo
+	KYCIndex() *url.URL
 }
 
 //go:generate mockery -case underscore -name rawGetter -testonly -inpkg

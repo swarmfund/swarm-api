@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"time"
 
-	"gitlab.com/distributed_lab/logan/v3"
 	"gitlab.com/swarmfund/api/config"
 	"gitlab.com/swarmfund/api/db2/api"
 	api2 "gitlab.com/swarmfund/api/internal/api"
@@ -43,6 +42,7 @@ func NewApp(config config.Config) (*App, error) {
 		cancel:  cancel,
 		txBus:   hose.NewTransactionBus(),
 		userBus: hose.NewUserBus(),
+		infoer:  NewLazyInfo(ctx, config.Log(), config.Horizon()),
 	}
 	result.init()
 	return result, nil
@@ -104,6 +104,7 @@ func (a *App) Serve() {
 		a.Tracker(),
 		a.Config().Salesforce(),
 		builder,
+		a.Config().KYCIndex(),
 	)
 
 	http.Handle("/", r)
@@ -147,6 +148,5 @@ func (a *App) Info() data.Info {
 // Init initializes app, using the config to populate db connections and
 // whatnot.
 func (a *App) init() {
-	a.infoer = NewLazyInfo(a.ctx, &logan.Entry{}, a.infoer)
 	appInit.Run(a)
 }

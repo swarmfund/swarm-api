@@ -2,8 +2,11 @@ package api
 
 import (
 	"net/http"
+	"net/url"
 
 	"time"
+
+	"net/http/httputil"
 
 	raven "github.com/getsentry/raven-go"
 	"github.com/go-chi/chi"
@@ -35,6 +38,7 @@ func Router(
 	tfaQ api.TFAQI, storage data.Storage, coreInfo data.Info, blobQ data.Blobs, sentry *raven.Client,
 	userDispatch hose.UserDispatch, notificator *notificator.Connector, repo *db2.Repo,
 	wallets config.Wallets, tracker *track.Tracker, salesforce *salesforce.Connector, txbuilder data.Infobuilder,
+	kycIndexURL *url.URL,
 ) chi.Router {
 	r := chi.NewRouter()
 
@@ -104,6 +108,17 @@ func Router(
 			r.Patch("/{backend}", handlers.UpdateWalletFactor)
 			r.Put("/{backend}/verification", handlers.VerifyFactorOTP)
 		})
+	})
+
+	r.Route("/v2/users", func(r chi.Router) {
+		proxy := httputil.ReverseProxy{
+			Director: func(request *http.Request) {
+				request.URL.Scheme = kycIndexURL.Scheme
+				request.URL.Host = kycIndexURL.Host
+				request.URL.Path = kycIndexURL.Path
+			},
+		}
+		r.Get("/", proxy.ServeHTTP)
 	})
 
 	r.Route("/users", func(r chi.Router) {
