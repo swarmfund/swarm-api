@@ -187,7 +187,7 @@ func CtxTransaction(txbuilder data.Infobuilder) func(context.Context) context.Co
 }
 
 func Transaction(r *http.Request) *xdrbuild.Transaction {
-	txbuilderbuilder := r.Context().Value(txBuilderCtxKey).(func(info data.Info) *xdrbuild.Transaction)
+	txbuilderbuilder := r.Context().Value(txBuilderCtxKey).(data.Infobuilder)
 	info := r.Context().Value(coreInfoCtxKey).(data.Info)
 	return txbuilderbuilder(info)
 }
