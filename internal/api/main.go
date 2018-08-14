@@ -5,6 +5,9 @@ import (
 
 	"time"
 
+	"net/http/httputil"
+	"net/url"
+
 	raven "github.com/getsentry/raven-go"
 	"github.com/go-chi/chi"
 	"github.com/google/jsonapi"
@@ -145,6 +148,18 @@ func Router(
 
 		//get users statistics
 		r.Get("/stats", handlers.UserStats)
+	})
+
+	r.Route("/v2/users", func(r chi.Router) {
+		url, _ := url.Parse("http://localhost:7006")
+		proxy := httputil.ReverseProxy{
+			Director: func(request *http.Request) {
+				request.URL.Scheme = url.Scheme
+				request.URL.Host = url.Host
+				request.URL.Path = url.Path
+			},
+		}
+		r.Get("/", proxy.ServeHTTP)
 	})
 
 	// blobs
