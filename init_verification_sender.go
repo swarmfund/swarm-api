@@ -17,8 +17,13 @@ func initVerificationSender(app *App) {
 			if err != nil {
 				log.WithError(err).Error("Failed to send verifications")
 			}
-
-			err = sendWelcomeEmails(app, log)
+		}
+	}()
+	go func() {
+		log := logan.New()
+		ticker := time.NewTicker(5 * time.Second)
+		for ; ; <-ticker.C {
+			err := sendWelcomeEmails(app, log)
 			if err != nil {
 				log.WithError(err).Error("Failed to send welcome emails")
 			}
