@@ -13,7 +13,8 @@ import (
 
 // AuthResponse contains auth response data, only AccessToken is useful
 type AuthResponse struct {
-	AccessToken string `json:"access_token"`
+	AccessToken string   `json:"access_token"`
+	InstanceURL *url.URL `json:"instance_url"`
 }
 
 // EmptyAuthResponse is used for signaling about special conditions

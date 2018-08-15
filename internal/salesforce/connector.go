@@ -18,16 +18,18 @@ type Connector struct {
 }
 
 // NewConnector construct a connector from arguments and gets accessToken
-func NewConnector(apiURL *url.URL, secret string, id string, username string, password string) (*Connector, error) {
-	client := NewClient(apiURL, secret, id)
+func NewConnector(authURL *url.URL, secret string, id string, username string, password string) (*Connector, error) {
+	client := NewClient(authURL, secret, id)
 	authResponse, err := client.PostAuthRequest(username, password)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to authenticate while constructing salesforce connector")
 	}
+
 	return &Connector{
 		client: &Client{
 			httpClient:  client.httpClient,
-			apiURL:      client.apiURL,
+			authURL:     authURL,
+			apiURL:      authResponse.InstanceURL,
 			secret:      client.secret,
 			accessToken: authResponse.AccessToken,
 			id:          client.id,
