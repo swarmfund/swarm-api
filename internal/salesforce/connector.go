@@ -25,11 +25,16 @@ func NewConnector(authURL *url.URL, secret string, id string, username string, p
 		return nil, errors.Wrap(err, "failed to authenticate while constructing salesforce connector")
 	}
 
+	apiURL, err := url.Parse(authResponse.InstanceURL)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to parse instance url from salesforce")
+	}
+
 	return &Connector{
 		client: &Client{
 			httpClient:  client.httpClient,
 			authURL:     authURL,
-			apiURL:      authResponse.InstanceURL,
+			apiURL:      apiURL,
 			secret:      client.secret,
 			accessToken: authResponse.AccessToken,
 			id:          client.id,
