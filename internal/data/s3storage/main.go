@@ -52,8 +52,9 @@ type Storage struct {
 
 func (s *Storage) SignedObjectURL(key string) (*url.URL, error) {
 	request, _ := s.s3.GetObjectRequest(&s3.GetObjectInput{
-		Bucket: aws.String(s.bucket),
-		Key:    aws.String(key),
+		Bucket:              aws.String(s.bucket),
+		Key:                 aws.String(key),
+		ResponseContentType: aws.String(""),
 	})
 
 	signed, err := request.Presign(presignExpire)
