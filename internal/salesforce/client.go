@@ -12,6 +12,7 @@ var authEndpointURL = &url.URL{
 // Client is a custom salesforce client implementation
 type Client struct {
 	httpClient  *http.Client
+	authURL     *url.URL
 	apiURL      *url.URL
 	secret      string
 	accessToken string
