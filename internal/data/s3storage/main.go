@@ -21,13 +21,18 @@ const (
 	presignExpire = 1 * time.Hour
 )
 
-func NewStorage(aws *session.Session, bucket string) (data.Storage, error) {
-	creds, err := aws.Config.Credentials.Get()
+func NewStorage(session *session.Session, bucket string) (data.Storage, error) {
+	creds, err := session.Config.Credentials.Get()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get credentials")
 	}
+
+	endpoint := fmt.Sprintf("s3.%s.amazonaws.com", *session.Config.Region)
+	if session.Config.Endpoint != nil {
+		endpoint = *session.Config.Endpoint
+	}
 	mc, err := minio.New(
-		fmt.Sprintf("s3.%s.amazonaws.com", *aws.Config.Region),
+		endpoint,
 		creds.AccessKeyID,
 		creds.SecretAccessKey,
 		true,
@@ -37,7 +42,7 @@ func NewStorage(aws *session.Session, bucket string) (data.Storage, error) {
 	}
 
 	return &Storage{
-		s3.New(aws),
+		s3.New(session),
 		mc,
 		bucket,
 	}, nil
