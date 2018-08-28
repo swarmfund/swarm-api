@@ -7,7 +7,7 @@ import (
 
 	"github.com/pkg/errors"
 	"gitlab.com/distributed_lab/logan/v3"
-	"gitlab.com/swarmfund/api/actions"
+	"gitlab.com/swarmfund/api/geoinfo"
 	"gitlab.com/tokend/go/signcontrol"
 )
 
@@ -80,7 +80,7 @@ func (t *Tracker) track(event Event) {
 func (t *Tracker) CreateBlob(address string, request *http.Request) {
 	ip := request.Header.Get("x-real-ip")
 
-	location, err := actions.GetGeoLocation(ip)
+	location, err := GetGeoLocation(ip)
 	if err != nil {
 		t.entry.WithError(err).WithFields(logan.F{
 			"ip": ip,
@@ -104,4 +104,14 @@ func (t *Tracker) CreateBlob(address string, request *http.Request) {
 
 func (t *Tracker) GetLast(event Event) (*Event, error) {
 	return t.q.Last(&event)
+}
+
+func GetGeoLocation(ip string) (string, error) {
+	connector := geoinfo.NewConnector("fb170f98697192973f33434cb35157b4")
+	locationInfo, err := connector.LocationInfo(ip)
+	if err != nil {
+		return "Unknown", err
+	} else {
+		return locationInfo.FullRegion(), nil
+	}
 }
