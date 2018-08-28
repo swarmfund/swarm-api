@@ -25,13 +25,24 @@ func (e *Entry) WithRecover(recoverData interface{}) *Entry {
 func (e *Entry) WithError(err error) *Entry {
 	errorFields := errors.GetFields(err)
 
+	if fieldsProvider, ok := err.(fields.Provider); ok {
+		// This error also implements GetLoganFields().
+		errorFields = fields.Merge(errorFields, fieldsProvider.GetLoganFields())
+	}
+
 	return &Entry{
 		entry: e.WithFields(errorFields).entry.WithError(err),
 	}
 }
 
 func (e *Entry) WithField(key string, value interface{}) *Entry {
-	return e.WithFields(F{key: value})
+	f := F{key: value}
+
+	if err, ok := value.(error); ok {
+		f = fields.Merge(f, errors.GetFields(err))
+	}
+
+	return e.WithFields(f)
 }
 
 func (e *Entry) WithFields(f F) *Entry {

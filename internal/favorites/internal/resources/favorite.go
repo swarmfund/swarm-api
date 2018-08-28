@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/go-ozzo/ozzo-validation"
+	"github.com/go-ozzo/ozzo-validation/is"
 	"gitlab.com/swarmfund/api/internal/favorites/internal/data"
 	"gitlab.com/swarmfund/api/internal/favorites/internal/types"
 )
@@ -39,15 +40,19 @@ type FavoriteData struct {
 func (r FavoriteData) Validate() error {
 	return validation.ValidateStruct(&r,
 		validation.Field(&r.Type, validation.Required),
+		validation.Field(&r.Attributes, validation.Required),
 	)
 }
 
 type FavoriteAttributes struct {
-	Key string `json:"key"`
+	// Email is a record "owner" for guest-by-email flow
+	Email *string `json:"email,omitempty"`
+	Key   string  `json:"key"`
 }
 
 func (r FavoriteAttributes) Validate() error {
 	return validation.ValidateStruct(&r,
+		validation.Field(&r.Email, is.Email),
 		validation.Field(&r.Key, validation.Required),
 	)
 }

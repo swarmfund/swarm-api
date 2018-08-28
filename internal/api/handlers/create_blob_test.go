@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"gitlab.com/distributed_lab/ape/apeutil"
 	"gitlab.com/swarmfund/api/internal/types"
 )
 
@@ -18,13 +19,13 @@ func TestNewCreateBlobRequest(t *testing.T) {
 	}`
 
 	t.Run("nil address is valid", func(t *testing.T) {
-		r := RequestWithURLParams([]byte(data), map[string]string{})
+		r := apeutil.RequestWithURLParams([]byte(data), map[string]string{})
 		_, err := NewCreateBlobRequest(r)
 		assert.NoError(t, err)
 	})
 
 	t.Run("invalid address", func(t *testing.T) {
-		r := RequestWithURLParams([]byte(data), map[string]string{
+		r := apeutil.RequestWithURLParams([]byte(data), map[string]string{
 			"address": "GINVALIDADDRESS",
 		})
 		_, err := NewCreateBlobRequest(r)
@@ -33,7 +34,7 @@ func TestNewCreateBlobRequest(t *testing.T) {
 
 	t.Run("valid address", func(t *testing.T) {
 		address := "GB22CHWJQSDQ4VIP7A6QHDIFMTT2FCZKTOJGHCK56UKWR6VFVUDJ5RCR"
-		r := RequestWithURLParams([]byte(data), map[string]string{
+		r := apeutil.RequestWithURLParams([]byte(data), map[string]string{
 			"address": address,
 		})
 		got, err := NewCreateBlobRequest(r)
@@ -43,7 +44,7 @@ func TestNewCreateBlobRequest(t *testing.T) {
 	})
 
 	t.Run("blob", func(t *testing.T) {
-		r := RequestWithURLParams([]byte(data), map[string]string{})
+		r := apeutil.RequestWithURLParams([]byte(data), map[string]string{})
 		got, err := NewCreateBlobRequest(r)
 		assert.NoError(t, err)
 		assert.EqualValues(t, types.BlobTypeKYCForm, got.Data.Type)

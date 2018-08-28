@@ -6,15 +6,18 @@ import (
 
 	"gitlab.com/distributed_lab/logan/v3"
 	"gitlab.com/distributed_lab/logan/v3/errors"
+	goresources "gitlab.com/tokend/go/resources"
 	"gitlab.com/tokend/go/xdr"
 	"gitlab.com/tokend/horizon-connector/internal"
 	"gitlab.com/tokend/horizon-connector/internal/resources"
 	"gitlab.com/tokend/horizon-connector/internal/responses"
+	"gitlab.com/tokend/regources"
 )
 
 var (
 	ErrNoSigner      = errors.New("No such signer")
 	ErrNotEnoughType = errors.New("Not enough types")
+	ErrNoBalance     = errors.New("no such balance")
 )
 
 type Q struct {
@@ -35,12 +38,12 @@ func (q *Q) IsSigner(master string, signer string, signerType ...xdr.SignerType)
 	isAllowedSigner := false
 	var notEnoughTypes []xdr.SignerType
 	for _, s := range signers {
-		if signer == s.PublicKey {
+		if signer == s.AccountID {
 			isAllowedSigner = true
 		}
 
 		for _, t := range signerType {
-			if s.Type&int32(t) == 0 {
+			if s.SignerType&int(t) == 0 {
 				notEnoughTypes = append(notEnoughTypes, t)
 			}
 		}
@@ -57,7 +60,7 @@ func (q *Q) IsSigner(master string, signer string, signerType ...xdr.SignerType)
 	return nil
 }
 
-func (q *Q) Signers(address string) ([]resources.Signer, error) {
+func (q *Q) Signers(address string) ([]goresources.Signer, error) {
 	endpoint := fmt.Sprintf("/accounts/%s/signers", address)
 	response, err := q.client.Get(endpoint)
 	if err != nil {
@@ -67,10 +70,12 @@ func (q *Q) Signers(address string) ([]resources.Signer, error) {
 	if response == nil {
 		return nil, nil
 	}
+
 	var result responses.AccountSigners
 	if err := json.Unmarshal(response, &result); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal")
 	}
+
 	return result.Signers, nil
 }
 
@@ -113,6 +118,37 @@ func (q *Q) ByAddress(address string) (*resources.Account, error) {
 	return &account, nil
 }
 
+// CurrentBalanceIn return account's balance in provided asset
+// ErrNoBalance if balance does not exist
+func (q *Q) CurrentBalanceIn(address, asset string) (result resources.Balance, err error) {
+	account, err := q.ByAddress(address)
+	if err != nil {
+		return result, errors.Wrap(err, "failed to get account")
+	}
+	for _, balance := range account.Balances {
+		if balance.Asset == asset {
+			return balance, nil
+		}
+	}
+	return result, ErrNoBalance
+}
+
+// CurrentExternalBindingData will return (nil, nil) if account external binding does not exist
+func (q *Q) CurrentExternalBindingData(address string, externalSystem int32) (*string, error) {
+	account, err := q.ByAddress(address)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get account")
+	}
+
+	for _, system := range account.ExternalSystemAccounts {
+		if system.Type.Value == externalSystem {
+			return &system.Data, nil
+		}
+	}
+
+	return nil, nil
+}
+
 func (q *Q) Balances(address string) ([]resources.Balance, error) {
 	endpoint := fmt.Sprintf("/accounts/%s/balances", address)
 	response, err := q.client.Get(endpoint)
@@ -129,6 +165,39 @@ func (q *Q) Balances(address string) ([]resources.Balance, error) {
 		return nil, errors.Wrap(err, "failed to unmarshal")
 	}
 	return result, nil
+}
+
+// Offers requests Offers by the Account.
+// All parameters except `address` are optional - use default values for parameters you don't need to provide.
+func (q *Q) Offers(address, baseAsset, quoteAsset string, isBuy *bool, offerID string, orderBookID *uint64) ([]regources.Offer, error) {
+	if (baseAsset == "") != (quoteAsset == "") {
+		return nil, errors.New("base and quote assets must be both set or both not set")
+	}
+
+	endpoint := fmt.Sprintf("/accounts/%s/offers?base_asset=%s&quote_asset=%s&offer_id=%s",
+		address, baseAsset, quoteAsset, offerID)
+	if isBuy != nil {
+		endpoint = fmt.Sprintf("%s&is_buy=%v", endpoint, *isBuy)
+	}
+	if orderBookID != nil {
+		endpoint = fmt.Sprintf("%s&order_book_id=%d", endpoint, *orderBookID)
+	}
+
+	respBB, err := q.client.Get(endpoint)
+	if err != nil {
+		return nil, errors.Wrap(err, "request failed")
+	}
+
+	if respBB == nil {
+		return nil, nil
+	}
+
+	var result responses.OfferIndex
+	if err := json.Unmarshal(respBB, &result); err != nil {
+		return nil, errors.Wrap(err, "failed to unmarshal")
+	}
+
+	return result.Embedded.Records, nil
 }
 
 func (q *Q) References(address string) ([]resources.Reference, error) {

@@ -1,10 +1,12 @@
 package responses
 
-import "gitlab.com/tokend/horizon-connector/internal/resources"
+import (
+	"gitlab.com/tokend/regources"
+)
 
 type TransactionIndex struct {
 	Embedded struct {
-		Meta    resources.PageMeta      `json:"meta"`
-		Records []resources.Transaction `json:"records"`
+		Meta    regources.PageMeta      `json:"meta"`
+		Records []regources.Transaction `json:"records"`
 	} `json:"_embedded"`
 }

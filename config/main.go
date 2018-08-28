@@ -3,14 +3,17 @@ package config
 import (
 	"sync"
 
-	raven "github.com/getsentry/raven-go"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/getsentry/raven-go"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 	"gitlab.com/distributed_lab/logan/v3"
+	"gitlab.com/swarmfund/api/db2"
+	"gitlab.com/swarmfund/api/internal/data"
 	"gitlab.com/swarmfund/api/internal/discourse"
 	"gitlab.com/swarmfund/api/internal/mixpanel"
+	"gitlab.com/swarmfund/api/internal/salesforce"
 	"gitlab.com/swarmfund/api/notificator"
-	"gitlab.com/swarmfund/api/storage"
 	"gitlab.com/tokend/horizon-connector"
 )
 
@@ -18,21 +21,28 @@ type Config interface {
 	Init() error
 	API() API
 	HTTP() HTTP
-	Storage() *storage.Connector
+	Storage() data.Storage
 	Log() *logan.Entry
 	Wallets() Wallets
+	TXWatcher() TXWatcher
 
 	Notificator() *notificator.Connector
 	Sentry() *raven.Client
 	Horizon() *horizon.Connector
 	Discourse() *discourse.Connector
 	Mixpanel() *mixpanel.Connector
+	Salesforce() *salesforce.Connector
+	DB() *db2.Repo
+}
 
-	Get(string) map[string]interface{}
+//go:generate mockery -case underscore -name rawGetter -testonly -inpkg
+// rawGetter encapsulates raw config values provider
+type rawGetter interface {
+	GetStringMap(key string) map[string]interface{}
 }
 
 type ViperConfig struct {
-	*viper.Viper
+	rawGetter
 	*sync.RWMutex
 
 	// runtime-initialized instances
@@ -42,17 +52,28 @@ type ViperConfig struct {
 	sentry      *raven.Client
 	logan       *logan.Entry
 	mixpanel    *mixpanel.Connector
+	salesforce  *salesforce.Connector
 	wallets     *Wallets
-	storage     *storage.Connector
+	storage     data.Storage
+	api         *API
+	aws         *session.Session
+	db          *db2.Repo
 }
 
 func NewViperConfig(fn string) Config {
-	config := ViperConfig{
-		Viper:   viper.GetViper(),
+	// init underlying viper
+	v := viper.GetViper()
+	v.SetConfigFile(fn)
+
+	return newViperConfig(v)
+}
+
+func newViperConfig(raw rawGetter) Config {
+	config := &ViperConfig{
 		RWMutex: &sync.RWMutex{},
 	}
-	config.SetConfigFile(fn)
-	return &config
+	config.rawGetter = raw
+	return config
 }
 
 func (c *ViperConfig) Init() error {
@@ -60,13 +81,4 @@ func (c *ViperConfig) Init() error {
 		return errors.Wrap(err, "failed to read config file")
 	}
 	return nil
-}
-
-// Get will return value associated with config key, empty map if key is missing
-func (c *ViperConfig) Get(key string) map[string]interface{} {
-	m := c.Viper.GetStringMap(key)
-	if m == nil {
-		m = map[string]interface{}{}
-	}
-	return m
 }

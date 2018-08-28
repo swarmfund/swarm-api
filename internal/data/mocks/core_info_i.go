@@ -22,8 +22,8 @@ func (_m *CoreInfoI) GetMasterAccountID() string {
 	return r0
 }
 
-// Passphrase provides a mock function with given fields:
-func (_m *CoreInfoI) Passphrase() string {
+// GetPassphrase provides a mock function with given fields:
+func (_m *CoreInfoI) GetPassphrase() string {
 	ret := _m.Called()
 
 	var r0 string
@@ -36,8 +36,8 @@ func (_m *CoreInfoI) Passphrase() string {
 	return r0
 }
 
-// TXExpire provides a mock function with given fields:
-func (_m *CoreInfoI) TXExpire() int64 {
+// GetTXExpire provides a mock function with given fields:
+func (_m *CoreInfoI) GetTXExpire() int64 {
 	ret := _m.Called()
 
 	var r0 int64

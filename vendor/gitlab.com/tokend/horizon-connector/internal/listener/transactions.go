@@ -2,13 +2,15 @@ package listener
 
 import (
 	"context"
-	"gitlab.com/tokend/horizon-connector/internal/resources"
-	"gitlab.com/distributed_lab/logan/v3/errors"
+
 	"gitlab.com/distributed_lab/logan/v3"
+	"gitlab.com/distributed_lab/logan/v3/errors"
+	"gitlab.com/tokend/horizon-connector/internal/resources"
+	"gitlab.com/tokend/regources"
 )
 
 // DEPRECATED
-// Use StreamTransactions instead
+// Use StreamTXs instead
 func (q *Q) Transactions(result chan<- resources.TransactionEvent) <-chan error {
 	errs := make(chan error)
 	go func() {
@@ -28,13 +30,13 @@ func (q *Q) Transactions(result chan<- resources.TransactionEvent) <-chan error 
 					Transaction: &ohaigo,
 					// emulating discrete transactions stream by spoofing meta
 					// to not let bump cursor too much before actually consuming all transactions
-					Meta: resources.PageMeta{
-						LatestLedger: resources.LedgerMeta{
-							ClosedAt: tx.CreatedAt,
+					Meta: regources.PageMeta{
+						LatestLedger: regources.LedgerMeta{
+							ClosedAt: tx.LedgerCloseTime,
 						},
 					},
 				}
-				cursor = tx.PagingToken
+				cursor = tx.PagingToken()
 			}
 			// letting consumer know about current ledger cursor
 			result <- resources.TransactionEvent{
@@ -48,7 +50,7 @@ func (q *Q) Transactions(result chan<- resources.TransactionEvent) <-chan error 
 
 // DEPRECATED
 // Use StreamTXs instead
-func (q *Q) StreamTransactions(ctx context.Context) (<-chan resources.TransactionEvent, <- chan error) {
+func (q *Q) StreamTransactions(ctx context.Context) (<-chan resources.TransactionEvent, <-chan error) {
 	txStream := make(chan resources.TransactionEvent)
 	errChan := make(chan error)
 
@@ -80,9 +82,9 @@ func (q *Q) StreamTransactions(ctx context.Context) (<-chan resources.Transactio
 					Transaction: &ohaigo,
 					// emulating discrete transactions stream by spoofing meta
 					// to not let bump cursor too much before actually consuming all transactions
-					Meta: resources.PageMeta{
-						LatestLedger: resources.LedgerMeta{
-							ClosedAt: tx.CreatedAt,
+					Meta: regources.PageMeta{
+						LatestLedger: regources.LedgerMeta{
+							ClosedAt: tx.LedgerCloseTime,
 						},
 					},
 				}
@@ -92,7 +94,7 @@ func (q *Q) StreamTransactions(ctx context.Context) (<-chan resources.Transactio
 					return
 				}
 
-				cursor = tx.PagingToken
+				cursor = tx.PagingToken()
 			}
 
 			// letting consumer know about current ledger cursor
@@ -110,19 +112,42 @@ func (q *Q) StreamTransactions(ctx context.Context) (<-chan resources.Transactio
 	return txStream, errChan
 }
 
-// StreamTXs obtains Transactions from Horizon in pages (using txQ)
-// And streams TXPackets(Transaction + error) into returned channel.
+// StreamTXs streams all Transactions from Horizon from the very beginning of TX history
+// into returned channel (TransactionEvent + error).
 //
-// StreamTXs starts goroutine inside and returns immediately.
-func (q *Q) StreamTXs(ctx context.Context, stopOnEmptyPage bool) (<-chan TXPacket) {
+// See StreamTXsFromCursor method for more details.
+func (q *Q) StreamTXs(ctx context.Context, stopOnEmptyPage bool) <-chan TXPacket {
+	return q.StreamTXsFromCursor(ctx, "", stopOnEmptyPage)
+}
+
+// StreamTXsFromCursor obtains Transactions from Horizon in pages (using txQ),
+// starting from the provided cursor.
+// And streams TXPackets(TransactionEvent + error) into returned channel.
+//
+// Cursor is PagingToken, use empty string to stream all Transactions from the very beginning.
+//
+// StreamTXsFromCursor starts goroutine inside and returns immediately.
+//
+// Errors happening during TX streaming will be sent via returned channel in a TXPacket.
+// If TXPacket contains non-nil error, the TransactionEvent is nil.
+//
+// Returned TransactionEvent can have nil Transaction with non-empty Meta,
+// such a TransactionEvent is sent at the end of every page of Transactions retrieved from Horizon.
+func (q *Q) StreamTXsFromCursor(ctx context.Context, cursor string, stopOnEmptyPage bool) <-chan TXPacket {
 	txStream := make(chan TXPacket)
 
 	go func() {
 		defer func() {
-			close(txStream)
+			if r := recover(); r != nil {
+				txStream <- TXPacket{
+					body: nil,
+					err:  errors.Wrap(errors.FromPanic(r), "panic happened, stopping work, leaving channel unclosed"),
+				}
+			} else {
+				close(txStream)
+			}
 		}()
 
-		cursor := ""
 		for {
 			select {
 			case <-ctx.Done():
@@ -152,9 +177,9 @@ func (q *Q) StreamTXs(ctx context.Context, stopOnEmptyPage bool) (<-chan TXPacke
 					Transaction: &ohaigo,
 					// emulating discrete transactions stream by spoofing meta
 					// to not let bump cursor too much before actually consuming all transactions
-					Meta: resources.PageMeta{
-						LatestLedger: resources.LedgerMeta{
-							ClosedAt: tx.CreatedAt,
+					Meta: regources.PageMeta{
+						LatestLedger: regources.LedgerMeta{
+							ClosedAt: tx.LedgerCloseTime,
 						},
 					},
 				}
@@ -165,8 +190,7 @@ func (q *Q) StreamTXs(ctx context.Context, stopOnEmptyPage bool) (<-chan TXPacke
 					// Ctx was canceled
 					return
 				}
-
-				cursor = tx.PagingToken
+				cursor = tx.PagingToken()
 			}
 
 			// letting consumer know about current ledger cursor
@@ -188,7 +212,7 @@ func (q *Q) StreamTXs(ctx context.Context, stopOnEmptyPage bool) (<-chan TXPacke
 
 func streamTxEvent(ctx context.Context, txEvent resources.TransactionEvent, txStream chan<- resources.TransactionEvent) bool {
 	select {
-	case <- ctx.Done():
+	case <-ctx.Done():
 		return false
 	case txStream <- txEvent:
 		return true
@@ -197,7 +221,7 @@ func streamTxEvent(ctx context.Context, txEvent resources.TransactionEvent, txSt
 
 func streamTxPacket(ctx context.Context, txPacket TXPacket, txStream chan<- TXPacket) bool {
 	select {
-	case <- ctx.Done():
+	case <-ctx.Done():
 		return false
 	case txStream <- txPacket:
 		return true

@@ -27,7 +27,7 @@ func (c *ViperConfig) Sentry() *raven.Client {
 	err := figure.
 		Out(&config).
 		With(figure.BaseHooks, logLevelHook).
-		From(c.Get(sentryConfigKey)).
+		From(c.GetStringMap(sentryConfigKey)).
 		Please()
 	if err != nil {
 		panic(errors.Wrap(err, "failed to figure out sentry"))

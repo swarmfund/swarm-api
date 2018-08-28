@@ -10,13 +10,12 @@ import (
 	"gitlab.com/swarmfund/api/db2/api"
 	"gitlab.com/swarmfund/api/internal/data"
 	"gitlab.com/swarmfund/api/internal/hose"
+	"gitlab.com/swarmfund/api/internal/salesforce"
 	"gitlab.com/swarmfund/api/internal/track"
 	"gitlab.com/swarmfund/api/notificator"
-	"gitlab.com/swarmfund/api/storage"
 	"gitlab.com/tokend/go/doorman"
 	"gitlab.com/tokend/go/xdrbuild"
 	"gitlab.com/tokend/horizon-connector"
-	"gitlab.com/tokend/keypair"
 )
 
 type ctxKey int
@@ -28,10 +27,11 @@ const (
 	usersQCtxKey
 	horizonConnectorCtxKey
 	txSignerCtxKey
-	txSourceCtxKey
+	txBuilderCtxKey
 	tfaQCtxKey
 	doormanCtxKey
 	storageCtxKey
+	salesforceCtxKey
 	coreInfoCtxKey
 	blobQCtxKey
 	userBusDispatchCtxKey
@@ -112,24 +112,39 @@ func Doorman(r *http.Request, constraints ...doorman.SignerConstraint) error {
 	return d.Check(r, constraints...)
 }
 
-func CtxStorage(s *storage.Connector) func(context.Context) context.Context {
+func CtxStorage(s data.Storage) func(context.Context) context.Context {
 	return func(ctx context.Context) context.Context {
 		return context.WithValue(ctx, storageCtxKey, s)
 	}
 }
 
-func Storage(r *http.Request) *storage.Connector {
-	return r.Context().Value(storageCtxKey).(*storage.Connector)
+func Storage(r *http.Request) data.Storage {
+	return r.Context().Value(storageCtxKey).(data.Storage)
 }
 
-func CtxCoreInfo(s data.CoreInfoI) func(context.Context) context.Context {
+func CtxSalesforce(s *salesforce.Connector) func(context.Context) context.Context {
+	return func(ctx context.Context) context.Context {
+		return context.WithValue(ctx, salesforceCtxKey, s)
+	}
+}
+
+func Salesforce(r *http.Request) *salesforce.Connector {
+	return r.Context().Value(salesforceCtxKey).(*salesforce.Connector)
+}
+
+func CtxCoreInfo(s data.Info) func(context.Context) context.Context {
 	return func(ctx context.Context) context.Context {
 		return context.WithValue(ctx, coreInfoCtxKey, s)
 	}
 }
 
-func CoreInfo(r *http.Request) data.CoreInfoI {
-	return r.Context().Value(coreInfoCtxKey).(data.CoreInfoI)
+func CoreInfo(r *http.Request) *horizon.Info {
+	info, err := r.Context().Value(coreInfoCtxKey).(data.Info).Info()
+	if err != nil {
+		//TODO handle error
+		panic(err)
+	}
+	return info
 }
 
 func CtxBlobQ(q data.Blobs) func(context.Context) context.Context {
@@ -153,14 +168,6 @@ func UserBusDispatch(r *http.Request, event hose.UserEvent) {
 	dispatch(event)
 }
 
-func CtxTransaction(source keypair.Address, signer keypair.Full) func(context.Context) context.Context {
-	return func(ctx context.Context) context.Context {
-		ctx = context.WithValue(ctx, txSourceCtxKey, source)
-		ctx = context.WithValue(ctx, txSignerCtxKey, signer)
-		return ctx
-	}
-}
-
 func CtxNotificator(notificator *notificator.Connector) func(context.Context) context.Context {
 	return func(ctx context.Context) context.Context {
 		return context.WithValue(ctx, notificatorCtxKey, notificator)
@@ -171,14 +178,18 @@ func Notificator(r *http.Request) *notificator.Connector {
 	return r.Context().Value(notificatorCtxKey).(*notificator.Connector)
 }
 
+func CtxTransaction(txbuilder data.Infobuilder) func(context.Context) context.Context {
+	return func(ctx context.Context) context.Context {
+		ctx = context.WithValue(ctx, txBuilderCtxKey, txbuilder)
+		return ctx
+	}
+
+}
+
 func Transaction(r *http.Request) *xdrbuild.Transaction {
-	info := CoreInfo(r)
-	source := r.Context().Value(txSourceCtxKey).(keypair.Address)
-	signer := r.Context().Value(txSignerCtxKey).(keypair.Full)
-	return xdrbuild.
-		NewBuilder(info.Passphrase(), info.TXExpire()).
-		Transaction(source).
-		Sign(signer)
+	txbuilderbuilder := r.Context().Value(txBuilderCtxKey).(data.Infobuilder)
+	info := r.Context().Value(coreInfoCtxKey).(data.Info)
+	return txbuilderbuilder(info)
 }
 
 func CtxWallets(disableConfirm config.Wallets) func(context.Context) context.Context {

@@ -1,22 +1,25 @@
 package horizon
 
 import (
+	"encoding/json"
 	"net/http"
 	"net/url"
 
-	"encoding/json"
-
-	"github.com/pkg/errors"
+	"gitlab.com/distributed_lab/logan/v3/errors"
+	"gitlab.com/tokend/go/xdrbuild"
 	"gitlab.com/tokend/horizon-connector/internal/account"
 	"gitlab.com/tokend/horizon-connector/internal/asset"
 	"gitlab.com/tokend/horizon-connector/internal/balance"
 	"gitlab.com/tokend/horizon-connector/internal/blob"
 	"gitlab.com/tokend/horizon-connector/internal/document"
+	"gitlab.com/tokend/horizon-connector/internal/keyvalue"
 	"gitlab.com/tokend/horizon-connector/internal/listener"
 	"gitlab.com/tokend/horizon-connector/internal/operation"
 	"gitlab.com/tokend/horizon-connector/internal/sale"
+	"gitlab.com/tokend/horizon-connector/internal/system"
 	"gitlab.com/tokend/horizon-connector/internal/templates"
 	"gitlab.com/tokend/horizon-connector/internal/transaction"
+	"gitlab.com/tokend/horizon-connector/internal/transactionv2"
 	"gitlab.com/tokend/horizon-connector/internal/user"
 	"gitlab.com/tokend/horizon-connector/internal/wallets"
 	"gitlab.com/tokend/keypair"
@@ -43,6 +46,16 @@ func (c *Connector) Client() *Client {
 	return c.client
 }
 
+func (c *Connector) TXBuilder() (*xdrbuild.Builder, error) {
+	info, err := c.System().Info()
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get horizon info")
+	}
+
+	return xdrbuild.NewBuilder(info.Passphrase, info.TXExpirationPeriod), nil
+}
+
+// DEPRECATED: use .System().Info() instead
 func (c *Connector) Info() (info *Info, err error) {
 	response, err := c.client.Get("/")
 	if err != nil {
@@ -52,6 +65,14 @@ func (c *Connector) Info() (info *Info, err error) {
 		return nil, errors.Wrap(err, "failed to unmarshal info")
 	}
 	return info, nil
+}
+
+func (c *Connector) KeyValue() *keyvalue.Q {
+	return keyvalue.NewQ(c.client)
+}
+
+func (c *Connector) System() *system.Q {
+	return system.NewQ(c.client)
 }
 
 func (c *Connector) Submitter() *Submitter {
@@ -72,6 +93,10 @@ func (c *Connector) Transactions() *transaction.Q {
 	return transaction.NewQ(c.client)
 }
 
+func (c *Connector) TransactionsV2() *transactionv2.Q {
+	return transactionv2.NewQ(c.client)
+}
+
 func (c *Connector) Sales() *sale.Q {
 	return sale.NewQ(c.client)
 }
@@ -86,7 +111,7 @@ func (c *Connector) Balances() *balance.Q {
 
 func (c *Connector) Listener() *listener.Q {
 	// TODO Rename Operations to Requests? it does actually manages Requests only.
-	return listener.NewQ(c.Transactions(), c.Operations())
+	return listener.NewQ(c.Transactions(), c.TransactionsV2(), c.Operations())
 }
 
 // TODO Rename to Requests? it does actually manages Requests only.

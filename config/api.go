@@ -12,12 +12,7 @@ import (
 	"gitlab.com/tokend/keypair"
 )
 
-const (
-	apiConfigKey = "api"
-)
-
 var (
-	apiConfig *API
 	// TODO move to figure
 	URLHook = figure.Hooks{
 		"url.URL": func(value interface{}) (reflect.Value, error) {
@@ -51,22 +46,28 @@ var (
 )
 
 type API struct {
-	DatabaseURL        string
-	HorizonURL         url.URL
-	AccountManager     keypair.Full
+	// Project human readable name which will be used as user-facing project identifier
+	// FIXME eventually should be required
+	Project            string       `fig:"project"`
+	AccountManager     keypair.Full `fig:"account_manager,required"`
 	SkipSignatureCheck bool
-
-	NoEmailVerify bool
-	ClientDomain  string
 }
 
 func (c *ViperConfig) API() API {
-	if apiConfig == nil {
-		apiConfig = &API{}
-		config := c.GetStringMap(apiConfigKey)
-		if err := figure.Out(apiConfig).With(figure.BaseHooks, URLHook, KeypairHook).From(config).Please(); err != nil {
+	c.Lock()
+	defer c.Unlock()
+
+	if c.api == nil {
+		config := API{}
+		err := figure.
+			Out(&config).
+			With(figure.BaseHooks, URLHook, KeypairHook).
+			From(c.GetStringMap("api")).
+			Please()
+		if err != nil {
 			panic(errors.Wrap(err, "failed to figure out api"))
 		}
+		c.api = &config
 	}
-	return *apiConfig
+	return *c.api
 }
