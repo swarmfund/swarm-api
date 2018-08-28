@@ -14,6 +14,7 @@ import (
 	"github.com/minio/minio-go"
 	"github.com/pkg/errors"
 	"gitlab.com/swarmfund/api/internal/data"
+	"gitlab.com/swarmfund/api/internal/storage"
 	"gitlab.com/swarmfund/api/internal/types"
 )
 
@@ -21,7 +22,7 @@ const (
 	presignExpire = 1 * time.Hour
 )
 
-func NewStorage(session *session.Session, bucket string) (data.Storage, error) {
+func NewStorage(session *session.Session, bucket string, mediaTypes storage.MediaTypes) (data.Storage, error) {
 	creds, err := session.Config.Credentials.Get()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get credentials")
@@ -45,14 +46,16 @@ func NewStorage(session *session.Session, bucket string) (data.Storage, error) {
 		s3.New(session),
 		mc,
 		bucket,
+		mediaTypes,
 	}, nil
 }
 
 type Storage struct {
 	s3 *s3.S3
 	// keeping minio for backwards compatibility
-	minio  *minio.Client
-	bucket string
+	minio      *minio.Client
+	bucket     string
+	mediaTypes storage.MediaTypes
 }
 
 func (s *Storage) SignedObjectURL(key string) (*url.URL, error) {
@@ -77,8 +80,7 @@ func (s *Storage) SignedObjectURL(key string) (*url.URL, error) {
 
 // TODO move out of connector
 func (s *Storage) IsContentTypeAllowed(docType types.DocumentType, mediaType string) bool {
-	// TODO implement
-	return true
+	return s.mediaTypes.IsAllowed(docType, mediaType)
 }
 
 func (s *Storage) UploadFormData(key string) (map[string]string, error) {
