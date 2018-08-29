@@ -9,6 +9,7 @@ import (
 	"github.com/spf13/viper"
 	"gitlab.com/distributed_lab/logan/v3"
 	"gitlab.com/swarmfund/api/db2"
+	"gitlab.com/swarmfund/api/geoinfo"
 	"gitlab.com/swarmfund/api/internal/data"
 	"gitlab.com/swarmfund/api/internal/discourse"
 	"gitlab.com/swarmfund/api/internal/mixpanel"
@@ -32,6 +33,7 @@ type Config interface {
 	Discourse() *discourse.Connector
 	Mixpanel() *mixpanel.Connector
 	Salesforce() *salesforce.Connector
+	GeoInfo() *geoinfo.Connector
 	DB() *db2.Repo
 }
 
@@ -58,6 +60,7 @@ type ViperConfig struct {
 	api         *API
 	aws         *session.Session
 	db          *db2.Repo
+	geoinfo     *geoinfo.Connector
 }
 
 func NewViperConfig(fn string) Config {

@@ -8,12 +8,6 @@ import (
 	"net/url"
 
 	"gitlab.com/distributed_lab/logan/v3/errors"
-	"gitlab.com/swarmfund/api/geoinfo/resources"
-)
-
-var (
-	BaseURL         *url.URL
-	ErrHTTPResponse = errors.New("request failed with status")
 )
 
 type Connector struct {
@@ -21,21 +15,14 @@ type Connector struct {
 	base      *url.URL
 }
 
-func (c *Connector) WithBase(url *url.URL) *Connector {
+func NewConnector(accessKey string, url *url.URL) *Connector {
 	return &Connector{
-		accessKey: c.accessKey,
+		accessKey: accessKey,
 		base:      url,
 	}
 }
 
-func NewConnector(accessKey string) *Connector {
-	return &Connector{
-		accessKey: accessKey,
-		base:      BaseURL,
-	}
-}
-
-func (c *Connector) LocationInfo(ip string) (*resources.LocationInfo, error) {
+func (c *Connector) LocationInfo(ip string) (*LocationInfo, error) {
 	endpoint := fmt.Sprintf("%s/%s?access_key=%s&output=json", c.base.String(), ip, c.accessKey)
 	resp, err := http.Get(endpoint)
 	if err != nil {
@@ -44,23 +31,14 @@ func (c *Connector) LocationInfo(ip string) (*resources.LocationInfo, error) {
 
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
-		return nil, errors.Wrap(ErrHTTPResponse, resp.Status)
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return nil, errors.Wrap(errors.New("request failed with status"), resp.Status)
 	}
 
-	var info resources.LocationInfo
+	var info LocationInfo
 	if err := json.NewDecoder(resp.Body).Decode(&info); err != nil {
 		return nil, errors.Wrap(err, "failed to decode location info")
 	}
 
 	return &info, nil
-}
-
-func init() {
-	url, err := url.Parse("http://api.ipstack.com")
-	if err != nil {
-		panic(errors.Wrap(err, "failed to init base geoinfo url"))
-	}
-
-	BaseURL = url
 }

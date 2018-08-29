@@ -7,7 +7,6 @@ import (
 
 	"github.com/pkg/errors"
 	"gitlab.com/distributed_lab/logan/v3"
-	"gitlab.com/swarmfund/api/geoinfo"
 	"gitlab.com/tokend/go/signcontrol"
 )
 
@@ -78,14 +77,14 @@ func (t *Tracker) track(event Event) {
 }
 
 func (t *Tracker) CreateBlob(address string, request *http.Request) {
-	ip := request.Header.Get("x-real-ip")
+	/*	ip := request.Header.Get("x-real-ip")
 
-	location, err := GetGeoLocation(ip)
-	if err != nil {
-		t.entry.WithError(err).WithFields(logan.F{
-			"ip": ip,
-		}).Error("failed to get geolocation")
-	}
+		location, err := GetGeoLocation(ip)
+		if err != nil {
+			t.entry.WithError(err).WithFields(logan.F{
+				"ip": ip,
+			}).Error("failed to get geolocation")
+		}*/
 
 	sig, _ := signcontrol.IsSigned(request)
 	t.track(Event{
@@ -94,9 +93,9 @@ func (t *Tracker) CreateBlob(address string, request *http.Request) {
 		Details: EventDetails{
 			Type: EventTypeGetWallet,
 			Request: &RequestDetails{
-				IP:        ip,
+				//IP:        ip,
 				UserAgent: request.Header.Get("user-agent"),
-				Location:  location,
+				//Location:  location,
 			},
 		},
 	})
@@ -106,7 +105,7 @@ func (t *Tracker) GetLast(event Event) (*Event, error) {
 	return t.q.Last(&event)
 }
 
-func GetGeoLocation(ip string) (string, error) {
+/*func GetGeoLocation(ip string) (string, error) {
 	connector := geoinfo.NewConnector("fb170f98697192973f33434cb35157b4")
 	locationInfo, err := connector.LocationInfo(ip)
 	if err != nil {
@@ -114,4 +113,4 @@ func GetGeoLocation(ip string) (string, error) {
 	} else {
 		return locationInfo.FullRegion(), nil
 	}
-}
+}*/

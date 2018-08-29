@@ -1,9 +1,11 @@
-package resources
+package geoinfo
 
-import "strings"
+import (
+	"fmt"
+)
 
 type LocationInfo struct {
-	Ip            string  `json:"ip"`
+	IP            string  `json:"ip"`
 	Type          string  `json:"type"`
 	ContinentCode string  `json:"continent_code"`
 	ContinentName string  `json:"continent_name"`
@@ -17,15 +19,22 @@ type LocationInfo struct {
 }
 
 func (l *LocationInfo) FullRegion() string {
-	sep := ", "
-	locationParts := []string{l.City, l.RegionName, l.CountryName}
-	location := strings.Join(locationParts, sep)
-
-	// set location = "Unknown" if all locationParts is empty strings
-	if len(location) == len(sep)*(len(locationParts)-1) {
-		location = "Unknown"
+	if (l.City == "") && (l.RegionName == "") && (l.ContinentName == "") {
+		return "Unknown"
 	}
 
-	// remove unnecessary whitespaces and separators when some locationParts empty
-	return strings.Replace(location, " ,", "", -1)
+	location := addNotEmptyString(l.City, l.RegionName)
+	return addNotEmptyString(location, l.CountryName)
+}
+
+func addNotEmptyString(basic, toAdd string) string {
+	if toAdd == "" {
+		return basic
+	}
+
+	if basic == "" {
+		return toAdd
+	}
+
+	return fmt.Sprintf("%s, %s", basic, toAdd)
 }
