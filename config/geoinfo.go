@@ -16,8 +16,8 @@ func (c *ViperConfig) GeoInfo() *geoinfo.Connector {
 
 	if c.geoinfo == nil {
 		var config struct {
-			AccessKey string   `fig:"access_key"`
-			URL       *url.URL `fig:"api_url"`
+			AccessKey string   `fig:"access_key,required"`
+			URL       *url.URL `fig:"api_url,required"`
 		}
 
 		err := figure.
