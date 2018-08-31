@@ -32,7 +32,7 @@ func (c *Connector) LocationInfo(ip string) (*LocationInfo, error) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return nil, errors.Wrap(errors.New("request failed with status"), resp.Status)
+		return nil, errors.Errorf("request failed with status %s", resp.Status)
 	}
 
 	var info LocationInfo

@@ -41,7 +41,7 @@ func (d LogInfo) Value() (driver.Value, error) {
 
 func (a AuditLogAction) GetIP() string {
 	if a.Details.GeoInfo != nil {
-		return a.Details.GeoInfo.Ip
+		return a.Details.GeoInfo.IP
 	}
 	return ""
 }
