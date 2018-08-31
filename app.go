@@ -12,7 +12,6 @@ import (
 	horizon2 "gitlab.com/swarmfund/api/internal/data/horizon"
 	"gitlab.com/swarmfund/api/internal/data/postgres"
 	"gitlab.com/swarmfund/api/internal/hose"
-	"gitlab.com/swarmfund/api/internal/track"
 	"gitlab.com/tokend/go/doorman"
 	"gitlab.com/tokend/go/support/log"
 	"gitlab.com/tokend/go/xdrbuild"
@@ -30,19 +29,19 @@ type App struct {
 	infoer  data.Info
 	storage data.Storage
 	txBus   *hose.TransactionBus
-	userBus *hose.UserBus
+	logBus  *hose.LogBus
 }
 
 // NewApp constructs an new App instance from the provided config.
 func NewApp(config config.Config) (*App, error) {
 	ctx, cancel := context.WithCancel(context.Background())
 	result := &App{
-		config:  config,
-		ctx:     ctx,
-		cancel:  cancel,
-		txBus:   hose.NewTransactionBus(),
-		userBus: hose.NewUserBus(),
-		infoer:  NewLazyInfo(ctx, config.Log(), config.Horizon()),
+		config: config,
+		ctx:    ctx,
+		cancel: cancel,
+		txBus:  hose.NewTransactionBus(config.Log().WithField("service", "tx-bus")),
+		logBus: hose.NewLogBus(config.Log().WithField("service", "audit-log-bus")),
+		infoer: NewLazyInfo(ctx, config.Log(), config.Horizon()),
 	}
 	result.init()
 	return result, nil
@@ -58,10 +57,6 @@ func (a *App) EmailTokensQ() data.EmailTokensQ {
 
 func (a *App) Blobs() data.Blobs {
 	return postgres.NewBlobs(a.Config().DB())
-}
-
-func (a *App) Tracker() *track.Tracker {
-	return track.NewTracker(a.Config().Log(), postgres.NewTracking(a.Config().DB()))
 }
 
 // Serve starts the horizon web server, binding it to a socket, setting up
@@ -87,6 +82,7 @@ func (a *App) Serve() {
 		a.APIQ().Wallet(),
 		a.EmailTokensQ(),
 		a.APIQ().Users(),
+		a.APIQ().AuditLog(),
 		doorman.New(
 			a.Config().API().SkipSignatureCheck,
 			horizon2.NewAccountQ(a.Config().Horizon()),
@@ -97,11 +93,10 @@ func (a *App) Serve() {
 		a.Info(),
 		a.Blobs(),
 		a.Config().Sentry(),
-		a.userBus.Dispatch,
+		a.logBus.Dispatch,
 		a.Config().Notificator(),
 		a.Config().DB(),
 		a.config.Wallets(),
-		a.Tracker(),
 		a.Config().Salesforce(),
 		builder,
 	)

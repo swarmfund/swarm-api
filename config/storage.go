@@ -71,14 +71,14 @@ func (c *ViperConfig) Storage() data.Storage {
 		defer c.Unlock()
 
 		var config struct {
-			Bucket string `fig:"bucket,required"`
-			//MediaTypes       storage.MediaTypes `fig:"media_types"`
+			Bucket     string             `fig:"bucket,required"`
+			MediaTypes storage.MediaTypes `fig:"media_types,required"`
 		}
 
-		if err := figure.Out(&config).From(raw).Please(); err != nil {
+		if err := figure.Out(&config).With(figure.BaseHooks, MediaTypeHook).From(raw).Please(); err != nil {
 			panic(errors.Wrap(err, "failed to figure out storage"))
 		}
-		storage, err := s3storage.NewStorage(aws, config.Bucket)
+		storage, err := s3storage.NewStorage(aws, config.Bucket, config.MediaTypes)
 		if err != nil {
 			panic(errors.Wrap(err, "failed to init storage"))
 		}
