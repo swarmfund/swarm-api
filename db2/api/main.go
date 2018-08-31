@@ -10,6 +10,7 @@ type QInterface interface {
 	AuthorizedDevice() AuthorizedDeviceQI
 	TFA() TFAQI
 	Wallet() WalletQI
+	AuditLog() AuditLogQI
 }
 
 // Q is a helper struct on which to hang common queries against a history
@@ -23,7 +24,7 @@ func (q *Q) Wallet() WalletQI {
 		parent: &Q{
 			q.Clone(),
 		},
-		sql:    walletSelect,
+		sql: walletSelect,
 	}
 }
 

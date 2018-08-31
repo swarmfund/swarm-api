@@ -10,31 +10,31 @@ import (
 	"gitlab.com/distributed_lab/logan/v3"
 )
 
-type TransactionCallback func(TransactionEvent)
-type TransactionDispatch func(TransactionEvent)
+type LogCallback func(LogEvent)
+type LogDispatch func(LogEvent)
 
-type TransactionBus struct {
+type LogBus struct {
 	*sync.RWMutex
 	log       *logan.Entry
-	callbacks []TransactionCallback
+	callbacks []LogCallback
 }
 
-func NewTransactionBus(log *logan.Entry) *TransactionBus {
-	return &TransactionBus{
+func NewLogBus(log *logan.Entry) *LogBus {
+	return &LogBus{
 		&sync.RWMutex{},
 		log,
-		make([]TransactionCallback, 0),
+		make([]LogCallback, 0),
 	}
 }
 
-func (b *TransactionBus) Subscribe(cb TransactionCallback) *TransactionBus {
+func (b *LogBus) Subscribe(cb LogCallback) *LogBus {
 	b.Lock()
 	defer b.Unlock()
 	b.callbacks = append(b.callbacks, cb)
 	return b
 }
 
-func (b *TransactionBus) Dispatch(event TransactionEvent) {
+func (b *LogBus) Dispatch(event LogEvent) {
 	b.Lock()
 	defer b.Unlock()
 
@@ -42,7 +42,7 @@ func (b *TransactionBus) Dispatch(event TransactionEvent) {
 		func() {
 			defer func() {
 				if v := recover(); v != nil { // a panic is detected.
-					b.log.WithRecover(v).Error("TransactionBus crashed", logan.F{
+					b.log.WithRecover(v).Error("LogBus crashed", logan.F{
 						"event": event,
 					})
 				}
