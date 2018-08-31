@@ -8,10 +8,11 @@ import (
 	"github.com/go-chi/chi"
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/ape/problems"
-	"gitlab.com/distributed_lab/logan/v3"
 	"gitlab.com/swarmfund/api/internal/api/movetoape"
 	"gitlab.com/swarmfund/api/internal/api/resources"
-	"gitlab.com/swarmfund/api/internal/track"
+
+	"gitlab.com/distributed_lab/logan/v3"
+	"gitlab.com/swarmfund/api/internal/types"
 	"gitlab.com/tokend/go/doorman"
 )
 
@@ -48,24 +49,17 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 
 	defer json.NewEncoder(w).Encode(&response)
 
-	// FIXME
 	{
-		event, err := Tracker(r).GetLast(track.Event{
-			Address: string(user.Address),
-		})
+		event, err := AuditLogs(r).LastSeen(types.Address(address))
 		if err != nil {
 			Log(r).WithError(err).Error("failed to get event")
 			return
 		}
 
-		if event == nil {
-			Log(r).WithField("address", user.Address).Debug("event not found")
-			return
-		}
-		response.Data.Attributes.LastIPAddress = event.Details.Request.IP
+		response.Data.Attributes.LastIPAddress = event.GetIP()
 		Log(r).WithFields(logan.F{
 			"address": user.Address,
-			"ip":      event.Details.Request.IP,
+			"ip":      event.GetIP(),
 		}).Debug("found event")
 	}
 

@@ -26,7 +26,6 @@ import (
 	"gitlab.com/swarmfund/api/internal/hose"
 	"gitlab.com/swarmfund/api/internal/salesforce"
 	"gitlab.com/swarmfund/api/internal/secondfactor"
-	"gitlab.com/swarmfund/api/internal/track"
 	"gitlab.com/swarmfund/api/notificator"
 	"gitlab.com/tokend/go/doorman"
 	"gitlab.com/tokend/horizon-connector"
@@ -34,10 +33,10 @@ import (
 
 func Router(
 	entry *logan.Entry, walletQ api.WalletQI, tokensQ data.EmailTokensQ,
-	usersQ api.UsersQI, doorman doorman.Doorman, horizon *horizon.Connector,
+	usersQ api.UsersQI, auditLogsQ api.AuditLogQI, doorman doorman.Doorman, horizon *horizon.Connector,
 	tfaQ api.TFAQI, storage data.Storage, coreInfo data.Info, blobQ data.Blobs, sentry *raven.Client,
-	userDispatch hose.UserDispatch, notificator *notificator.Connector, repo *db2.Repo,
-	wallets config.Wallets, tracker *track.Tracker, salesforce *salesforce.Connector, txbuilder data.Infobuilder,
+	logDispatch hose.LogDispatch, notificator *notificator.Connector, repo *db2.Repo,
+	wallets config.Wallets, salesforce *salesforce.Connector, txbuilder data.Infobuilder,
 ) chi.Router {
 	r := chi.NewRouter()
 
@@ -51,17 +50,17 @@ func Router(
 			handlers.CtxLog(entry),
 			handlers.CtxEmailTokensQ(tokensQ),
 			handlers.CtxUsersQ(usersQ),
+			handlers.CtxAuditLogs(auditLogsQ),
 			handlers.CtxHorizon(horizon),
 			handlers.CtxTransaction(txbuilder),
 			handlers.CtxTFAQ(tfaQ),
 			handlers.CtxDoorman(doorman),
 			handlers.CtxStorage(storage),
 			handlers.CtxCoreInfo(coreInfo),
-			handlers.CtxUserBusDispatch(userDispatch),
+			handlers.CtxLogBusDispatch(logDispatch),
 			handlers.CtxNotificator(notificator),
 			handlers.CtxWallets(wallets),
 			handlers.CtxBlobQ(blobQ),
-			handlers.CtxTracker(tracker),
 			handlers.CtxDomainApprover(blacklist.NewApprover(wallets.DomainsBlacklist...)),
 			handlers.CtxSalesforce(salesforce),
 		),

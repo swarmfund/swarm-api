@@ -3,6 +3,8 @@ package handlers
 import (
 	"net/http"
 
+	"time"
+
 	"github.com/go-chi/chi"
 	. "github.com/go-ozzo/ozzo-validation"
 	"gitlab.com/distributed_lab/ape"
@@ -78,14 +80,6 @@ func performUserCreate(r *http.Request, wallet *api.Wallet) error {
 			return errors.Wrap(result.Err, "failed to submit tx", result.GetLoganFields())
 		}
 
-		// dispatch user create event
-		UserBusDispatch(r, hose.UserEvent{
-			Type: hose.UserEventTypeCreated,
-			User: hose.User{
-				Email:   wallet.Username,
-				Address: wallet.AccountID,
-			},
-		})
 		return nil
 	})
 	if err != nil {
@@ -130,6 +124,18 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
+
+	// dispatch user create event
+	LogBusDispatch(r, hose.LogEvent{
+		Type: types.LogEventTypeUserCreated,
+		User: hose.User{
+			Email:   wallet.Username,
+			Address: wallet.AccountID,
+			IP:      r.Header.Get("x-real-ip"),
+		},
+		Time:    time.Now(),
+		Context: r.Context(),
+	})
 
 	w.WriteHeader(http.StatusNoContent)
 }

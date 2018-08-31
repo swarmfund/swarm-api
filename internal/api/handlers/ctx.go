@@ -11,7 +11,6 @@ import (
 	"gitlab.com/swarmfund/api/internal/data"
 	"gitlab.com/swarmfund/api/internal/hose"
 	"gitlab.com/swarmfund/api/internal/salesforce"
-	"gitlab.com/swarmfund/api/internal/track"
 	"gitlab.com/swarmfund/api/notificator"
 	"gitlab.com/tokend/go/doorman"
 	"gitlab.com/tokend/go/xdrbuild"
@@ -34,11 +33,11 @@ const (
 	salesforceCtxKey
 	coreInfoCtxKey
 	blobQCtxKey
-	userBusDispatchCtxKey
 	notificatorCtxKey
 	walletAdditionCtxKey
-	trackerCtxKey
 	domainApproverCtxKey
+	logBusDispatchCtxKey
+	auditLogsQCtxKey
 )
 
 func CtxWalletQ(q api.WalletQI) func(context.Context) context.Context {
@@ -157,14 +156,14 @@ func BlobQ(r *http.Request) data.Blobs {
 	return r.Context().Value(blobQCtxKey).(data.Blobs).New()
 }
 
-func CtxUserBusDispatch(dispatch hose.UserDispatch) func(context.Context) context.Context {
+func CtxLogBusDispatch(dispatch hose.LogDispatch) func(context.Context) context.Context {
 	return func(ctx context.Context) context.Context {
-		return context.WithValue(ctx, userBusDispatchCtxKey, dispatch)
+		return context.WithValue(ctx, logBusDispatchCtxKey, dispatch)
 	}
 }
 
-func UserBusDispatch(r *http.Request, event hose.UserEvent) {
-	dispatch := r.Context().Value(userBusDispatchCtxKey).(hose.UserDispatch)
+func LogBusDispatch(r *http.Request, event hose.LogEvent) {
+	dispatch := r.Context().Value(logBusDispatchCtxKey).(hose.LogDispatch)
 	dispatch(event)
 }
 
@@ -202,16 +201,6 @@ func Wallet(r *http.Request) config.Wallets {
 	return r.Context().Value(walletAdditionCtxKey).(config.Wallets)
 }
 
-func CtxTracker(tracker *track.Tracker) func(context.Context) context.Context {
-	return func(ctx context.Context) context.Context {
-		return context.WithValue(ctx, trackerCtxKey, tracker)
-	}
-}
-
-func Tracker(r *http.Request) *track.Tracker {
-	return r.Context().Value(trackerCtxKey).(*track.Tracker)
-}
-
 func CtxDomainApprover(approver *blacklist.Approver) func(context.Context) context.Context {
 	return func(ctx context.Context) context.Context {
 		return context.WithValue(ctx, domainApproverCtxKey, approver)
@@ -220,4 +209,14 @@ func CtxDomainApprover(approver *blacklist.Approver) func(context.Context) conte
 
 func DomainApprover(r *http.Request) *blacklist.Approver {
 	return r.Context().Value(domainApproverCtxKey).(*blacklist.Approver)
+}
+
+func CtxAuditLogs(q api.AuditLogQI) func(context.Context) context.Context {
+	return func(ctx context.Context) context.Context {
+		return context.WithValue(ctx, auditLogsQCtxKey, q)
+	}
+}
+
+func AuditLogs(r *http.Request) api.AuditLogQI {
+	return r.Context().Value(auditLogsQCtxKey).(api.AuditLogQI).New()
 }
