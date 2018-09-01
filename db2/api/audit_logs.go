@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"reflect"
 
-	"gitlab.com/swarmfund/api/geoinfo"
+	"gitlab.com/distributed_lab/geoinfo"
 )
 
 type LogInfo struct {

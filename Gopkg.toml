@@ -92,6 +92,10 @@
   name = "gitlab.com/distributed_lab/figure"
 
 [[constraint]]
+  branch = "feature/refactor"
+  name = "gitlab.com/distributed_lab/geoinfo"
+
+[[constraint]]
   name = "gitlab.com/distributed_lab/ape"
   version = "v0.3"
 

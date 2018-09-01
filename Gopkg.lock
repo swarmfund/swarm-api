@@ -329,14 +329,6 @@
   version = "v0.3.0"
 
 [[projects]]
-  digest = "1:748946761cf99c8b73cef5a3c0ee3e040859dd713a20cece0d0e0dc04e6ceca7"
-  name = "github.com/patrickmn/go-cache"
-  packages = ["."]
-  pruneopts = "NT"
-  revision = "a3647f8e31d79543b2d0f0ae2fe5c379d72cedc0"
-  version = "v2.1.0"
-
-[[projects]]
   digest = "1:95a12ef665294eb550b922dcc981bdc55ef32cd3fe86692162e51f8d240825eb"
   name = "github.com/pelletier/go-toml"
   packages = ["."]
@@ -483,6 +475,14 @@
   packages = ["."]
   pruneopts = "NT"
   revision = "21ba3b8f508e2638402bf83aa62eff1a86d61020"
+
+[[projects]]
+  branch = "feature/refactor"
+  digest = "1:4a57b7fe500e5418f0079cefe5a16c47061cf7f7948e5c5d63d1364f52415f45"
+  name = "gitlab.com/distributed_lab/geoinfo"
+  packages = ["."]
+  pruneopts = "NT"
+  revision = "f3b5eca332fcabf8b8b7bf11e48f850718e2b7ea"
 
 [[projects]]
   digest = "1:842c26eb09d1caa20526d2645a764771dd9755bb8ded760e1c8f8057e1aeb747"
@@ -700,7 +700,6 @@
     "github.com/mitchellh/mapstructure",
     "github.com/mssola/user_agent",
     "github.com/oklog/ulid",
-    "github.com/patrickmn/go-cache",
     "github.com/pkg/errors",
     "github.com/pquerna/otp",
     "github.com/pquerna/otp/totp",
@@ -715,6 +714,7 @@
     "gitlab.com/distributed_lab/ape/apeutil",
     "gitlab.com/distributed_lab/ape/problems",
     "gitlab.com/distributed_lab/figure",
+    "gitlab.com/distributed_lab/geoinfo",
     "gitlab.com/distributed_lab/logan",
     "gitlab.com/distributed_lab/logan/v3",
     "gitlab.com/distributed_lab/logan/v3/errors",

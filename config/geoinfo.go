@@ -5,7 +5,7 @@ import (
 
 	"github.com/pkg/errors"
 	"gitlab.com/distributed_lab/figure"
-	"gitlab.com/swarmfund/api/geoinfo"
+	"gitlab.com/distributed_lab/geoinfo"
 )
 
 const geoInfoConfigKey = "geo_info"
