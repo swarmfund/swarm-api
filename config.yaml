@@ -62,3 +62,8 @@ storage:
 wallet_cleaner:
   enabled: true
   expiration: 128h
+
+geo_info:
+  access_key: 288fbbd921b99d9d60024c5a232d0546
+  api_url: http://api.ipstack.com
+  disabled: false

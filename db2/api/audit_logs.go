@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"reflect"
 
-	"gitlab.com/swarmfund/api/geoinfo"
+	"gitlab.com/distributed_lab/geoinfo"
 )
 
 type LogInfo struct {
@@ -41,7 +41,7 @@ func (d LogInfo) Value() (driver.Value, error) {
 
 func (a AuditLogAction) GetIP() string {
 	if a.Details.GeoInfo != nil {
-		return a.Details.GeoInfo.Ip
+		return a.Details.GeoInfo.IP
 	}
 	return ""
 }

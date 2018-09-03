@@ -32,6 +32,7 @@ type Config interface {
 	Discourse() *discourse.Connector
 	Mixpanel() *mixpanel.Connector
 	Salesforce() *salesforce.Connector
+	GeoInfo() GeoConnector
 	DB() *db2.Repo
 }
 
@@ -58,6 +59,7 @@ type ViperConfig struct {
 	api         *API
 	aws         *session.Session
 	db          *db2.Repo
+	geoinfo     GeoConnector
 }
 
 func NewViperConfig(fn string) Config {
