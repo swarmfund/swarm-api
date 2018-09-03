@@ -92,7 +92,7 @@
   name = "gitlab.com/distributed_lab/figure"
 
 [[constraint]]
-  branch = "feature/refactor"
+  branch = "master"
   name = "gitlab.com/distributed_lab/geoinfo"
 
 [[constraint]]
