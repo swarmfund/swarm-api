@@ -25,26 +25,42 @@ func (c *ViperConfig) GeoInfo() GeoConnector {
 	defer c.Unlock()
 
 	if c.geoinfo == nil {
+		c.geoinfo = &DisabledGeoConnector{}
+
+		// check if geo_info is disabled
+		var disabled struct {
+			Disabled bool `fig:"disabled"`
+		}
+
+		configData := c.GetStringMap(geoInfoConfigKey)
+
+		err := figure.
+			Out(&disabled).
+			From(configData).
+			Please()
+		if err != nil {
+			panic(errors.Wrap(err, "failed to figure out geo_info disabled"))
+		}
+
+		if disabled.Disabled {
+			return c.geoinfo
+		}
+
 		var config struct {
 			AccessKey string   `fig:"access_key,required"`
 			URL       *url.URL `fig:"api_url,required"`
-			Disabled  bool     `fig:"disabled"`
 		}
 
-		err := figure.
+		err = figure.
 			Out(&config).
 			With(figure.BaseHooks).
-			From(c.GetStringMap(geoInfoConfigKey)).
+			From(configData).
 			Please()
 		if err != nil {
 			panic(errors.Wrap(err, "failed to figure out geo_info"))
 		}
 
-		c.geoinfo = &DisabledGeoConnector{}
-
-		if !config.Disabled {
-			c.geoinfo = geoinfo.NewConnector(config.AccessKey, config.URL)
-		}
+		c.geoinfo = geoinfo.NewConnector(config.AccessKey, config.URL)
 	}
 
 	return c.geoinfo

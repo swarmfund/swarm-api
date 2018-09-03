@@ -17,7 +17,7 @@ func TestViperConfig_GeoInfo(t *testing.T) {
 
 		config := newViperConfig(raw)
 
-		assert.NotNil(t, config.GeoInfo())
+		assert.NotPanics(t, func() { config.GeoInfo() })
 	})
 
 	t.Run("panic because access key not specified", func(t *testing.T) {
@@ -47,9 +47,7 @@ func TestViperConfig_GeoInfo(t *testing.T) {
 	t.Run("disabled geoConnector", func(t *testing.T) {
 		raw := &mockRawGetter{}
 		raw.On("GetStringMap", "geo_info").Return(map[string]interface{}{
-			"access_key": "fb170f98697192973f33434cb35157b4",
-			"api_url":    "http://api.ipstack.com",
-			"disabled":   "true",
+			"disabled": true,
 		}).Once()
 		defer raw.AssertExpectations(t)
 
