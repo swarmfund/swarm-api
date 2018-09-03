@@ -14,9 +14,9 @@ type GeoConnector interface {
 	LocationInfo(ip string) (*geoinfo.LocationInfo, error)
 }
 
-type DisabledGeoConnector struct{}
+type disabledGeoConnector struct{}
 
-func (c *DisabledGeoConnector) LocationInfo(ip string) (*geoinfo.LocationInfo, error) {
+func (c *disabledGeoConnector) LocationInfo(ip string) (*geoinfo.LocationInfo, error) {
 	return &geoinfo.LocationInfo{}, nil
 }
 
@@ -25,8 +25,6 @@ func (c *ViperConfig) GeoInfo() GeoConnector {
 	defer c.Unlock()
 
 	if c.geoinfo == nil {
-		c.geoinfo = &DisabledGeoConnector{}
-
 		// check if geo_info is disabled
 		var disabled struct {
 			Disabled bool `fig:"disabled"`
@@ -43,6 +41,7 @@ func (c *ViperConfig) GeoInfo() GeoConnector {
 		}
 
 		if disabled.Disabled {
+			c.geoinfo = &disabledGeoConnector{}
 			return c.geoinfo
 		}
 
