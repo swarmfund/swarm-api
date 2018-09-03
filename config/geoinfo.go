@@ -10,7 +10,17 @@ import (
 
 const geoInfoConfigKey = "geo_info"
 
-func (c *ViperConfig) GeoInfo() *geoinfo.Connector {
+type GeoConnector interface {
+	LocationInfo(ip string) (*geoinfo.LocationInfo, error)
+}
+
+type DisabledGeoConnector struct{}
+
+func (c *DisabledGeoConnector) LocationInfo(ip string) (*geoinfo.LocationInfo, error) {
+	return &geoinfo.LocationInfo{}, nil
+}
+
+func (c *ViperConfig) GeoInfo() GeoConnector {
 	c.Lock()
 	defer c.Unlock()
 
@@ -18,6 +28,7 @@ func (c *ViperConfig) GeoInfo() *geoinfo.Connector {
 		var config struct {
 			AccessKey string   `fig:"access_key,required"`
 			URL       *url.URL `fig:"api_url,required"`
+			Disabled  bool     `fig:"disabled"`
 		}
 
 		err := figure.
@@ -29,7 +40,11 @@ func (c *ViperConfig) GeoInfo() *geoinfo.Connector {
 			panic(errors.Wrap(err, "failed to figure out geo_info"))
 		}
 
-		c.geoinfo = geoinfo.NewConnector(config.AccessKey, config.URL)
+		c.geoinfo = &DisabledGeoConnector{}
+
+		if !config.Disabled {
+			c.geoinfo = geoinfo.NewConnector(config.AccessKey, config.URL)
+		}
 	}
 
 	return c.geoinfo

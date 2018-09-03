@@ -7,7 +7,6 @@ import (
 	"github.com/getsentry/raven-go"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
-	"gitlab.com/distributed_lab/geoinfo"
 	"gitlab.com/distributed_lab/logan/v3"
 	"gitlab.com/swarmfund/api/db2"
 	"gitlab.com/swarmfund/api/internal/data"
@@ -33,7 +32,7 @@ type Config interface {
 	Discourse() *discourse.Connector
 	Mixpanel() *mixpanel.Connector
 	Salesforce() *salesforce.Connector
-	GeoInfo() *geoinfo.Connector
+	GeoInfo() GeoConnector
 	DB() *db2.Repo
 }
 
@@ -60,7 +59,7 @@ type ViperConfig struct {
 	api         *API
 	aws         *session.Session
 	db          *db2.Repo
-	geoinfo     *geoinfo.Connector
+	geoinfo     GeoConnector
 }
 
 func NewViperConfig(fn string) Config {

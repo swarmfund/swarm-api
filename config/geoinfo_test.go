@@ -43,4 +43,23 @@ func TestViperConfig_GeoInfo(t *testing.T) {
 
 		assert.Panics(t, func() { config.GeoInfo() })
 	})
+
+	t.Run("disabled geoConnector", func(t *testing.T) {
+		raw := &mockRawGetter{}
+		raw.On("GetStringMap", "geo_info").Return(map[string]interface{}{
+			"access_key": "fb170f98697192973f33434cb35157b4",
+			"api_url":    "http://api.ipstack.com",
+			"disabled":   "true",
+		}).Once()
+		defer raw.AssertExpectations(t)
+
+		config := newViperConfig(raw)
+		geoConnector := config.GeoInfo()
+		assert.NotNil(t, geoConnector)
+
+		location, err := geoConnector.LocationInfo("127.0.0.1")
+		assert.NotNil(t, location)
+		assert.NoError(t, err)
+		assert.Equal(t, location.FullRegion(), "Unknown")
+	})
 }
