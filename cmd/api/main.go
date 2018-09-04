@@ -1,8 +1,6 @@
 package main
 
 import (
-	"os"
-
 	"github.com/spf13/cast"
 	"github.com/spf13/cobra"
 	"gitlab.com/swarmfund/api"
@@ -70,7 +68,7 @@ var (
 )
 
 func main() {
-	defer os.Exit(exitCode)
+	//defer os.Exit(exitCode)
 	cobra.OnInitialize(func() {
 		c, err := initConfig(configFile)
 		if err != nil {
