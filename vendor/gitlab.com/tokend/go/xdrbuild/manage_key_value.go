@@ -6,51 +6,89 @@ import (
 	"gitlab.com/tokend/go/xdr"
 )
 
-type (
-	ManageKeyValueOp struct {
-		Key    string
-		Uint32 *uint32
-		String *string
+type ManageKeyValueOp struct {
+	Key    string
+	Uint32 *uint32
+	Uint64 *uint64
+	String *string
+}
+
+func isNil(i interface{}) error {
+	_, isNil := Indirect(i)
+	if !isNil {
+		return errors.New("must be nil")
 	}
-)
+	return nil
+}
 
 func (mkv ManageKeyValueOp) Validate() error {
-	var fieldRules []*FieldRules
+	errs := Errors{
+			"Key": Validate(&mkv.Key, Required),
+		}
 
-	fieldRules = append(fieldRules, Field(&mkv.Key, Required))
-	if mkv.Uint32 == nil && mkv.String != nil {
-		fieldRules = append(fieldRules, Field(&mkv.String, Required))
-		return ValidateStruct(&mkv, fieldRules...)
-	} else {
-		fieldRules = append(fieldRules, Field(&mkv.Uint32, Required))
-		return ValidateStruct(&mkv, fieldRules...)
+	if mkv.Uint32 != nil {
+		errs["Uint32"] = Validate(mkv.Uint32, NotNil)
+		errs["String"] = Validate(mkv.String, By(isNil))
+		errs["Uint64"] = Validate(mkv.Uint64, By(isNil))
 	}
-	return errors.New("Only Uint32 or String required, not both")
+	if mkv.String != nil {
+		errs["String"] = Validate(mkv.String, NotNil)
+		errs["Uint32"] = Validate(mkv.Uint32, By(isNil))
+		errs["Uint64"] = Validate(mkv.Uint64, By(isNil))
+	}
+	if mkv.Uint64 != nil {
+		errs["Uint64"] = Validate(mkv.Uint64, NotNil)
+		errs["String"] = Validate(mkv.String, By(isNil))
+		errs["Uint32"] = Validate(mkv.Uint32, By(isNil))
+	}
+	return errs.Filter()
 }
 
 func (mkv ManageKeyValueOp) XDR() (*xdr.Operation, error) {
-	op := &xdr.Operation{
+	manageKvAction := xdr.ManageKvActionRemove
+	keyValueEntry := (*xdr.KeyValueEntry)(nil)
+	switch {
+	case mkv.Uint32 != nil:
+		manageKvAction = xdr.ManageKvActionPut
+		val := xdr.Uint32(*mkv.Uint32)
+		keyValueEntry = &xdr.KeyValueEntry{
+			Key: xdr.Longstring(mkv.Key),
+			Value: xdr.KeyValueEntryValue{
+				Type:      xdr.KeyValueEntryTypeUint32,
+				Ui32Value: &val,
+			},
+		}
+	case mkv.Uint64 != nil:
+		manageKvAction = xdr.ManageKvActionPut
+		val := xdr.Uint64(*mkv.Uint64)
+		keyValueEntry = &xdr.KeyValueEntry{
+			Key: xdr.Longstring(mkv.Key),
+			Value: xdr.KeyValueEntryValue{
+				Type:      xdr.KeyValueEntryTypeUint64,
+				Ui64Value: &val,
+			},
+		}
+	case mkv.String != nil:
+		manageKvAction = xdr.ManageKvActionPut
+		keyValueEntry = &xdr.KeyValueEntry{
+			Key: xdr.Longstring(mkv.Key),
+			Value: xdr.KeyValueEntryValue{
+				Type:        xdr.KeyValueEntryTypeString,
+				StringValue: mkv.String,
+			},
+		}
+	}
+
+	return &xdr.Operation{
 		Body: xdr.OperationBody{
 			Type: xdr.OperationTypeManageKeyValue,
 			ManageKeyValueOp: &xdr.ManageKeyValueOp{
 				Key: xdr.String256(mkv.Key),
 				Action: xdr.ManageKeyValueOpAction{
-					Action: xdr.ManageKvActionPut,
-					Value: &xdr.KeyValueEntry{
-						Key: xdr.Longstring(mkv.Key),
-					},
+					Action: manageKvAction,
+					Value:  keyValueEntry,
 				},
 			},
 		},
-	}
-
-	if mkv.Uint32 != nil {
-		op.Body.ManageKeyValueOp.Action.Value.Value.Type = xdr.KeyValueEntryTypeUint32
-		val := xdr.Uint32(*mkv.Uint32)
-		op.Body.ManageKeyValueOp.Action.Value.Value.Ui32Value = &val
-	} else {
-		op.Body.ManageKeyValueOp.Action.Value.Value.Type = xdr.KeyValueEntryTypeString
-		op.Body.ManageKeyValueOp.Action.Value.Value.StringValue = mkv.String
-	}
-	return op, nil
+	}, nil
 }
