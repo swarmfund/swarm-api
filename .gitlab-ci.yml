@@ -17,8 +17,7 @@ variables:
 stages:
   - build
   - test
-  - deploy
-  # TODO pages
+  - publish-gh
 
 # build and publish docker image to the registry
 build:
@@ -39,12 +38,16 @@ test:
     - docker run $IMAGE_TEST_NAME ./...
 
 
-deploy:
-  image: williamyeh/ansible:ubuntu16.04
-  stage: deploy
+publish-gh:
+  image: ubuntu
+  stage: publish-gh
   only:
-    - staging
-    - dev
+    - master
   script:
-    # TODO add host fingerprint
-    - ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i $DEPLOYMENT_INV -e @$DEPLOYMENT_SECRETS -e api_revision=$CI_COMMIT_SHA $DEPLOYMENT_DIR/api.yml
+    - apt update
+    - apt install -y --no-install-recommends git openssh-client
+    - mkdir -p ~/.ssh
+    - echo "$GH_SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+    - chmod 600 ~/.ssh/id_rsa
+    - ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
+    - GIT_SSH_COMMAND="ssh -i ~/.ssh/id_rsa" git push -f git@github.com:swarmfund/swarm-api.git master
