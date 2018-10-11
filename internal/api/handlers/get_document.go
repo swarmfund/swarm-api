@@ -3,6 +3,8 @@ package handlers
 import (
 	"net/http"
 
+	"gitlab.com/swarmfund/api/internal/storage"
+
 	"encoding/json"
 
 	"github.com/go-chi/chi"
@@ -13,12 +15,25 @@ import (
 )
 
 func GetDocument(w http.ResponseWriter, r *http.Request) {
-	address := chi.URLParam(r, "address")
 	document := chi.URLParam(r, "document")
 
+	key := storage.Key{}
+	if err := key.UnmarshalText([]byte(document)); err != nil {
+		Log(r).WithError(err).Error("failed to unmarshal key")
+		ape.RenderErr(w, problems.InternalError())
+		return
+	}
+
+	user, err := UsersQ(r).ByID(key.UserID)
+	if err != nil {
+		Log(r).WithError(err).Error("failed to get user by id")
+		ape.RenderErr(w, problems.InternalError())
+		return
+	}
+
 	constrains := []doorman.SignerConstraint{doorman.SignerOf(CoreInfo(r).GetMasterAccountID())}
-	if address != "" {
-		constrains = append(constrains, doorman.SignerOf(address))
+	if user != nil {
+		constrains = append(constrains, doorman.SignerOf(string(user.Address)))
 	}
 
 	if err := Doorman(r, constrains...); err != nil {

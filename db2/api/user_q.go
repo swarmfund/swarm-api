@@ -81,6 +81,7 @@ type UsersQI interface {
 	ByLastName(lastName string) UsersQI
 	ByCountry(country string) UsersQI
 	ByIP(ip string) (UsersQI, error)
+	ByID(id int64) (*User, error)
 	Select(dest interface{}) error
 	Page(page uint64) UsersQI
 
@@ -181,6 +182,16 @@ func (q *UsersQ) ByAddress(address string) (*User, error) {
 		return nil, nil
 	}
 
+	return dest, err
+}
+
+func (q *UsersQ) ByID(id int64) (*User, error) {
+	dest := new(User)
+	stmt := selectUser.Where("u.id = ?", id)
+	err := q.parent.Get(dest, stmt)
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
 	return dest, err
 }
 
